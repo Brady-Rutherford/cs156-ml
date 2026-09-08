@@ -12,6 +12,14 @@ core concepts, and a first hands-on data pipeline.
 | 2.3 | Mind map | [`2.3.md`](2.3.md) | Done |
 | 3.1 | Code Practice | [`3.1-iris.ipynb`](3.1-iris.ipynb), [`3.1-mnist.ipynb`](3.1-mnist.ipynb), [`3.1-conversation-log.md`](3.1-conversation-log.md) | Done |
 
+## 2.3 Mind map
+
+Four concepts — Uncertainty, Representation, Generalization, Objectives — with all six
+pairwise connections drawn, plus each node expanded into its sub-branches. All ten assigned
+HCs appear on it. See [`2.3.md`](2.3.md).
+
+![Machine learning mind map](assets/2.3-mind-map.png)
+
 ## Reading notes
 
 [`Notes/murphy_ch1_condensed.md`](Notes/murphy_ch1_condensed.md) — a condensed pass over
