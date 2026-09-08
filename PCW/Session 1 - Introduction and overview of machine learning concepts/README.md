@@ -1,0 +1,62 @@
+# Session 1 — Introduction and overview of machine learning concepts
+
+Pre-class work for the first session. Covers what machine learning is, a mind map of its
+core concepts, and a first hands-on data pipeline.
+
+| # | Question | Deliverable | Status |
+|---|---|---|---|
+| 2.1 | Pre-class work | [`2.1.md`](2.1.md) | Done |
+| 2.2 | Interviewing Robots | [`2.2.md`](2.2.md) | Done |
+| 2.3 | Mind map | [`2.3.md`](2.3.md) | Done |
+| 3.1 | Code Practice | [`3.1-iris.ipynb`](3.1-iris.ipynb), [`3.1-mnist.ipynb`](3.1-mnist.ipynb), [`3.1-conversation-log.md`](3.1-conversation-log.md) | Done |
+
+## 3.1 Code Practice — what the two notebooks show
+
+**Script 1 — Iris** (`3.1-iris.ipynb`). Loads the 150 iris flowers into a pandas
+DataFrame, drops every row with sepal length greater than 5 cm, and scatter-plots petal
+length against sepal length with each dot colored by species. Every step is commented in
+plain terms: what an iris is, what a sepal is, that the units are centimeters, and what
+the filter does.
+
+The finding worth reading for: **the filter keeps 32 of 150 flowers, and 28 of them are
+setosa.** A rule phrased as a size cutoff turns out to be very nearly a species filter,
+because setosa is simply the smaller flower. The plot keeps both the before and the after
+side by side so the bite the filter takes is visible rather than asserted.
+
+**Script 2 — MNIST** (`3.1-mnist.ipynb`). Loads 70,000 handwritten digits into a
+70000 × 785 DataFrame, keeps only the 3s and the 8s (13,966 images, 20% of the data), and
+displays grids of them. The comments explain how the images are stored — each 28×28
+picture arrives as a flat row of 784 brightness values, 0 black to 255 white — and what
+folding a row back into a square with `.reshape(28, 28)` and `imshow` is doing.
+
+After the mixed grid there is one row of 3s and one row of 8s, so the variation on screen
+is handwriting style rather than which digit it is. That variation is the point: a
+hand-written rule like "an 8 has two closed loops" breaks the moment someone leaves a loop
+slightly open.
+
+## Running these notebooks
+
+From the repository root:
+
+```bash
+uv sync
+uv run python -m ipykernel install --user --name cs156-ml --display-name "Python (cs156-ml)"
+```
+
+Then open either notebook in VS Code or Cursor and run the cells — the `Python (cs156-ml)`
+kernel is selected automatically. Or use `uv run jupyter lab` for the classic UI.
+
+Iris needs no download. MNIST pulls ~15MB from OpenML on first run and caches it outside
+the repo. Notebook outputs are stripped before commit, so run the cells to see the plots.
+
+## Files
+
+```
+2.1.md                    question 2.1
+2.2.md                    the Interviewing Robots prompt and transcript
+2.3.md                    the mind map and the HCs it covers
+3.1-iris.ipynb            Script 1
+3.1-mnist.ipynb           Script 2
+3.1-conversation-log.md   the LLM conversation behind the scripts
+assets/                   photos of handwritten work, mind map exports
+```

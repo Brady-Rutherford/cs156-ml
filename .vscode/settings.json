@@ -1,0 +1,18 @@
+{
+  // Always use the project's uv-managed virtualenv. This is what stops the
+  // "select a kernel" prompt: the interpreter is chosen for the workspace.
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+
+  // Notebooks: reuse the workspace interpreter instead of asking each time,
+  // and hide the unrelated system kernels (SageMath) from the picker.
+  "jupyter.kernels.excludePythonEnvironments": [
+    "/usr/local/share/jupyter/kernels/SageMath-10.5",
+    "/usr/local/share/jupyter/kernels/SageMath-10.8"
+  ],
+  "notebook.kernelPicker.type": "mru",
+
+  // Keep committed notebooks clean; nbstripout handles the rest at commit time.
+  "notebook.output.scrolling": true,
+  "files.trimTrailingWhitespace": true
+}

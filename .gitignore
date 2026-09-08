@@ -17,5 +17,10 @@ outputs/*
 
 # OS / editor
 .DS_Store
-.vscode/
 .idea/
+
+# Editor config IS committed so the .venv kernel is picked automatically.
+# Ignore only the machine-specific bits.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
