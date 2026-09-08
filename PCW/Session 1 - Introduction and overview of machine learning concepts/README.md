@@ -11,6 +11,7 @@ core concepts, and a first hands-on data pipeline.
 | 2.2 | Interviewing Robots | [`2.2.md`](2.2.md) | Done |
 | 2.3 | Mind map | [`2.3.md`](2.3.md) | Done |
 | 3.1 | Code Practice | [`3.1-iris.ipynb`](3.1-iris.ipynb), [`3.1-mnist.ipynb`](3.1-mnist.ipynb), [`3.1-conversation-log.md`](3.1-conversation-log.md) | Done |
+| 4.1 | Stat questions (extension) | [`4.1-stat-questions.ipynb`](4.1-stat-questions.ipynb) | Done |
 
 ## 2.3 Mind map
 
@@ -77,12 +78,37 @@ is handwriting style rather than which digit it is.
 That variation is the point: a hand-written rule like "an 8 has two closed loops" breaks
 the moment someone leaves a loop slightly open.
 
+## 4.1 Stat questions — extension
+
+[`4.1-stat-questions.ipynb`](4.1-stat-questions.ipynb) works both problems **exactly and by
+simulation**, so each answer is checked against the other rather than asserted.
+
+| Question | Answer |
+|---|---|
+| Expected correct matches, 5 watches and keys | **1** |
+| P(at least one correct match) | **19/30 ≈ 0.633** |
+| P(urn A given a red ball) | **2/3 ≈ 0.667** |
+| P(second red given first red) | **9/14 ≈ 0.643** |
+
+Two results worth the words:
+
+- The expected number of matches is **1 regardless of how many people there are** — five or
+  five hundred. And a pure guesser scores at least one hit about **63%** of the time, so a
+  medium getting one match has demonstrated nothing.
+- One red ball moves the prior on urn A from 1/2 to only **2/3**, not to certainty, because
+  urn B holds red balls too. That updated belief then raises the chance the next ball is red
+  above the unconditional 0.6.
+
+The handwritten working the question asks for goes in `assets/` and is linked from the top of
+the notebook.
+
 ## Running these notebooks
 
 **In your browser, nothing to install** — Binder builds this repo into a live JupyterLab:
 
 - [Run Script 1, Iris](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-iris.ipynb)
 - [Run Script 2, MNIST](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-mnist.ipynb)
+- [Run 4.1 Stat questions](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/4.1-stat-questions.ipynb)
 
 The first launch takes a few minutes while the environment builds. Or just click a
 notebook in this folder to read it on GitHub with all its output already rendered.
@@ -111,5 +137,6 @@ Notes/                    reading notes for this session
 3.1-iris.ipynb            Script 1
 3.1-mnist.ipynb           Script 2
 3.1-conversation-log.md   the LLM conversation behind the scripts
+4.1-stat-questions.ipynb  extension: derangements and Bayes, exact + simulated
 assets/                   figures the notebooks save, plus handwritten work
 ```
