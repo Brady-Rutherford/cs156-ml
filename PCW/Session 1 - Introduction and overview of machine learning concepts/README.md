@@ -1,5 +1,7 @@
 # Session 1 — Introduction and overview of machine learning concepts
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts)
+
 Pre-class work for the first session. Covers what machine learning is, a mind map of its
 core concepts, and a first hands-on data pipeline.
 
@@ -23,20 +25,42 @@ setosa.** A rule phrased as a size cutoff turns out to be very nearly a species 
 because setosa is simply the smaller flower. The plot keeps both the before and the after
 side by side so the bite the filter takes is visible rather than asserted.
 
+![Iris petal length vs sepal length, before and after the 5 cm filter](assets/3.1-iris-scatter.png)
+
+Setosa (blue) sits alone in the bottom left, separated from the other two by a clear gap —
+short sepals and very short petals. Versicolor and virginica overlap along a shared upward
+trend. The dashed line is the 5 cm cutoff; everything right of it is deleted, which is
+nearly everything that is not setosa.
+
 **Script 2 — MNIST** (`3.1-mnist.ipynb`). Loads 70,000 handwritten digits into a
 70000 × 785 DataFrame, keeps only the 3s and the 8s (13,966 images, 20% of the data), and
 displays grids of them. The comments explain how the images are stored — each 28×28
 picture arrives as a flat row of 784 brightness values, 0 black to 255 white — and what
 folding a row back into a square with `.reshape(28, 28)` and `imshow` is doing.
 
+![A grid of MNIST 3s and 8s with their true labels](assets/3.1-mnist-digits.png)
+
 After the mixed grid there is one row of 3s and one row of 8s, so the variation on screen
-is handwriting style rather than which digit it is. That variation is the point: a
-hand-written rule like "an 8 has two closed loops" breaks the moment someone leaves a loop
-slightly open.
+is handwriting style rather than which digit it is.
+
+![Eight different people writing a 3](assets/3.1-mnist-3s.png)
+
+![Eight different people writing an 8](assets/3.1-mnist-8s.png)
+
+That variation is the point: a hand-written rule like "an 8 has two closed loops" breaks
+the moment someone leaves a loop slightly open.
 
 ## Running these notebooks
 
-From the repository root:
+**In your browser, nothing to install** — Binder builds this repo into a live JupyterLab:
+
+- [Run Script 1, Iris](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-iris.ipynb)
+- [Run Script 2, MNIST](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-mnist.ipynb)
+
+The first launch takes a few minutes while the environment builds. Or just click a
+notebook in this folder to read it on GitHub with all its output already rendered.
+
+**Locally**, from the repository root:
 
 ```bash
 uv sync
@@ -47,7 +71,7 @@ Then open either notebook in VS Code or Cursor and run the cells — the `Python
 kernel is selected automatically. Or use `uv run jupyter lab` for the classic UI.
 
 Iris needs no download. MNIST pulls ~15MB from OpenML on first run and caches it outside
-the repo. Notebook outputs are stripped before commit, so run the cells to see the plots.
+the repo.
 
 ## Files
 
@@ -58,5 +82,5 @@ the repo. Notebook outputs are stripped before commit, so run the cells to see t
 3.1-iris.ipynb            Script 1
 3.1-mnist.ipynb           Script 2
 3.1-conversation-log.md   the LLM conversation behind the scripts
-assets/                   photos of handwritten work, mind map exports
+assets/                   figures the notebooks save, plus handwritten work
 ```

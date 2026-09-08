@@ -3,10 +3,18 @@
 Coursework for CS156. Every class session has its own folder holding all the work for it:
 notebooks, written answers, and photos of any handwritten work.
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts)
+
 **If you are grading this, start with the session folder you want and read its README.**
 Each one lists every question in the assignment, links the file that answers it, and says
 what that file shows. You should never have to open a notebook to find out whether a
 question was answered.
+
+**Two ways to see the code.** Clicking any `.ipynb` in this repo renders it on GitHub
+complete with its plots and printed output — nothing to install. To actually *run* and
+edit it, click the Binder badge above: it builds this repo into a live JupyterLab in your
+browser, no account and no local setup. The first launch takes a few minutes while the
+environment builds; after that it is cached.
 
 ## Sessions
 
@@ -29,6 +37,9 @@ PCW/                              pre-class work, one folder per class session
 src/cs156/                        shared code the notebooks import
   data.py                         dataset loaders (Iris, MNIST)
   plotting.py                     plotting helpers (image grids)
+
+binder/requirements.txt           environment mybinder.org builds to run this live
+.vscode/settings.json             pins the .venv interpreter so notebooks just open
 
 data/                             local datasets, gitignored
 outputs/                          figures and exports, gitignored
@@ -64,9 +75,11 @@ folder because the project installs itself into the environment.
 
 ## Notes on the setup
 
-- **Notebook outputs are stripped before commit**, so diffs show changed code rather than
-  changed images. Run the cells yourself to see the plots. To hand in a rendered copy:
-  `uv run jupyter nbconvert --to html <notebook>.ipynb`.
+- **Notebook outputs are committed**, so the plots and printed results show up when you
+  click a notebook on GitHub. That is deliberate: the output *is* the deliverable here, and
+  a reader should not have to run anything to see it. It costs slightly noisier diffs.
+  `nbstripout` is still installed if that trade ever stops being worth it
+  (`uv run nbstripout --install` turns stripping back on).
 - **Datasets are never committed.** Iris ships inside scikit-learn. MNIST downloads ~15MB
   from OpenML on first use and caches to `~/scikit_learn_data`, outside the repo.
 - **Dependencies are pinned** in `uv.lock`. Add one with `uv add <package>`.

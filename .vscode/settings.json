@@ -12,7 +12,12 @@
   ],
   "notebook.kernelPicker.type": "mru",
 
-  // Keep committed notebooks clean; nbstripout handles the rest at commit time.
+  // Show PCW/ and each session as separate, nested rows in the file tree.
+  // Without this, VS Code and Cursor collapse a folder chain with one child into
+  // a single "PCW / Session 1 - ..." row, which hides the structure.
+  "explorer.compactFolders": false,
+
+  // Notebook display.
   "notebook.output.scrolling": true,
   "files.trimTrailingWhitespace": true
 }
