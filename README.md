@@ -28,6 +28,7 @@ environment builds; after that it is cached.
 PCW/                              pre-class work, one folder per class session
   Session 1 - <session title>/
     README.md                     index of every question, with answers linked
+    Notes/                        reading notes for the session
     2.1.md, 2.2.md, 2.3.md        written answers, named by their PCW question number
     3.1-iris.ipynb                notebooks, prefixed with their question number
     3.1-mnist.ipynb

@@ -12,6 +12,25 @@ core concepts, and a first hands-on data pipeline.
 | 2.3 | Mind map | [`2.3.md`](2.3.md) | Done |
 | 3.1 | Code Practice | [`3.1-iris.ipynb`](3.1-iris.ipynb), [`3.1-mnist.ipynb`](3.1-mnist.ipynb), [`3.1-conversation-log.md`](3.1-conversation-log.md) | Done |
 
+## Reading notes
+
+[`Notes/murphy_ch1_condensed.md`](Notes/murphy_ch1_condensed.md) — a condensed pass over
+chapter 1 of Murphy's *Probabilistic Machine Learning*, the reading behind question 2.2.
+It follows the chapter's own arc: what ML is and why probabilistic, the model / loss /
+optimizer template, regression as the same skeleton with a different loss, overfitting and
+no free lunch, then unsupervised learning, RL, and preprocessing.
+
+The section worth reading first is the last one, which ranks the chapter by where the time
+is best spent — printed pages 5 to 9 carry the definitions every later chapter is a
+variation on.
+
+Two things in the notes connect straight to the code in this folder:
+
+- Murphy uses **Iris** as his running example, and the $150 \times 4$ design matrix he
+  describes is literally what `3.1-iris.ipynb` builds.
+- He notes **MNIST** is now considered too easy, since many digit pairs separate on a
+  single pixel — which is why `3.1-mnist.ipynb` uses 3 vs 8 rather than an easy pair.
+
 ## 3.1 Code Practice — what the two notebooks show
 
 **Script 1 — Iris** (`3.1-iris.ipynb`). Loads the 150 iris flowers into a pandas
@@ -76,6 +95,8 @@ the repo.
 ## Files
 
 ```
+Notes/                    reading notes for this session
+  murphy_ch1_condensed.md   condensed Murphy chapter 1
 2.1.md                    question 2.1
 2.2.md                    the Interviewing Robots prompt and transcript
 2.3.md                    the mind map and the HCs it covers
