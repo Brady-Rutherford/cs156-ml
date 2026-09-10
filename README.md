@@ -37,6 +37,8 @@ PCW/                              pre-class work, one folder per class session
     README.md                     index of every question, with answers linked
     drawing-lines.ipynb           booklet Code Cells 1 and 2, plus analysis
     extension-question.ipynb      booklet Code Cells 4 and 5, models from scratch
+    badness-measures.ipynb        follow-up Q4, how badly each model fits
+    claude-ai-transcript-for-pcw.md   the LLM conversation behind the session
     assets/
 
 src/cs156/                        shared code the notebooks import

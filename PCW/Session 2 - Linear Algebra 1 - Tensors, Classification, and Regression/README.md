@@ -8,6 +8,7 @@ scikit-learn and then from scratch in numpy.
 |---|---|---|---|
 | Drawing Lines | Replicate the two reading guides: pull Iris, fit a linear regression and a logistic regression, visualize the output | [`drawing-lines.ipynb`](drawing-lines.ipynb) — Code Cells 1 and 2 | Done |
 | Extension Question | Why don't the models match the data perfectly? Implement both from scratch, commenting on what they do to "fit" | [`extension-question.ipynb`](extension-question.ipynb) — Code Cells 4 and 5 | Done |
+| Follow-up Q4 | Write code implementing a measure of how *badly* each model fits | [`badness-measures.ipynb`](badness-measures.ipynb) | Done |
 | LLM conversation | The exchange behind the pre-class work | [`claude-ai-transcript-for-pcw.md`](claude-ai-transcript-for-pcw.md) — 12 turns | Done |
 
 One notebook per booklet section. The four booklet cells are labelled `CODE CELL 1`, `2`, `4`, `5`
@@ -164,6 +165,43 @@ only available method. That is the point of the extension question: **once a mod
 linear in its parameters, closed forms disappear and iterative optimisation becomes the universal
 tool.** Everything from here to deep networks is this loop.
 
+## Measuring badness — the follow-up questions
+
+[`badness-measures.ipynb`](badness-measures.ipynb) answers booklet question 4, implementing the
+measures described for questions 2 (linear) and 3 (logistic). It runs top to bottom in one cell on
+**sepal length and petal length**, the same two features as the transcript.
+
+![Linear regression on a categorical target, and its residual plot](assets/badness-measures.png)
+
+**Question 2 — $R^2$ says the fit is good and it is wrong.** $R^2 = 0.909$ reads as a strong fit.
+Two other measures say otherwise:
+
+- **38 of 150 fitted values (25%) fall outside the valid label range $[0, 2]$**, running from
+  $-0.312$ to $2.278$. Those are not wrong species; they are not species. No regression metric can
+  express that, because regression has no concept of an inadmissible value.
+- **The residual plot is the real verdict.** Residuals do not scatter around zero — they fall on
+  **three perfectly straight diagonal bands**, one per species, which is the most structure a
+  residual plot can show. Per-species residual means confirm the bias is systematic: setosa
+  $+0.030$, versicolor $-0.242$, virginica $+0.212$.
+
+That is the argument for the residual plot over a summary number. $R^2$ says how much variance was
+explained; only the residuals say whether what is left is structureless noise, which the model
+assumes, or leftover pattern it failed to capture.
+
+**Question 3 — different target, different tools.** $R^2$ does not apply to a categorical target,
+and accuracy is one number covering three classes. Scored by 5-fold cross-validation so no flower
+is judged by a model that saw it, accuracy is **0.9533** — and the breakdown is what accuracy hides:
+
+| species | sensitivity | specificity | missed |
+|---|---|---|---|
+| setosa | **1.0000** | **1.0000** | 0 |
+| versicolor | 0.9200 | 0.9700 | 4 |
+| virginica | 0.9400 | 0.9600 | 3 |
+
+Setosa is perfect on both measures; all seven errors are versicolor and virginica trading places,
+nearly symmetrically. The model is not uniformly slightly wrong — it is flawless on one class and
+imperfect on a single boundary, which "95% accurate" would have averaged away.
+
 ## The conversation behind this
 
 [`claude-ai-transcript-for-pcw.md`](claude-ai-transcript-for-pcw.md) — 12 turns with Claude Opus 5
@@ -219,6 +257,7 @@ it ships inside scikit-learn. Both notebooks run start to finish in about 8 seco
 ```
 drawing-lines.ipynb       booklet Code Cells 1 and 2, plus the overfitting analysis
 extension-question.ipynb  booklet Code Cells 4 and 5, both models from scratch in numpy
+badness-measures.ipynb    follow-up question 4 — how badly each model fits
 claude-ai-transcript-for-pcw.md   the 12-turn LLM conversation behind the session
 assets/
   extension-question.png                       the booklet page the extension answers
@@ -229,4 +268,5 @@ assets/
   drawing-lines-perfect-fit-ceiling.png        analysis
   extension-question-linear.png                Cell 4
   extension-question-logistic.png              Cell 5
+  badness-measures.png                         follow-up Q4
 ```
