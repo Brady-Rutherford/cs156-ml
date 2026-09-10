@@ -8,6 +8,7 @@ scikit-learn and then from scratch in numpy.
 |---|---|---|---|
 | Drawing Lines | Replicate the two reading guides: pull Iris, fit a linear regression and a logistic regression, visualize the output | [`drawing-lines.ipynb`](drawing-lines.ipynb) — Code Cells 1 and 2 | Done |
 | Extension Question | Why don't the models match the data perfectly? Implement both from scratch, commenting on what they do to "fit" | [`extension-question.ipynb`](extension-question.ipynb) — Code Cells 4 and 5 | Done |
+| LLM conversation | The exchange behind the pre-class work | [`claude-ai-transcript-for-pcw.md`](claude-ai-transcript-for-pcw.md) — 12 turns | Done |
 
 One notebook per booklet section. The four booklet cells are labelled `CODE CELL 1`, `2`, `4`, `5`
 in banner comments, and **each is self-contained** — its own imports, its own `load_iris()` call,
@@ -163,6 +164,26 @@ only available method. That is the point of the extension question: **once a mod
 linear in its parameters, closed forms disappear and iterative optimisation becomes the universal
 tool.** Everything from here to deep networks is this loop.
 
+## The conversation behind this
+
+[`claude-ai-transcript-for-pcw.md`](claude-ai-transcript-for-pcw.md) — 12 turns with Claude Opus 5
+working through the concepts rather than the code: what Iris actually contains, why "4 variables
+of 150 dimensions" is the shape confusion backwards, why classifying species is **not** linear
+regression, how logistic regression is built up from weighted sum → sigmoid → softmax → decision
+boundary, and what would actually reveal overfitting.
+
+Two moments worth reading for. The model **corrected the framing of a question rather than
+answering it** — asked to critique "the two models you just created", it opened by pointing out
+that only one was ever fitted, since linear regression had been discussed and rejected as
+inappropriate for a categorical target. And it **refused to hand over the accuracy number**,
+giving a way to reason it out instead, plus the caveat that Iris is a teaching dataset rather than
+a benchmark: a good score tells you your pipeline runs, not that your model is good.
+
+The transcript's fitted model was re-run before committing, and every figure it quotes is exact —
+0.96 training accuracy, 6 of 150 misclassified, all on the versicolor/virginica boundary, petal
+coefficients −3.105 to +3.539. It fits on sepal length and petal length, a different feature pair
+from the notebooks, which use the two petal columns and reach 96.7%.
+
 ## Readings behind this
 
 | Reading | How it is used |
@@ -198,6 +219,7 @@ it ships inside scikit-learn. Both notebooks run start to finish in about 8 seco
 ```
 drawing-lines.ipynb       booklet Code Cells 1 and 2, plus the overfitting analysis
 extension-question.ipynb  booklet Code Cells 4 and 5, both models from scratch in numpy
+claude-ai-transcript-for-pcw.md   the 12-turn LLM conversation behind the session
 assets/
   extension-question.png                       the booklet page the extension answers
   drawing-lines-linear-fit.png                 Cell 1
