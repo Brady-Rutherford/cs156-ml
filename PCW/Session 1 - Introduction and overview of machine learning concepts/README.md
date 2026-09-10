@@ -1,7 +1,5 @@
 # Session 1 — Introduction and overview of machine learning concepts
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts)
-
 Pre-class work for the first session. Covers what machine learning is, a mind map of its
 core concepts, and a first hands-on data pipeline.
 
@@ -79,15 +77,10 @@ the moment someone leaves a loop slightly open.
 
 ## Running these notebooks
 
-**In your browser, nothing to install** — Binder builds this repo into a live JupyterLab:
+**To read them, nothing to install** — click either notebook in this folder and GitHub
+renders it with all its plots and printed output already in place.
 
-- [Run Script 1, Iris](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-iris.ipynb)
-- [Run Script 2, MNIST](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts/3.1-mnist.ipynb)
-
-The first launch takes a few minutes while the environment builds. Or just click a
-notebook in this folder to read it on GitHub with all its output already rendered.
-
-**Locally**, from the repository root:
+**To run them**, from the repository root:
 
 ```bash
 uv sync

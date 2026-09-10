@@ -3,18 +3,16 @@
 Coursework for CS156. Every class session has its own folder holding all the work for it:
 notebooks, written answers, and photos of any handwritten work.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%201%20-%20Introduction%20and%20overview%20of%20machine%20learning%20concepts)
-
 **If you are grading this, start with the session folder you want and read its README.**
 Each one lists every question in the assignment, links the file that answers it, and says
 what that file shows. You should never have to open a notebook to find out whether a
 question was answered.
 
 **Two ways to see the code.** Clicking any `.ipynb` in this repo renders it on GitHub
-complete with its plots and printed output — nothing to install. To actually *run* and
-edit it, click the Binder badge above: it builds this repo into a live JupyterLab in your
-browser, no account and no local setup. The first launch takes a few minutes while the
-environment builds; after that it is cached.
+complete with its plots and printed output — nothing to install, nothing to run. To edit
+and re-run it, clone the repo and follow [Running the code](#running-the-code) below:
+`uv sync` builds the pinned environment, and every notebook already records the kernel it
+needs.
 
 ## Sessions
 
@@ -45,7 +43,6 @@ src/cs156/                        shared code the notebooks import
   data.py                         dataset loaders (Iris, MNIST)
   plotting.py                     plotting helpers (image grids)
 
-binder/requirements.txt           environment mybinder.org builds to run this live
 .vscode/settings.json             pins the .venv interpreter so notebooks just open
 
 data/                             local datasets, gitignored

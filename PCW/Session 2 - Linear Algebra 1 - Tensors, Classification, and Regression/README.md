@@ -1,7 +1,5 @@
 # Session 2 — Linear Algebra 1: Tensors, Classification, and Regression
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%202%20-%20Linear%20Algebra%201%20-%20Tensors%2C%20Classification%2C%20and%20Regression)
-
 Pre-class work for the second session. Implements the two models the session is built on —
 linear regression and logistic regression — on the same 150 iris flowers, first with
 scikit-learn and then from scratch in numpy.
@@ -180,13 +178,12 @@ the pipeline it teaches rather than being transcribed from it. And the scikit-le
 keeps that page's structure and plotting code and substitutes Iris, which is what the PCW
 instruction asks for.
 
-## Running this notebook
+## Running these notebooks
 
-**In your browser, nothing to install** —
-[run it on Binder](https://mybinder.org/v2/gh/Brady-Rutherford/cs156-ml/main?urlpath=lab/tree/PCW/Session%202%20-%20Linear%20Algebra%201%20-%20Tensors%2C%20Classification%2C%20and%20Regression/drawing-lines.ipynb).
-Or click the notebook in this folder to read it on GitHub with all its output already rendered.
+**To read them, nothing to install** — click either notebook in this folder and GitHub renders
+it with all its plots and printed output already in place.
 
-**Locally**, from the repository root:
+**To run them**, from the repository root:
 
 ```bash
 uv sync
