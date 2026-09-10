@@ -9,22 +9,22 @@ scikit-learn and then from scratch in numpy.
 | # | Question | Deliverable | Status |
 |---|---|---|---|
 | Drawing Lines | Replicate the two reading guides: pull Iris, fit a linear regression and a logistic regression, visualize the output | [`drawing-lines.ipynb`](drawing-lines.ipynb) — Code Cells 1 and 2 | Done |
-| Extension Question | Why don't the models match the data perfectly? Implement both from scratch, commenting on what they do to "fit" | [`drawing-lines.ipynb`](drawing-lines.ipynb) — Code Cells 4 and 5 | Done |
+| Extension Question | Why don't the models match the data perfectly? Implement both from scratch, commenting on what they do to "fit" | [`extension-question.ipynb`](extension-question.ipynb) — Code Cells 4 and 5 | Done |
 
-Everything lives in one notebook, [`drawing-lines.ipynb`](drawing-lines.ipynb). The four booklet
-cells are labelled `CODE CELL 1`, `2`, `4`, `5` in banner comments, and **each is self-contained**
-— its own imports, its own `load_iris()` call, nothing imported from this repo — so any one can be
-pasted into the booklet's cell runner and executed alone.
+One notebook per booklet section. The four booklet cells are labelled `CODE CELL 1`, `2`, `4`, `5`
+in banner comments, and **each is self-contained** — its own imports, its own `load_iris()` call,
+nothing imported from this repo — so any one can be pasted into the booklet's cell runner and
+executed alone.
 
-| booklet cell | what it does |
-|---|---|
-| **1** | linear regression via scikit-learn: petal width from petal length |
-| **2** | logistic regression via scikit-learn: 3 species, multinomial vs one-vs-rest |
-| **4** | linear regression **from scratch** — normal equation *and* gradient descent |
-| **5** | logistic regression **from scratch** — softmax + cross-entropy + gradient descent |
+| booklet cell | notebook | what it does |
+|---|---|---|
+| **1** | [`drawing-lines.ipynb`](drawing-lines.ipynb) | linear regression via scikit-learn: petal width from petal length |
+| **2** | [`drawing-lines.ipynb`](drawing-lines.ipynb) | logistic regression via scikit-learn: 3 species, multinomial vs one-vs-rest |
+| **4** | [`extension-question.ipynb`](extension-question.ipynb) | linear regression **from scratch** — normal equation *and* gradient descent |
+| **5** | [`extension-question.ipynb`](extension-question.ipynb) | logistic regression **from scratch** — softmax + cross-entropy + gradient descent |
 
-Between cells 2 and 4 the notebook carries an analysis section that is not a booklet cell: it
-answers whether the Cell 1 fit overfits, and whether any model could fit this data perfectly.
+`drawing-lines.ipynb` also carries an analysis section that is not a booklet cell: it answers
+whether the Cell 1 fit overfits, and whether any model could fit this data perfectly.
 
 ## Code Cell 1 — linear regression with scikit-learn
 
@@ -115,6 +115,8 @@ on this dataset rather than described.
 
 ## Extension Question — the models from scratch
 
+Everything below is in [`extension-question.ipynb`](extension-question.ipynb).
+
 ![The extension question as it appears in the booklet](assets/extension-question.png)
 
 **Why don't they match the data perfectly?** Neither is trying to. Each is handed a small family
@@ -127,7 +129,7 @@ of allowed shapes and a scoring rule, and returns the best member of that family
 
 ### Code Cell 4 — linear regression from scratch
 
-![Gradient descent converging, and the errors being minimised](assets/drawing-lines-scratch-linear.png)
+![Gradient descent converging, and the errors being minimised](assets/extension-question-linear.png)
 
 Implemented twice — the **normal equation** $(X^\top X)w = X^\top y$, solved exactly in one step,
 and **gradient descent**, 20,000 steps downhill. Both land on scikit-learn's answer to
@@ -144,7 +146,7 @@ slope or intercept could reduce it. The model has not failed to fit — it has h
 
 ### Code Cell 5 — logistic regression from scratch
 
-![Cross-entropy descending, and decision regions from the scratch weights](assets/drawing-lines-scratch-logistic.png)
+![Cross-entropy descending, and decision regions from the scratch weights](assets/extension-question-logistic.png)
 
 Softmax, cross-entropy loss, and the gradient $X^\top(P - Y)/n$ — where $(P - Y)$ is literally
 "predicted probability minus what happened". Starting from "every species equally likely", the
@@ -191,20 +193,21 @@ uv sync
 uv run python -m ipykernel install --user --name cs156-ml --display-name "Python (cs156-ml)"
 ```
 
-Then open the notebook and pick the **`Python (cs156-ml)`** kernel. Iris needs no download — it
-ships inside scikit-learn. The whole notebook runs in about 8 seconds.
+Then open either notebook and pick the **`Python (cs156-ml)`** kernel. Iris needs no download —
+it ships inside scikit-learn. Both notebooks run start to finish in about 8 seconds each.
 
 ## Files
 
 ```
-drawing-lines.ipynb       booklet Code Cells 1, 2, 4, 5 plus the analysis section, all executed
+drawing-lines.ipynb       booklet Code Cells 1 and 2, plus the overfitting analysis
+extension-question.ipynb  booklet Code Cells 4 and 5, both models from scratch in numpy
 assets/
-  extension-question.png                       the booklet page this answers
+  extension-question.png                       the booklet page the extension answers
   drawing-lines-linear-fit.png                 Cell 1
   drawing-lines-decision-boundary.png          Cell 2
   drawing-lines-hyperplanes.png                Cell 2
   drawing-lines-overfitting-diagnostics.png    analysis
   drawing-lines-perfect-fit-ceiling.png        analysis
-  drawing-lines-scratch-linear.png             Cell 4
-  drawing-lines-scratch-logistic.png           Cell 5
+  extension-question-linear.png                Cell 4
+  extension-question-logistic.png              Cell 5
 ```

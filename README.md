@@ -37,7 +37,8 @@ PCW/                              pre-class work, one folder per class session
     assets/                       photos of handwritten work, diagrams, exports
   Session 2 - <session title>/
     README.md                     index of every question, with answers linked
-    drawing-lines.ipynb           the booklet's Code Cells 1, 2, 4 and 5
+    drawing-lines.ipynb           booklet Code Cells 1 and 2, plus analysis
+    extension-question.ipynb      booklet Code Cells 4 and 5, models from scratch
     assets/
 
 src/cs156/                        shared code the notebooks import
