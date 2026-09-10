@@ -4,13 +4,27 @@
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "python.terminal.activateEnvironment": true,
 
-  // Notebooks: reuse the workspace interpreter instead of asking each time,
-  // and hide the unrelated system kernels (SageMath) from the picker.
+  // Notebooks: reuse the workspace interpreter instead of asking each time.
+  "notebook.kernelPicker.type": "mru",
+
+  // Hide the unrelated SageMath kernels from the notebook kernel picker.
+  // This matters because one of them is called "Python (SageMath)", which is a
+  // single word away from this project's "Python (cs156-ml)" and is trivially
+  // easy to pick by mistake — it runs an anaconda interpreter that has none of
+  // this project's pinned packages. `jupyter.kernels.filter` is the setting that
+  // filters registered *kernelspecs*; excludePythonEnvironments below only ever
+  // covered interpreters, which is why the ~/Library one still showed up.
+  "jupyter.kernels.filter": [
+    { "path": "/Users/brady/Library/Jupyter/kernels/sagemath", "type": "jupyterKernelspec" },
+    { "path": "/usr/local/share/jupyter/kernels/SageMath-10.5", "type": "jupyterKernelspec" },
+    { "path": "/usr/local/share/jupyter/kernels/SageMath-10.8", "type": "jupyterKernelspec" },
+    { "path": "/Users/brady/anaconda3/envs/sage_env/bin/python3", "type": "pythonEnvironment" }
+  ],
   "jupyter.kernels.excludePythonEnvironments": [
+    "/Users/brady/anaconda3/envs/sage_env/bin/python3",
     "/usr/local/share/jupyter/kernels/SageMath-10.5",
     "/usr/local/share/jupyter/kernels/SageMath-10.8"
   ],
-  "notebook.kernelPicker.type": "mru",
 
   // Show PCW/ and each session as separate, nested rows in the file tree.
   // Without this, VS Code and Cursor collapse a folder chain with one child into
