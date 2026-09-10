@@ -21,6 +21,7 @@ environment builds; after that it is cached.
 | Session | Title | Work |
 |---|---|---|
 | 1 | Introduction and overview of machine learning concepts | [PCW/Session 1](<PCW/Session 1 - Introduction and overview of machine learning concepts/README.md>) |
+| 2 | Linear Algebra 1: Tensors, Classification, and Regression | [PCW/Session 2](<PCW/Session 2 - Linear Algebra 1 - Tensors, Classification, and Regression/README.md>) |
 
 ## How the repo is organised
 
@@ -34,6 +35,10 @@ PCW/                              pre-class work, one folder per class session
     3.1-mnist.ipynb
     3.1-conversation-log.md       the LLM conversation behind that question
     assets/                       photos of handwritten work, diagrams, exports
+  Session 2 - <session title>/
+    README.md                     index of every question, with answers linked
+    drawing-lines.ipynb           notebook holding the booklet's Code Cell 1 and 2
+    assets/
 
 src/cs156/                        shared code the notebooks import
   data.py                         dataset loaders (Iris, MNIST)
