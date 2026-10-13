@@ -24,3 +24,8 @@ outputs/*
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Secrets: never commit, at any depth. pipeline1/.env links to ~/.minerva/.env.
+.env
+.env.*
+!.env.example
