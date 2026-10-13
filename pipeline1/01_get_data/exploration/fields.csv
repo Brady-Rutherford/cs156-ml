@@ -1,0 +1,411 @@
+table,field,type,filled_rows,filled_pct,distinct,example
+breakouts,class_id,BIGINT,1207,100.0,660,82889
+breakouts,breakout.id,BIGINT,1207,100.0,1207,284231
+breakouts,breakout.breakout-control-room,BIGINT,1207,100.0,1207,1940144
+breakouts,breakout.course-builder-id,DOUBLE,1187,98.3,1177,1634827.0
+breakouts,breakout.created-on,TEXT,1207,100.0,731,2024-03-01T23:47:13Z
+breakouts,breakout.default-resource-desc,TEXT,1188,98.4,1061,"{""type"": ""copy"", ""id"": 4903043}"
+breakouts,breakout.duration-in-seconds,DOUBLE,1202,99.6,33,480.0
+breakouts,breakout.group-specific-resource-descs,TEXT,110,9.1,109,"[{""type"": ""copy"", ""id"": 4777027, ""flavor"": ""Group 1 - Rumelt""}, {""type"": ""cop…"
+breakouts,breakout.grouping,TEXT,1207,100.0,77,groups-of:3
+breakouts,breakout.klass-id,BIGINT,1207,100.0,660,82889
+breakouts,breakout.sorting,TEXT,1207,100.0,1,
+breakouts,breakout.title,TEXT,1207,100.0,876,LBA Slide Deck Breakout
+breakouts,breakout.updated-on,TEXT,1207,100.0,744,2024-03-01T23:47:13Z
+breakouts,breakout-groups.count,BIGINT,1207,100.0,12,1
+breakouts.breakout-groups,class_id,BIGINT,2588,100.0,660,79715
+breakouts.breakout-groups,id,BIGINT,2588,100.0,2588,1461043
+breakouts.breakout-groups,breakout-id,BIGINT,2588,100.0,1207,266980
+breakouts.breakout-groups,title,TEXT,2588,100.0,40,Group 4
+breakouts.breakout-groups,resource.id,DOUBLE,2024,78.2,2024,4448606.0
+breakouts.breakout-groups,resource.type,TEXT,2024,78.2,2,sle
+breakouts.breakout-groups,resource.subtype,TEXT,2024,78.2,4,sled
+breakouts.breakout-groups,resource.signed-url,TEXT,2024,78.2,2024,https://sle-collaboration.minervaproject.com?id=dada2882-766d-4f78-bfbd-bbc5e…
+breakouts.breakout-groups,resource.status,TEXT,2024,78.2,1,done
+breakouts.breakout-groups,resource.user-id,DOUBLE,0,0.0,0,
+breakouts.breakout-groups,resource.group-id,DOUBLE,0,0.0,0,
+breakouts.breakout-groups,resource.breakout-group-id,DOUBLE,2024,78.2,2024,1420577.0
+breakouts.breakout-groups,resource,DOUBLE,0,0.0,0,
+class,class_id,BIGINT,739,100.0,739,82366
+class,id,BIGINT,739,100.0,739,82366
+class,title,TEXT,739,100.0,723,B166 Session 8 - How do you source to maximize value?
+class,assessment.id,BIGINT,739,100.0,739,84325
+class,assessment.muted,BOOLEAN,739,100.0,2,False
+class,assessment.unmuted-at,TEXT,636,86.1,636,2024-04-07T13:46:11Z
+class,assessment.num-students,BIGINT,739,100.0,20,13
+class,section.id,BIGINT,739,100.0,46,11427
+class,section.course.id,BIGINT,739,100.0,43,3016
+class,section.course.title,TEXT,739,100.0,36,Business Optimization
+class,section.course.course-code,TEXT,739,100.0,41,B166
+class,section.course.uses-hcs,BOOLEAN,739,100.0,2,False
+class,section.course.uses-los,BOOLEAN,739,100.0,2,False
+class,section.course.uses-glos,BOOLEAN,739,100.0,2,True
+class,section.course.term-id,BIGINT,739,100.0,9,30
+class,section.title,TEXT,739,100.0,44,"Özlük, TTh@10:00AM London"
+class,class-users.count,DOUBLE,738,99.9,19,13.0
+class,recording-sessions.count,DOUBLE,693,93.8,2,1.0
+class,type,TEXT,739,100.0,3,virtual
+class,recording-sessions,TEXT,46,6.2,1,[]
+class,class-users,TEXT,1,0.1,1,[]
+class.class-users,class_id,BIGINT,28729,100.0,738,82357
+class.class-users,id,BIGINT,28729,100.0,28729,1457906
+class.class-users,active,BOOLEAN,28729,100.0,1,True
+class.class-users,role,TEXT,28729,100.0,1,student
+class.class-users,user.id,BIGINT,28729,100.0,377,12847
+class.class-users,user.first-name,TEXT,28729,100.0,341,<masked>
+class.class-users,user.last-name,TEXT,28729,100.0,321,<masked>
+class.class-users,user.aws-avatar-key,TEXT,28729,100.0,320,<masked>
+class.class-users,absent,BOOLEAN,10915,38.0,2,False
+class.recording-sessions,class_id,BIGINT,694,100.0,693,82758
+class.recording-sessions,id,BIGINT,694,100.0,694,60604
+class.recording-sessions,recording-state,TEXT,694,100.0,1,NOREC
+class.recording-sessions,recording-started,TEXT,693,99.9,693,2024-02-06T18:59:03Z
+class.recording-sessions,recording-ended,TEXT,694,100.0,694,2024-02-08T20:40:05Z
+events,class_id,BIGINT,192400,100.0,717,82016
+events,id,BIGINT,192400,100.0,192400,60738039
+events,actor-id,BIGINT,192400,100.0,362,<student>
+events,created-on,TEXT,192400,100.0,67990,2024-01-25T19:42:01Z
+events,end-time,TEXT,192400,100.0,182298,2024-01-25T19:41:17Z
+events,event-data.duration,DOUBLE,158609,82.4,32052,492.0
+events,event-type,TEXT,192400,100.0,3,message
+events,klass-id,BIGINT,192400,100.0,717,82016
+events,private,BOOLEAN,192400,100.0,1,False
+events,room-id,BIGINT,192400,100.0,1441,1847804
+events,room-signature,TEXT,125585,65.3,512,Main Classroom
+events,start-time,TEXT,192400,100.0,181991,2024-01-25T19:41:12Z
+events,timestamp,BIGINT,192400,100.0,185447,1706211672000
+events,updated-on,TEXT,192400,100.0,67989,2024-01-25T19:42:01Z
+events,outcome-assessments,TEXT,191892,99.7,1,[]
+events,actor.id,BIGINT,192400,100.0,362,<student>
+events,actor.first-name,TEXT,192400,100.0,334,<masked>
+events,actor.last-name,TEXT,192400,100.0,320,<masked>
+events,actor.aws-avatar-key,TEXT,192400,100.0,325,<masked>
+events,event-data.timeline-segment-id,TEXT,7287,3.8,6818,3127541
+events,event-data.timeline-segment-title,TEXT,7287,3.8,2187,Calculate Pi With Peas
+events,event-data.message-text,TEXT,26504,13.8,24790,<masked>
+events,outcome-assessments.count,DOUBLE,508,0.3,2,1.0
+events,event-data.timeline-section-title,TEXT,1834,1.0,707,Activity #1: Quantitative Structures
+events,event-data.message-id,DOUBLE,15176,7.9,15173,2106141.0
+events.outcome-assessments,class_id,BIGINT,509,100.0,136,88447
+events.outcome-assessments,id,BIGINT,509,100.0,509,2418219
+events.outcome-assessments,comment,TEXT,482,94.7,316,<masked>
+events.outcome-assessments,grader-user.id,BIGINT,509,100.0,25,11139
+events.outcome-assessments,grader-user.first-name,TEXT,509,100.0,25,<masked>
+events.outcome-assessments,grader-user.last-name,TEXT,509,100.0,25,<masked>
+events.outcome-assessments,grader-user.aws-avatar-key,TEXT,509,100.0,25,<masked>
+events.outcome-assessments,grader-user-id,BIGINT,509,100.0,25,11139
+events.outcome-assessments,hc-id,TEXT,0,0.0,0,
+events.outcome-assessments,hc-item-id,TEXT,0,0.0,0,
+events.outcome-assessments,klass-id,BIGINT,509,100.0,136,88447
+events.outcome-assessments,learning-outcome,DOUBLE,310,60.9,72,74129.0
+events.outcome-assessments,poll-session-id,TEXT,0,0.0,0,
+events.outcome-assessments,recording-session,TEXT,0,0.0,0,
+events.outcome-assessments,recording-session-event-id,BIGINT,509,100.0,508,71388607
+events.outcome-assessments,score,DOUBLE,308,60.5,5,3.0
+events.outcome-assessments,scoring-category,TEXT,0,0.0,0,
+events.outcome-assessments,target-assignment-group-id,TEXT,0,0.0,0,
+events.outcome-assessments,target-breakout-group-id,TEXT,0,0.0,0,
+events.outcome-assessments,target-user-id,BIGINT,509,100.0,55,12847
+events.outcome-assessments,type,TEXT,509,100.0,1,video
+events.outcome-assessments,updated-on,TEXT,509,100.0,401,2024-11-16T09:47:45Z
+focused_outcomes,class_id,BIGINT,2625,100.0,583,84623
+focused_outcomes,id,BIGINT,2625,100.0,2625,1109283
+focused_outcomes,assessment,BIGINT,2625,100.0,583,86582
+focused_outcomes,assignment,TEXT,0,0.0,0,
+focused_outcomes,created-on,TEXT,2625,100.0,601,2024-03-22T19:23:13Z
+focused_outcomes,hc-celsus-primary-key,TEXT,2,0.1,1,-JwZ8BmafDBrTizODQ-t
+focused_outcomes,hc-item,DOUBLE,0,0.0,0,
+focused_outcomes,learning-outcome.id,DOUBLE,2623,99.9,447,46606.0
+focused_outcomes,learning-outcome.course-id,DOUBLE,2623,99.9,31,2865.0
+focused_outcomes,learning-outcome.course-objective-id,DOUBLE,2623,99.9,102,5031.0
+focused_outcomes,learning-outcome.coursebuilder-id,DOUBLE,1,0.0,1,19214.0
+focused_outcomes,learning-outcome.created-on,TEXT,2623,99.9,62,2023-12-27T20:51:50Z
+focused_outcomes,learning-outcome.deprecated,BOOLEAN,2623,99.9,1,False
+focused_outcomes,learning-outcome.description,TEXT,2623,99.9,157,Identify ways that multiple causes interact to produce complex effects. (C) CX
+focused_outcomes,learning-outcome.hashtag,TEXT,2623,99.9,165,#complexcausality
+focused_outcomes,learning-outcome.outcome-type,TEXT,2623,99.9,1,lo
+focused_outcomes,learning-outcome.name,TEXT,2623,99.9,164,<masked>
+focused_outcomes,learning-outcome.paragraph,TEXT,2622,99.9,78,For scientific results to be accepted as well-established they must be reprod…
+focused_outcomes,learning-outcome.rubric-items-json,TEXT,2623,99.9,2,"[{""score"": 0, ""title"": ""No Evidence"", ""description"": ""No measurable evidence …"
+focused_outcomes,learning-outcome.updated-on,TEXT,2623,99.9,60,2024-04-08T22:52:03Z
+focused_outcomes,learning-outcome.general-learning-outcome.id,DOUBLE,2622,99.9,164,281.0
+focused_outcomes,learning-outcome.general-learning-outcome.is-gradable,BOOLEAN,2622,99.9,1,True
+focused_outcomes,learning-outcome.general-learning-outcome.college,DOUBLE,0,0.0,0,
+focused_outcomes,learning-outcome.general-learning-outcome.created-on,TEXT,2622,99.9,16,2023-07-23T21:39:30Z
+focused_outcomes,learning-outcome.general-learning-outcome.description,TEXT,2622,99.9,157,Identify ways that multiple causes interact to produce complex effects. (C) CX
+focused_outcomes,learning-outcome.general-learning-outcome.details,TEXT,2622,99.9,78,For scientific results to be accepted as well-established they must be reprod…
+focused_outcomes,learning-outcome.general-learning-outcome.example,TEXT,2622,99.9,78,"To learn more about this HC, including examples, tips for strong applications…"
+focused_outcomes,learning-outcome.general-learning-outcome.hashtag,TEXT,2622,99.9,164,#complexcausality
+focused_outcomes,learning-outcome.general-learning-outcome.name,TEXT,2622,99.9,164,<masked>
+focused_outcomes,learning-outcome.general-learning-outcome.outcome-type,TEXT,2622,99.9,1,glo
+focused_outcomes,learning-outcome.general-learning-outcome.parent,DOUBLE,2580,98.3,33,158.0
+focused_outcomes,learning-outcome.general-learning-outcome.raw-name,TEXT,2622,99.9,164,complexcausality
+focused_outcomes,learning-outcome.general-learning-outcome.rubric,TEXT,2622,99.9,1,"[{""score"": 0, ""title"": ""No Evidence"", ""description"": ""No measurable evidence …"
+focused_outcomes,learning-outcome.general-learning-outcome.updated-on,TEXT,2622,99.9,5,2026-09-25T15:33:48Z
+focused_outcomes,learning-outcome.is-gradable,BOOLEAN,2623,99.9,1,True
+focused_outcomes,type,TEXT,2625,100.0,1,foreground
+focused_outcomes,updated-on,TEXT,2625,100.0,601,2024-03-22T19:23:13Z
+focused_outcomes,usage-label,TEXT,2625,100.0,6,unknown
+focused_outcomes,why-use,TEXT,3,0.1,2,"Students will explore #rightproblem in the context of the Big Question ""How c…"
+focused_outcomes,learning-outcome.general-learning-outcome.college.id,DOUBLE,987,37.6,5,3.0
+focused_outcomes,learning-outcome.general-learning-outcome.college.code,TEXT,987,37.6,5,CS
+focused_outcomes,learning-outcome.general-learning-outcome.college.coursebuilder-id,DOUBLE,987,37.6,5,3.0
+focused_outcomes,learning-outcome.general-learning-outcome.college.created-on,TEXT,987,37.6,4,2018-07-16T21:06:53Z
+focused_outcomes,learning-outcome.general-learning-outcome.college.is-default,BOOLEAN,987,37.6,1,False
+focused_outcomes,learning-outcome.general-learning-outcome.college.name,TEXT,987,37.6,5,<masked>
+focused_outcomes,learning-outcome.general-learning-outcome.college.updated-on,TEXT,987,37.6,5,2026-10-08T19:21:21Z
+focused_outcomes,hc-item.id,DOUBLE,2,0.1,1,4593.0
+focused_outcomes,hc-item.celsus-primary-key,TEXT,2,0.1,1,-JwZ8BmafDBrTizODQ-t
+focused_outcomes,hc-item.class-of-introduction,TEXT,2,0.1,1,1.02.1
+focused_outcomes,hc-item.cornerstone-code,TEXT,2,0.1,1,EA
+focused_outcomes,hc-item.created-on,TEXT,2,0.1,1,2022-11-06T14:55:39Z
+focused_outcomes,hc-item.deprecated,BOOLEAN,2,0.1,1,False
+focused_outcomes,hc-item.description,TEXT,2,0.1,1,Characterize the nature of the problem. (H) EA
+focused_outcomes,hc-item.examples,TEXT,2,0.1,1,A significant part of the Minerva experience consists of events that make sur…
+focused_outcomes,hc-item.extra-metadata-json,TEXT,2,0.1,1,"{""class_of_introduction"": ""1.02.1"", ""course_of_introduction"": ""EA"", ""examples…"
+focused_outcomes,hc-item.hashtag,TEXT,2,0.1,1,#rightproblem
+focused_outcomes,hc-item.outcome-type,TEXT,2,0.1,1,hc
+focused_outcomes,hc-item.name,TEXT,2,0.1,1,<masked>
+focused_outcomes,hc-item.paragraph,TEXT,2,0.1,1,The first step to solving a problem is to characterize exactly what the probl…
+focused_outcomes,hc-item.rubric-items-json,TEXT,2,0.1,1,"[{""description"": ""No data."", ""score"": ""0""}, {""description"": ""Does not recall …"
+focused_outcomes,hc-item.successor,DOUBLE,2,0.1,1,4671.0
+focused_outcomes,hc-item.term,DOUBLE,2,0.1,1,28.0
+focused_outcomes,hc-item.updated-on,TEXT,2,0.1,1,2023-01-27T16:59:08Z
+focused_outcomes,learning-outcome,DOUBLE,0,0.0,0,
+focused_outcomes,learning-outcome.general-learning-outcome,DOUBLE,0,0.0,0,
+listing,class_id,BIGINT,739,100.0,739,82366
+listing,section_id,BIGINT,739,100.0,46,11427
+listing,course_code,TEXT,735,99.5,40,B166
+listing,term,TEXT,735,99.5,14,Spring 2024
+listing,class.id,BIGINT,739,100.0,739,82366
+listing,class.absence-notifications-scheduled,BOOLEAN,739,100.0,2,True
+listing,class.absence-notifications-sent,BOOLEAN,739,100.0,1,False
+listing,class.active-breakout-session,DOUBLE,153,20.7,153,131482.0
+listing,class.active-breakout-session-id,DOUBLE,153,20.7,153,131482.0
+listing,class.actual-length-seconds,BIGINT,739,100.0,202,5313
+listing,class.allow-student-no-video,BOOLEAN,739,100.0,1,False
+listing,class.av-config,TEXT,0,0.0,0,
+listing,class.av-service,TEXT,739,100.0,2,opentok
+listing,class.bandwidth-mode,TEXT,739,100.0,1,high
+listing,class.canvas-course-id,TEXT,0,0.0,0,
+listing,class.canvas-id,TEXT,0,0.0,0,
+listing,class.canvas-section-id,TEXT,0,0.0,0,
+listing,class.class-number,DOUBLE,737,99.7,49,7.0
+listing,class.course-title,TEXT,0,0.0,0,
+listing,class.created-on,TEXT,739,100.0,733,2024-01-16T08:35:55Z
+listing,class.current-filter,TEXT,739,100.0,5,Lowest Filter Count
+listing,class.date,TEXT,739,100.0,737,2024-02-01T10:00:00Z
+listing,class.disable-slideshow-recording,BOOLEAN,739,100.0,1,True
+listing,class.discussion-iframe-url,TEXT,0,0.0,0,
+listing,class.enable-broadcast,BOOLEAN,739,100.0,1,False
+listing,class.enable-single-pc,BOOLEAN,739,100.0,1,True
+listing,class.enable-student-audio-only,BOOLEAN,739,100.0,1,False
+listing,class.enable-student-drawing,BOOLEAN,739,100.0,2,True
+listing,class.end-time,TEXT,739,100.0,738,2024-02-01T11:30:00Z
+listing,class.experimental-features,BOOLEAN,739,100.0,1,False
+listing,class.flight-server,TEXT,333,45.1,9,class-new-pubsub-3
+listing,class.in-person-location,TEXT,65,8.8,2,HQ or Capital One
+listing,class.is-in-flight,BOOLEAN,739,100.0,2,False
+listing,class.is-open,BOOLEAN,739,100.0,2,False
+listing,class.licode-group,TEXT,739,100.0,2,mke-sf
+listing,class.licode-server,TEXT,739,100.0,2,licode-fallback1.av.minervaproject.com
+listing,class.location-hint-ip,TEXT,0,0.0,0,
+listing,class.max-subscribed-streams,BIGINT,739,100.0,2,22
+listing,class.max-updated-streams,BIGINT,739,100.0,1,10
+listing,class.module-updated-on,TEXT,0,0.0,0,
+listing,class.opentok-screenshare-session-id,TEXT,739,100.0,739,2_MX40NzIyODEzNH5-MTcwNTM5NDE1NDY1MH5reHlFVFNYbk0yLzczOGtDZWJPT2M0Tmd-fn4
+listing,class.opentok-session-id,TEXT,739,100.0,739,2_MX40NzIyODEzNH5-MTcwNTM5NDE1NDYxMX5kS2xyTytzWUJqRkpOeXFJNW1VbGNwc21-fn4
+listing,class.opentok-use-dedicated-server,BOOLEAN,739,100.0,1,False
+listing,class.ptt-mode,BOOLEAN,739,100.0,2,True
+listing,class.published,BOOLEAN,739,100.0,1,True
+listing,class.pubsub-server,TEXT,510,69.0,1,pubsub-1
+listing,class.reduced-framerate-cutoff,TEXT,0,0.0,0,
+listing,class.resources-have-been-unlocked,BOOLEAN,739,100.0,1,True
+listing,class.section-id,BIGINT,739,100.0,46,11427
+listing,class.settings-overrides,TEXT,0,0.0,0,
+listing,class.should-record-session,BOOLEAN,739,100.0,2,True
+listing,class.teacher-user-id,DOUBLE,738,99.9,32,874.0
+listing,class.title,TEXT,739,100.0,723,B166 Session 8 - How do you source to maximize value?
+listing,class.type,TEXT,739,100.0,3,virtual
+listing,class.updated-on,TEXT,739,100.0,703,2024-02-01T11:31:00Z
+listing,class.using-always-up-server,BOOLEAN,739,100.0,2,True
+listing,class.recording-sessions.count,DOUBLE,693,93.8,2,1.0
+listing,class.recording-sessions,TEXT,46,6.2,1,[]
+listing.class.recording-sessions,class_id,BIGINT,694,100.0,693,82758
+listing.class.recording-sessions,id,BIGINT,694,100.0,694,60604
+listing.class.recording-sessions,created-on,TEXT,694,100.0,694,2024-02-08T18:55:01Z
+listing.class.recording-sessions,is-annotated,BOOLEAN,694,100.0,1,False
+listing.class.recording-sessions,klass-id,BIGINT,694,100.0,693,82758
+listing.class.recording-sessions,recording-ended,TEXT,694,100.0,694,2024-02-08T20:40:05Z
+listing.class.recording-sessions,recording-started,TEXT,693,99.9,693,2024-02-06T18:59:03Z
+listing.class.recording-sessions,recording-state,TEXT,694,100.0,1,NOREC
+listing.class.recording-sessions,recording-uuid,TEXT,694,100.0,694,843c475e-8a86-4564-ad2e-32fc53283861
+listing.class.recording-sessions,updated-on,TEXT,694,100.0,694,2024-02-08T20:40:05Z
+manifest (manifest.csv),class_id,BIGINT,739,100.0,739,87444
+manifest (manifest.csv),section_id,BIGINT,739,100.0,46,11989
+manifest (manifest.csv),course_code,TEXT,735,99.5,40,B110
+manifest (manifest.csv),term,TEXT,735,99.5,14,33
+manifest (manifest.csv),title,TEXT,739,100.0,723,CS110 Session 11 - [6.2] Writing algorithms in Python—part II
+manifest (manifest.csv),date,TEXT,739,100.0,737,2024-10-17T04:00:00Z
+manifest (manifest.csv),recording_started,TEXT,693,93.8,693,2024-11-06T05:59:01Z
+manifest (manifest.csv),recording_ended,TEXT,693,93.8,693,2024-11-06T07:40:01Z
+manifest (manifest.csv),n_voice,BIGINT,739,100.0,341,214
+manifest (manifest.csv),n_my_voice,BIGINT,739,100.0,64,10
+manifest (manifest.csv),n_events_by_type,TEXT,739,100.0,717,"{""message"":27,""timeline-segment"":13,""voice"":214}"
+outcome_assessments,class_id,BIGINT,1764,100.0,520,83864
+outcome_assessments,id,BIGINT,1764,100.0,1764,2284008
+outcome_assessments,comment,TEXT,1613,91.4,1066,<masked>
+outcome_assessments,grader-user.id,BIGINT,1764,100.0,62,<student>
+outcome_assessments,grader-user.first-name,TEXT,1764,100.0,60,<masked>
+outcome_assessments,grader-user.last-name,TEXT,1764,100.0,58,<masked>
+outcome_assessments,grader-user.aws-avatar-key,TEXT,1764,100.0,61,<masked>
+outcome_assessments,grader-user-id,BIGINT,1764,100.0,62,<student>
+outcome_assessments,hc-id,TEXT,0,0.0,0,
+outcome_assessments,hc-item-id,TEXT,0,0.0,0,
+outcome_assessments,klass-id,BIGINT,1764,100.0,520,83864
+outcome_assessments,learning-outcome,DOUBLE,1338,75.9,211,46696.0
+outcome_assessments,poll-session-id,DOUBLE,617,35.0,236,225582.0
+outcome_assessments,recording-session,DOUBLE,179,10.1,102,70437.0
+outcome_assessments,recording-session-event-id,DOUBLE,509,28.9,508,71388607.0
+outcome_assessments,score,DOUBLE,1219,69.1,6,2.0
+outcome_assessments,scoring-category,TEXT,0,0.0,0,
+outcome_assessments,target-assignment-group-id,DOUBLE,2,0.1,1,
+outcome_assessments,target-breakout-group-id,DOUBLE,18,1.0,18,
+outcome_assessments,target-user-id,DOUBLE,1744,98.9,56,12847.0
+outcome_assessments,type,TEXT,1764,100.0,5,poll
+outcome_assessments,updated-on,TEXT,1764,100.0,1531,2024-03-09T18:40:28Z
+poll_responses,class_id,BIGINT,3155,100.0,528,81878
+poll_responses,id,BIGINT,3155,100.0,3155,2415365
+poll_responses,created-on,TEXT,3155,100.0,1422,2024-02-07T18:21:59Z
+poll_responses,is-draft,BOOLEAN,3155,100.0,2,False
+poll_responses,poll-session-id,BIGINT,3155,100.0,1415,225363
+poll_responses,response,TEXT,3155,100.0,2451,<masked>
+poll_responses,submitted-at,TEXT,3136,99.4,3057,2024-02-07T18:01:42.469000Z
+poll_responses,updated-on,TEXT,3155,100.0,1422,2024-02-07T18:21:59Z
+poll_responses,user-id,BIGINT,3155,100.0,57,12847
+polls,class_id,BIGINT,2992,100.0,673,83408
+polls,id,BIGINT,2992,100.0,2992,993773
+polls,grading-type,TEXT,2992,100.0,2,outcome
+polls,multiple-response,BOOLEAN,2992,100.0,2,False
+polls,num-choices,BIGINT,2992,100.0,6,4
+polls,question,TEXT,2992,100.0,2677,"What is ""the grey area"" in nudging, and why is this significant?  Illustrate …"
+polls,student-visible,BOOLEAN,2992,100.0,2,False
+polls,teacher-visible,BOOLEAN,2992,100.0,1,True
+polls,title,TEXT,2973,99.4,624,Set B
+polls,type,TEXT,2992,100.0,1,long-form
+polls,poll-sessions.count,DOUBLE,1413,47.2,6,1.0
+polls,scoring-category-default,TEXT,2992,100.0,1,neither
+polls,poll-sessions,TEXT,1579,52.8,1,[]
+polls.poll-sessions,class_id,BIGINT,1470,100.0,622,82497
+polls.poll-sessions,id,BIGINT,1470,100.0,1470,227248
+polls.poll-sessions,poll-id,BIGINT,1470,100.0,1413,997034
+polls.poll-sessions,started-at,TEXT,1466,99.7,1446,2024-01-24T20:38:48Z
+polls.poll-sessions,status,TEXT,1470,100.0,3,completed
+polls.poll-sessions,view-results-as,TEXT,1470,100.0,1,pie
+polls.poll-sessions,outcome-assessments,TEXT,1234,83.9,1,[]
+polls.poll-sessions,poll-responses,TEXT,382,26.0,1,[]
+polls.poll-sessions,instructor-notes,DOUBLE,0,0.0,0,
+polls.poll-sessions,poll-responses.count,DOUBLE,1088,74.0,15,1.0
+polls.poll-sessions,instructor-notes.engagement-prompt,TEXT,135,9.2,2,Tell students to pay attention to … because they will need this information i…
+polls.poll-sessions,instructor-notes.faculty-instructions,TEXT,135,9.2,71,"**Answer to Poll A**: We work in steps:
+
+* Identify the alternatives: Build o…"
+polls.poll-sessions,instructor-notes.focus-questions,TEXT,132,9.0,1,[]
+polls.poll-sessions,outcome-assessments.count,DOUBLE,236,16.1,12,12.0
+polls.poll-sessions,instructor-notes.focus-questions.count,DOUBLE,3,0.2,2,4.0
+polls.poll-sessions.instructor-notes.focus-questions,class_id,BIGINT,9,100.0,3,95507
+polls.poll-sessions.instructor-notes.focus-questions,answer,TEXT,9,100.0,2,"​
+"
+polls.poll-sessions.instructor-notes.focus-questions,question,TEXT,9,100.0,5,"What do the columns indicate?
+"
+polls.poll-sessions.outcome-assessments,class_id,BIGINT,617,100.0,234,82161
+polls.poll-sessions.outcome-assessments,id,BIGINT,617,100.0,617,2255659
+polls.poll-sessions.outcome-assessments,comment,TEXT,558,90.4,434,<masked>
+polls.poll-sessions.outcome-assessments,grader-user.id,BIGINT,617,100.0,43,<student>
+polls.poll-sessions.outcome-assessments,grader-user.first-name,TEXT,617,100.0,41,<masked>
+polls.poll-sessions.outcome-assessments,grader-user.last-name,TEXT,617,100.0,41,<masked>
+polls.poll-sessions.outcome-assessments,grader-user.aws-avatar-key,TEXT,617,100.0,43,<masked>
+polls.poll-sessions.outcome-assessments,grader-user-id,BIGINT,617,100.0,43,<student>
+polls.poll-sessions.outcome-assessments,hc-id,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,hc-item-id,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,klass-id,BIGINT,617,100.0,234,82161
+polls.poll-sessions.outcome-assessments,learning-outcome,DOUBLE,539,87.4,140,46841.0
+polls.poll-sessions.outcome-assessments,poll-session-id,BIGINT,617,100.0,236,225582
+polls.poll-sessions.outcome-assessments,recording-session,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,recording-session-event-id,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,score,DOUBLE,523,84.8,6,2.0
+polls.poll-sessions.outcome-assessments,scoring-category,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,target-assignment-group-id,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,target-breakout-group-id,TEXT,0,0.0,0,
+polls.poll-sessions.outcome-assessments,target-user-id,BIGINT,617,100.0,55,12847
+polls.poll-sessions.outcome-assessments,type,TEXT,617,100.0,1,poll
+polls.poll-sessions.outcome-assessments,updated-on,TEXT,617,100.0,528,2024-02-14T22:25:15Z
+polls.poll-sessions.poll-responses,class_id,BIGINT,2617,100.0,513,82747
+polls.poll-sessions.poll-responses,id,BIGINT,2617,100.0,2617,2413271
+polls.poll-sessions.poll-responses,created-on,TEXT,2617,100.0,1099,2024-02-06T19:42:28Z
+polls.poll-sessions.poll-responses,is-draft,BOOLEAN,2617,100.0,2,False
+polls.poll-sessions.poll-responses,poll-session-id,BIGINT,2617,100.0,1088,224694
+polls.poll-sessions.poll-responses,response,TEXT,2617,100.0,2446,<masked>
+polls.poll-sessions.poll-responses,submitted-at,TEXT,2598,99.3,2597,2024-02-06T20:36:17.617000Z
+polls.poll-sessions.poll-responses,updated-on,TEXT,2617,100.0,1099,2024-02-06T19:42:28Z
+polls.poll-sessions.poll-responses,user-id,BIGINT,2617,100.0,57,12847
+sections (sections.json),id,BIGINT,53,100.0,53,11989
+sections (sections.json),canvas-id,TEXT,0,0.0,0,
+sections (sections.json),class-length,BIGINT,53,100.0,3,90
+sections (sections.json),course.id,BIGINT,53,100.0,49,3282
+sections (sections.json),course.assignments-description,TEXT,36,67.9,22,Please refer to the [CS110 course guide](https://drive.google.com/file/d/15qt…
+sections (sections.json),course.calendar,DOUBLE,0,0.0,0,
+sections (sections.json),course.canvas-id,DOUBLE,0,0.0,0,
+sections (sections.json),course.college,DOUBLE,49,92.5,8,2.0
+sections (sections.json),course.course-code,TEXT,49,92.5,47,B111
+sections (sections.json),course.coursebuilder-id,DOUBLE,49,92.5,49,3415.0
+sections (sections.json),course.created-on,TEXT,49,92.5,49,2024-08-15T00:25:09Z
+sections (sections.json),course.credit-units,DOUBLE,49,92.5,4,4.0
+sections (sections.json),course.description,TEXT,47,88.7,47,"In this course, students learn how to apply core concepts in designing and an…"
+sections (sections.json),course.grading-scheme,TEXT,49,92.5,2,standard
+sections (sections.json),course.is-default,BOOLEAN,49,92.5,1,False
+sections (sections.json),course.prerequisites,TEXT,33,62.3,26,"* Cornerstone courses
+
+* B110 and B111
+
+* Knowledge of Algebra, Calculus, Pro…"
+sections (sections.json),course.state,TEXT,49,92.5,2,completed
+sections (sections.json),course.syllabus,TEXT,49,92.5,49,https://course-resources.minerva.edu/uploaded_files/mu/00360977-5688/b111-syl…
+sections (sections.json),course.term.id,DOUBLE,43,81.1,8,30.0
+sections (sections.json),course.term.created-on,TEXT,8,15.1,8,2024-04-17T08:17:17Z
+sections (sections.json),course.term.end-date,TEXT,8,15.1,8,2025-01-07T08:17:14Z
+sections (sections.json),course.term.start-date,TEXT,8,15.1,8,2024-08-17T08:17:15Z
+sections (sections.json),course.term.term-holidays.count,DOUBLE,7,13.2,4,9.0
+sections (sections.json),course.term.title,TEXT,8,15.1,8,Fall 2024
+sections (sections.json),course.term.updated-on,TEXT,8,15.1,8,2024-12-17T17:23:35Z
+sections (sections.json),course.title,TEXT,49,92.5,41,"Financial Planning, Budgeting and Modeling "
+sections (sections.json),course.type,TEXT,49,92.5,2,course-objective
+sections (sections.json),course.updated-on,TEXT,49,92.5,14,2025-01-13T18:11:05Z
+sections (sections.json),course.lo-tree-id,DOUBLE,43,81.1,43,2938.0
+sections (sections.json),course.term-id,DOUBLE,43,81.1,8,30.0
+sections (sections.json),created-on,TEXT,53,100.0,53,2024-08-15T22:54:20Z
+sections (sections.json),default-all-classes-to-flight,BOOLEAN,53,100.0,2,False
+sections (sections.json),external-section-id,TEXT,53,100.0,53,4707
+sections (sections.json),flight-group,TEXT,53,100.0,1,default
+sections (sections.json),is-default,BOOLEAN,53,100.0,1,False
+sections (sections.json),is-open,BOOLEAN,53,100.0,2,False
+sections (sections.json),av-service,TEXT,53,100.0,1,opentok
+sections (sections.json),licode-group,TEXT,53,100.0,2,mke-sf
+sections (sections.json),enable-single-pc,BOOLEAN,53,100.0,1,True
+sections (sections.json),max-enrollment,DOUBLE,20,37.7,4,18.0
+sections (sections.json),max-subscribed-streams,BIGINT,53,100.0,1,25
+sections (sections.json),num,DOUBLE,17,32.1,6,1.0
+sections (sections.json),pubsub-group,TEXT,53,100.0,1,default
+sections (sections.json),should-record-sessions,BOOLEAN,53,100.0,2,True
+sections (sections.json),student-add-drop-allowed,BOOLEAN,53,100.0,2,True
+sections (sections.json),title,TEXT,53,100.0,51,"Shekhar, TTh@12:00PM Taipei"
+sections (sections.json),updated-on,TEXT,53,100.0,36,2024-09-05T16:27:54Z
+sections (sections.json),use-public-resources,BOOLEAN,53,100.0,1,True
+sections (sections.json),_kind,TEXT,53,100.0,2,past
+sections (sections.json),course.term.term-holidays,TEXT,1,1.9,1,[]
+sections (sections.json),course.term,DOUBLE,6,11.3,2,39.0
+sections.course.term.term-holidays,id,BIGINT,55,100.0,55,80
+sections.course.term.term-holidays,created-on,TEXT,55,100.0,55,2024-08-19T18:44:11Z
+sections.course.term.term-holidays,date,TEXT,55,100.0,55,2024-11-29
+sections.course.term.term-holidays,term-id,BIGINT,55,100.0,7,33
+sections.course.term.term-holidays,updated-on,TEXT,55,100.0,55,2024-08-19T18:44:11Z

@@ -1,0 +1,21 @@
+table,rows,columns,classes
+breakouts,1207,14,660
+breakouts.breakout-groups,2588,13,660
+class,739,21,739
+class.class-users,28729,9,738
+class.recording-sessions,694,5,693
+events,192400,25,717
+events.outcome-assessments,509,22,136
+focused_outcomes,2625,65,583
+listing,739,58,739
+listing.class.recording-sessions,694,10,693
+manifest (manifest.csv),739,11,739
+outcome_assessments,1764,22,520
+poll_responses,3155,9,528
+polls,2992,13,673
+polls.poll-sessions,1470,15,622
+polls.poll-sessions.instructor-notes.focus-questions,9,3,3
+polls.poll-sessions.outcome-assessments,617,22,234
+polls.poll-sessions.poll-responses,2617,9,513
+sections (sections.json),53,51,
+sections.course.term.term-holidays,55,5,

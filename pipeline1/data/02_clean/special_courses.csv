@@ -1,0 +1,95 @@
+class_id,course_code,course_title,term,date,title,reason
+74656,ASC2023AP,Ascent 2023 (April),,,ASC2023AP Session 1 - Introduction to academics at Minerva,too few classes (2 listed)
+74655,ASC2023AP,Ascent 2023 (April),Spring 2023,2023-04-22,ASC2023AP Session 1 - Introduction to academics at Minerva,too few classes (2 listed)
+75984,FOUND,Introductory Academic Sessions,Summer 2023,2023-08-28,FOUND Session 1 - Understanding Forum & Professionalism,too few classes (4 listed)
+75997,FOUND,Introductory Academic Sessions,Summer 2023,2023-08-30,FOUND Session 2 - Self-Awareness and Emotional Intelligence,too few classes (4 listed)
+76006,FOUND,Introductory Academic Sessions,Fall 2023,2023-09-01,FOUND Session 3 - Purpose and Responsibility,too few classes (4 listed)
+76017,FOUND,Introductory Academic Sessions,Fall 2023,2023-09-15,FOUND Session 4 - Expressing Yourself in Academic Work and Avoiding Plagiarism,too few classes (4 listed)
+78219,GL91,Global Learning I,Fall 2023,2023-10-07,GL91 Session 1 - Challenging Perspectives,too few classes (2 listed)
+79761,GL91,Global Learning I,Fall 2023,2023-11-04,GL91 Session 2 - Adjusting Together,too few classes (2 listed)
+84244,GL92,Global Learning II,Spring 2024,2024-03-02,GL92 Session 1 - Global Thought: Engagement as a Global Citizen,too few classes (1 listed)
+88294,GL93,Global Learning III,,,GL93 Session 1 - Cultural Diversity,too few classes (2 listed)
+88323,GL93,Global Learning III,Fall 2024,2024-10-31,GL93 Session 1 - Cultural Diversity,too few classes (2 listed)
+92928,GL94,Global Learning IV,,,GL94 Session 1 - Power & Privilege,too few classes (2 listed)
+92936,GL94,Global Learning IV,Spring 2025,2025-03-06,GL94 Session 1 - Power & Privilege,too few classes (2 listed)
+97511,GL95,Global Learning V,Fall 2025,2025-10-28,GL95 Session 1 - Identity & Stereotypes,too few classes (2 listed)
+97508,GL95,Global Learning V,Fall 2025,2025-10-30,GL95 Session 1 - Identity & Stereotypes,too few classes (2 listed)
+102073,GL96,Global Learning VI,Spring 2026,2026-03-12,GL96 Session 1 - Global Connections,too few classes (1 listed)
+82063,HSR01,Human Subjects Research Workshops,Spring 2024,2024-01-18,HSR01 Session 1 - Basic HSR Training,too few classes (1 listed)
+75597,SP101,Summer Prep Support & Office Hours,,,SP101 Session 15 - Math Drop-in Office Hours with Mariana,summer program
+75598,SP101,Summer Prep Support & Office Hours,,,SP101 Session 16 - Programming Drop-in Office Hours with George,summer program
+75599,SP101,Summer Prep Support & Office Hours,,,SP101 Session 17 - Programming Drop-in Office Hours with Wisdom,summer program
+75600,SP101,Summer Prep Support & Office Hours,,,SP101 Session 18 - Writing Drop-in Office Hours with Miriam,summer program
+75601,SP101,Summer Prep Support & Office Hours,,,SP101 Session 19 - Writing Drop-in Office Hours with Miriam,summer program
+75610,SP101,Summer Prep Support & Office Hours,,,SP101 Session 20 - Math Drop-in Office Hours with Mariana,summer program
+75611,SP101,Summer Prep Support & Office Hours,,,SP101 Session 21 - Programming Drop-in Office Hours with George,summer program
+75612,SP101,Summer Prep Support & Office Hours,,,SP101 Session 22 - Programming Drop-in Office Hours with Pei,summer program
+75613,SP101,Summer Prep Support & Office Hours,,,SP101 Session 23 - Writing Drop-in Office Hours with Vitoria,summer program
+75614,SP101,Summer Prep Support & Office Hours,,,SP101 Session 24 - Writing Drop-in Office Hours with Zhi Zhi,summer program
+75645,SP101,Summer Prep Support & Office Hours,,,SP101 Session 25 - Math Drop-in Office Hours with George,summer program
+75646,SP101,Summer Prep Support & Office Hours,,,SP101 Session 26 - Programming Drop-in Office Hours with Pei,summer program
+75647,SP101,Summer Prep Support & Office Hours,,,SP101 Session 27 - Programming Drop-in Office Hours with Wisdom,summer program
+75648,SP101,Summer Prep Support & Office Hours,,,SP101 Session 28 - Writing Drop-in Office Hours with Miriam,summer program
+75649,SP101,Summer Prep Support & Office Hours,,,SP101 Session 29 - Writing Drop-in Office Hours with Miriam,summer program
+75686,SP101,Summer Prep Support & Office Hours,,,SP101 Session 30 - Math Drop-in Office Hours with George,summer program
+75687,SP101,Summer Prep Support & Office Hours,,,SP101 Session 31 - Programming Drop-in Office Hours with Pei,summer program
+75688,SP101,Summer Prep Support & Office Hours,,,SP101 Session 32 - Programming Drop-in Office Hours with Wisdom,summer program
+75689,SP101,Summer Prep Support & Office Hours,,,SP101 Session 33 - Writing Drop-in Office Hours with Vitoria,summer program
+75690,SP101,Summer Prep Support & Office Hours,,,SP101 Session 35 - Math Drop-in Office Hours with Mariana,summer program
+75691,SP101,Summer Prep Support & Office Hours,,,SP101 Session 34 - Writing Drop-in Office Hours with Miriam,summer program
+75711,SP101,Summer Prep Support & Office Hours,,,SP101 Session 36 - Programming Drop-in Office Hours with George,summer program
+75712,SP101,Summer Prep Support & Office Hours,,,SP101 Session 37 - Programming Drop-in Office Hours with Wisdom,summer program
+75713,SP101,Summer Prep Support & Office Hours,,,SP101 Session 38 - Writing Drop-in Office Hours with Vitoria,summer program
+75714,SP101,Summer Prep Support & Office Hours,,,SP101 Session 39 - Writing Drop-in Office Hours with Zhi-Zhi,summer program
+75724,SP101,Summer Prep Support & Office Hours,,,SP101 Session 40 - Math Drop-in Office Hours with Mariana,summer program
+75725,SP101,Summer Prep Support & Office Hours,,,SP101 Session 41 - Programming Drop-in Office Hours with George,summer program
+75726,SP101,Summer Prep Support & Office Hours,,,SP101 Session 42 - Programming Drop-in Office Hours with Pei,summer program
+75727,SP101,Summer Prep Support & Office Hours,,,SP101 Session 43 - Writing Drop-in Office Hours with Miriam,summer program
+75728,SP101,Summer Prep Support & Office Hours,,,SP101 Session 44 - Writing Drop-in Office Hours with Zhi-Zhi,summer program
+75741,SP101,Summer Prep Support & Office Hours,,,SP101 Session 45 - Math Drop-in Office Hours with Mariana,summer program
+75742,SP101,Summer Prep Support & Office Hours,,,SP101 Session 46 - Programming Drop-in Office Hours with Pei,summer program
+75743,SP101,Summer Prep Support & Office Hours,,,SP101 Session 47 - Programming Drop-in Office Hours with Wisdom,summer program
+75744,SP101,Summer Prep Support & Office Hours,,,SP101 Session 48 - Writing Drop-in Office Hours with Vitoria,summer program
+75745,SP101,Summer Prep Support & Office Hours,,,SP101 Session 49 - Writing Drop-in Office Hours with Zhi-Zhi,summer program
+75492,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-07,SP101 Session 1 - Pre-Summer Summer Prep 101 [Option 1],summer program
+75498,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-08,SP101 Session 2 - Pre-Summer Summer Prep 101 [Option 2],summer program
+75499,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-08,SP101 Session 3 - Pre-Summer Summer Prep 101 [Option 3],summer program
+75500,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-09,SP101 Session 4 - Pre-Summer Summer Prep 101 [Option 4],summer program
+75493,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-13,SP101 Session 5 - Math Drop-in Office Hours with George,summer program
+75494,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-14,SP101 Session 6 - Programming Drop-in Office Hours with Pei,summer program
+75495,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-15,SP101 Session 7 - Programming Drop-in Office Hours with Wisdom,summer program
+75496,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-15,SP101 Session 8 - Writing Drop-in Office Hours with Vitoria,summer program
+75497,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-16,SP101 Session 9 - Writing Drop-in Office Hours with Zhi Zhi,summer program
+75532,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-20,SP101 Session 10 - Math Drop-in Office Hours with Mariana,summer program
+75533,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-21,SP101 Session 11 - Programming Drop-in Office Hours with Pei,summer program
+75534,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-22,SP101 Session 12 - Programming Drop-in Office Hours with Wisdom,summer program
+75536,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-22,SP101 Session 13 - Writing Drop-in Office Hours with Miriam,summer program
+75535,SP101,Summer Prep Support & Office Hours,Summer 2023,2023-06-23,SP101 Session 14 - Writing Drop-in Office Hours with Zhi Zhi,summer program
+75503,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-14,SPPSG Session 1 - Thinking Like a Computer (Early time slot),summer program
+75504,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-15,SPPSG Session 2 - Thinking Like a Computer (Late time slot),summer program
+75543,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-21,"SPPSG Session 3 - Data Types, Math Operators, and Functions (Early time slot)",summer program
+75572,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-22,"SPPSG Session 4 - Data Types, Math Operators, and Functions (Later time slot)",summer program
+75587,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-28,"SPPSG Session 5 - Flow Control: Conditional Statements, For-Loops and Lists (Early time slot)",summer program
+75588,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-06-29,"SPPSG Session 6 - Flow Control: Conditional Statements, For-Loops and Lists (Late time slot)",summer program
+75602,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-05,SPPSG Session 7 - Flow Control: Conditional Statements and While Loops (Early time slot),summer program
+75603,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-06,SPPSG Session 8 - Flow Control: Conditional Statements and While Loops (Later time slot),summer program
+75643,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-12,SPPSG Session 9 - Libraries Part 1: Introducing Rounding and the Random Library (Earlier Time Slot),summer program
+75644,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-13,SPPSG Session 10 - Libraries Part 1: Introducing Rounding and the Random Library (Later Time Slot),summer program
+75667,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-19,"SPPSG Session 11 - Libraries Part 2: Introducing NumPy, Pandas and Matplotlib (Early Time Slot)",summer program
+75668,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-20,"SPPSG Session 12 - Libraries Part 2: Introducing NumPy, Pandas and Matplotlib (Late Time Slot)",summer program
+75705,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-26,SPPSG Session 13 - Review: Problem Solving (Early Time Slot),summer program
+75706,SPPSG,Summer Prep Programming Study Groups,Summer 2023,2023-07-27,SPPSG Session 14 - Review: Problem Solving (Later Time Slot),summer program
+75506,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-15,SPWSG Session 1 - Introduction and Critique (Early time slot),summer program
+75507,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-16,SPWSG Session 2 - Introduction and Critique (Later time slot),summer program
+75505,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-22,SPWSG Session 3 - Organization I (Early time slot),summer program
+75542,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-23,SPWSG Session 4 - Organization I (Later time slot),summer program
+75539,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-29,SPWSG Session 5 - Organization II (Early time slot),summer program
+75541,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-06-30,SPWSG Session 6 - Organization II (Later time slot),summer program
+75540,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-06,SPWSG Session 7 - Thesis I (Early time slot),summer program
+75609,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-07,SPWSG Session 8 - Thesis I (Later time slot),summer program
+75665,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-13,SPWSG Session 9 - Thesis II (Early time slot),summer program
+75666,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-14,SPWSG Session 10 - Thesis II (Later time slot),summer program
+75696,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-20,SPWSG Session 11 - Evidence and Citations I (Early time slot),summer program
+75697,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-21,SPWSG Session 12 - Evidence and Citations I (Later time slot),summer program
+75715,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-27,SPWSG Session 13 - Evidence and Citations II (Early time slot),summer program
+75716,SPWSG,Summer Prep Writing Study Groups,Summer 2023,2023-07-28,SPWSG Session 14 - Evidence and Citations II (Later time slot),summer program
