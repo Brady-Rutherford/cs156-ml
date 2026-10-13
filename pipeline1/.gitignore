@@ -1,0 +1,21 @@
+# Raw Forum records, transcripts, frames, embeddings and features contain classmates, so they
+# stay local under data/. Exception (Brady, 13 Oct): the outputs of step 2 (cleaning) and
+# step 3 (split) hold only class ids, courses, dates, titles and his own attendance, and are
+# committed as part of the assignment.
+data/*
+!data/02_clean/
+!data/03_split/
+outputs/
+*.mp4
+*.ogg
+*.wav
+
+# FORUM_COOKIE lives here. It is a login credential.
+.env
+
+# Audit material (contact sheets, clips) and local tables/arrays. Only the privacy-safe
+# results bundle is committed (HMAC ids, no words).
+audit/
+*.parquet
+*.npy
+!results/*.parquet

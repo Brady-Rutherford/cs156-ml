@@ -1,0 +1,622 @@
+<title>On Cue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #edf0f3;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --ink: #12161c;
+  --ink-2: #455061;
+  --muted: #737e8d;
+  --rule: #d6dce3;
+  --rule-strong: #b7c0cb;
+  --accent: #eb6834;
+  --accent-ink: #ad3f17;
+  --accent-wash: rgba(235, 104, 52, 0.12);
+  --me: #2a78d6;
+  --me-wash: rgba(42, 120, 214, 0.12);
+  --pos: #eb6834;
+  --neg: #1baf7a;
+  --neg-ink: #0b7a52;
+  --excl: #c9d0d8;
+  --code-bg: #f2f4f7;
+  --shadow: 0 1px 2px rgba(18, 22, 28, 0.06), 0 6px 24px rgba(18, 22, 28, 0.06);
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1015; --surface: #151a21; --surface-2: #1a2028; --ink: #e8ecf1; --ink-2: #b3bbc6;
+    --muted: #8a94a1; --rule: #28303a; --rule-strong: #3a4450; --accent: #d95926; --accent-ink: #f2895e;
+    --accent-wash: rgba(242, 137, 94, 0.13); --me: #3987e5; --me-wash: rgba(57, 135, 229, 0.16);
+    --pos: #d95926; --neg: #199e70; --neg-ink: #3fcf98; --excl: #2e3641; --code-bg: #10151b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1015; --surface: #151a21; --surface-2: #1a2028; --ink: #e8ecf1; --ink-2: #b3bbc6;
+  --muted: #8a94a1; --rule: #28303a; --rule-strong: #3a4450; --accent: #d95926; --accent-ink: #f2895e;
+  --accent-wash: rgba(242, 137, 94, 0.13); --me: #3987e5; --me-wash: rgba(57, 135, 229, 0.16);
+  --pos: #d95926; --neg: #199e70; --neg-ink: #3fcf98; --excl: #2e3641; --code-bg: #10151b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 20px; padding-block: 0 64px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+a { color: var(--accent-ink); text-underline-offset: 3px; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+.brand { display: flex; align-items: center; gap: 10px; }
+.tally { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-wash); }
+.due { color: var(--accent-ink); font-weight: 500; }
+
+.hero { padding-block: 44px 24px; display: grid; gap: 20px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(32px, 5vw, 58px); line-height: 1.03; letter-spacing: -0.02em; margin: 0; max-width: 18ch; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent-ink); }
+.lede { font-size: 18px; color: var(--ink-2); max-width: 66ch; margin: 0; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule); }
+.fact { padding: 14px 16px 14px 0; display: grid; gap: 2px; align-content: start; }
+.fact + .fact { padding-left: 16px; border-left: 1px solid var(--rule); }
+.fact > b { font-family: var(--display); font-stretch: 112%; font-size: 28px; font-weight: 750; line-height: 1.1; }
+.fact > span { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+
+section { padding-block: 40px 8px; }
+h2 { font-family: var(--display); font-stretch: 112%; font-weight: 750; font-size: clamp(23px, 3vw, 31px); letter-spacing: -0.01em; line-height: 1.15; margin: 6px 0 10px; text-wrap: balance; }
+h3 { font-family: var(--display); font-stretch: 105%; font-weight: 700; font-size: 18px; margin: 0 0 6px; }
+.intro { color: var(--ink-2); max-width: 70ch; margin: 0 0 20px; }
+
+.prov { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.prov.measured { color: var(--neg-ink); }
+.prov.illustrative { color: var(--muted); }
+
+/* ---------- explorer ---------- */
+.explorer { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+.diagram-scroll { overflow-x: auto; border-bottom: 1px solid var(--rule); background: var(--surface-2); }
+.diagram-scroll svg { display: block; min-width: 900px; width: 100%; height: auto; }
+.dg-edge { stroke: var(--rule-strong); stroke-width: 1.5; fill: none; }
+.dg-edge.on { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: 6 5; animation: flow 0.9s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -11; } }
+@media (prefers-reduced-motion: reduce) { .dg-edge.on { animation: none; stroke-dasharray: none; } }
+.dg-arrow { fill: var(--rule-strong); }
+.dg-label { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+.dg-label.on { fill: var(--accent-ink); font-weight: 500; }
+.dg-node { cursor: pointer; outline: none; }
+.dg-node rect.box { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1.25; transition: fill 0.2s, stroke 0.2s; }
+.dg-node:hover rect.box { stroke: var(--ink-2); }
+.dg-node:focus-visible rect.box { stroke: var(--accent); stroke-width: 2.5; }
+.dg-node.on rect.box { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 2; }
+.dg-num { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+.dg-name { font-family: var(--display); font-stretch: 106%; font-weight: 700; font-size: 13.5px; fill: var(--ink); }
+.dg-sub { font-family: var(--mono); font-size: 10px; fill: var(--ink-2); }
+.dg-bar { fill: var(--me); opacity: 0.55; }
+.dg-bar-label { font-family: var(--mono); font-size: 9.5px; fill: var(--muted); }
+.dg-plumb { fill: none; stroke: var(--rule-strong); stroke-dasharray: 4 4; }
+.dg-plumb-label { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid var(--rule); }
+.where { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.where b { color: var(--ink); font-weight: 500; }
+.btns { display: flex; gap: 8px; }
+button.step { font: 500 14px/1 var(--body); color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule-strong); border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+button.step:hover { border-color: var(--ink-2); }
+button.step.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+button.step:disabled { opacity: 0.4; cursor: default; }
+
+.panel { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+.say { padding: 22px 24px 26px; border-right: 1px solid var(--rule); display: grid; gap: 14px; align-content: start; }
+.show { padding: 22px 24px 26px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.say h3 { font-size: 21px; }
+.say p { margin: 0; color: var(--ink-2); }
+.io { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; margin: 0; }
+.io dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.io dd { margin: 0; }
+.check { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; font-size: 14px; color: var(--ink-2); }
+.check b { color: var(--ink); }
+.check ul { margin: 6px 0 0; padding-left: 18px; }
+.check li + li { margin-top: 3px; }
+.show-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.show-head .t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.mini-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; }
+table.mini { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.mini th, table.mini td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+table.mini tr:last-child td { border-bottom: none; }
+table.mini th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+table.mini td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.cmds { display: flex; flex-wrap: wrap; gap: 6px; }
+.cmd { font-family: var(--mono); font-size: 12px; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 8px; }
+.files { display: grid; gap: 8px; }
+.file { display: grid; grid-template-columns: 9.5rem 1fr; gap: 4px 12px; align-items: center; font-size: 13px; }
+.file .fn { font-family: var(--mono); font-weight: 500; }
+.file .meter { display: flex; align-items: center; gap: 8px; }
+.file .meter i { display: block; height: 8px; border-radius: 0 4px 4px 0; background: var(--me); opacity: 0.7; }
+.file .meter span { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.file .what { grid-column: 2; color: var(--ink-2); font-size: 12.5px; line-height: 1.4; }
+.start { font-size: 13.5px; color: var(--ink-2); }
+.start code { color: var(--ink); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* ---------- snapshot ---------- */
+.snap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.blk { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.blk .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+.blk p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+.blk ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+.blk.never { border-style: dashed; }
+
+/* ---------- dials ---------- */
+.dial-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); display: grid; gap: 14px; }
+.controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; }
+.ctl { display: grid; gap: 4px; }
+.ctl label { font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+.ctl label output { font-family: var(--mono); color: var(--accent-ink); }
+.ctl small { font-size: 12.5px; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.chart-scroll { overflow-x: auto; }
+.chart-scroll svg { display: block; width: 100%; min-width: 620px; height: auto; }
+.pt-pos { fill: var(--pos); }
+.pt-neg { fill: var(--neg); }
+.pt-excl { fill: var(--excl); }
+.ax { stroke: var(--rule-strong); stroke-width: 1; }
+.tick { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+.lbl { font-family: var(--mono); font-size: 11px; fill: var(--ink-2); }
+.lbl.acc { fill: var(--accent-ink); font-weight: 500; }
+.hand-line { stroke: var(--accent-ink); stroke-width: 2; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.pos { background: var(--pos); } .sw.neg { background: var(--neg); } .sw.excl { background: var(--excl); border: 1px solid var(--rule-strong); }
+.readout { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+.readout b { color: var(--ink); }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; }
+table.t { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 680px; }
+table.t th, table.t td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.t tr:last-child td { border-bottom: none; }
+table.t th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+table.t td.id { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+table.t td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+table.t td.q { color: var(--ink-2); }
+.chip { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--rule-strong); color: var(--ink-2); }
+.chip.core { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.callout { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px 18px; font-size: 15px; color: var(--ink-2); margin-top: 16px; }
+.callout b { color: var(--ink); }
+
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.st { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.st .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.st.done .k { color: var(--neg-ink); } .st.run .k { color: var(--accent-ink); } .st.wait .k { color: var(--muted); }
+.st ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+
+footer { margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 92ch; }
+
+@media (max-width: 860px) {
+  .panel { grid-template-columns: 1fr; }
+  .say { border-right: none; border-bottom: 1px solid var(--rule); }
+  .snap, .status { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fact:nth-child(3) { padding-left: 0; border-left: none; }
+  .fact:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .file { grid-template-columns: 1fr; }
+  .file .what { grid-column: 1; }
+}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><span class="tally" aria-hidden="true"></span><span>ON CUE · CS156 First Pipeline · Brady Rutherford</span></div>
+    <div class="due">Due Fri 16 Oct 2026</div>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow">What the pipeline does, step by step</div>
+    <h1>Can what's said in class tell <em>when I'll raise my hand</em>?</h1>
+    <p class="lede">Every few seconds of a recorded class, the model reads what was just said, where the class is, and what I prepared beforehand, and guesses whether my hand goes up soon. My actual hand raises come from the recording: the yellow-green icon on my tile. The question is whether the <i>words</i> help, beyond simply knowing <i>when</i> in class it is.</p>
+    <div class="facts" role="list">
+      <div class="fact" role="listitem"><b>694</b><span>recorded classes in my Forum history, Fall 2023 to now</span></div>
+      <div class="fact" role="listitem"><b>9</b><span>stages; Clean and Split are new and still being consolidated</span></div>
+      <div class="fact" role="listitem"><b>16.5k</b><span>lines of code, plus 10.2k lines of tests, measured 13 Oct</span></div>
+      <div class="fact" role="listitem"><b>0</b><span>real results yet: it has only run on a synthetic test world</span></div>
+    </div>
+  </div>
+
+  <section id="flow" aria-labelledby="flow-h">
+    <div class="eyebrow">The pipeline in nine steps</div>
+    <h2 id="flow-h">Click a step to see what it does, what the data looks like, and where the code is</h2>
+    <p class="intro">Each step takes the previous step's output and adds one thing. Steps 2 and 3 are new: their logic already exists but is spread across files, and the proposal is to make each one a single command with its own output folder. The blue bar under each box is how much code it is. Every sample row below is <span class="prov illustrative">illustrative</span>: the columns are the real ones, the values are made up. Line counts are <span class="prov measured">measured</span> from the code on 12 Oct.</p>
+
+    <div class="explorer" id="explorer">
+      <div class="diagram-scroll" id="diagram"></div>
+      <div class="stepper">
+        <div class="where" id="where" aria-live="polite"></div>
+        <div class="btns">
+          <button class="step" id="prev" type="button">← Previous</button>
+          <button class="step primary" id="next" type="button">Next step →</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="say" id="say"></div>
+        <div class="show" id="show"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="snapshot" aria-labelledby="snap-h">
+    <div class="eyebrow">What the model is allowed to see</div>
+    <h2 id="snap-h">At each moment <i>t</i>, a fixed-size snapshot of the past</h2>
+    <p class="intro">The model never reads the whole transcript. Every 2 seconds it gets the same three blocks, all built from things that had already happened by <i>t</i>. Step 5 builds them, and a test deletes everything after <i>t</i> and checks the snapshot doesn't change.</p>
+    <div class="snap">
+      <div class="blk"><div class="tag">① What was just said</div><p>The last 60 seconds of words, tagged by speaker role (professor, classmate, me). Names are masked and punctuation removed.</p><ul><li>did the professor just ask a question?</li><li>how long has it been quiet?</li></ul></div>
+      <div class="blk"><div class="tag">② Where the class is</div><p>A handful of numbers:</p><ul><li>minute of class, current activity (discussion, poll, lecture)</li><li>my raises so far this class, time since my last one</li><li>my usual rate in this course, from <i>earlier</i> classes only</li></ul></div>
+      <div class="blk"><div class="tag">③ What I prepared</div><p>The same all class: the pre-class questions, my workbook answers, the session's learning outcomes.</p><ul><li>how close is what's being said right now to what I wrote?</li></ul></div>
+    </div>
+    <div class="snap" style="margin-top:16px">
+      <div class="blk never"><div class="tag">Never allowed</div><p>Anything after <i>t</i>: the professor saying "Brady, go ahead", my own speech after the raise, the class's total raises, a lesson segment that hasn't started, punctuation the transcriber added using later audio.</p></div>
+    </div>
+  </section>
+
+  <section id="dials" aria-labelledby="dials-h">
+    <div class="eyebrow">The two dials you control</div>
+    <h2 id="dials-h">Which moments count as "about to raise my hand"</h2>
+    <p class="intro">Below is one real-shaped hand raise at 0 s and the 2-second moments before and after it. <b>H</b> is how far ahead the model looks. <b>g</b> is your rule that it must call it at least <i>g</i> seconds early, so it can't just see the hand going up.</p>
+    <div class="dial-card">
+      <div class="controls">
+        <div class="ctl">
+          <label for="h-range">Horizon <i>H</i> <output id="h-out" for="h-range">15 s</output></label>
+          <input type="range" id="h-range" min="5" max="30" step="1" value="15">
+          <small>"Will my hand go up in the next H seconds?" Headline: 15 s.</small>
+        </div>
+        <div class="ctl">
+          <label for="g-range">Guard <i>g</i> <output id="g-out" for="g-range">2 s</output></label>
+          <input type="range" id="g-range" min="1" max="5" step="1" value="2">
+          <small>Must predict at least g seconds before the hand. Swept at 1, 2, 3 and 5 s.</small>
+        </div>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw pos"></i>positive: hand goes up in (t + g, t + H]</span>
+        <span><i class="sw neg"></i>negative: no hand in that window</span>
+        <span><i class="sw excl"></i>not used: too close to the raise, or hand already up</span>
+      </div>
+      <div class="chart-scroll" id="dial-chart"></div>
+      <p class="readout" id="dial-readout"></p>
+    </div>
+  </section>
+
+  <section id="split" aria-labelledby="split-h">
+    <div class="eyebrow">Step 3, up close</div>
+    <h2 id="split-h">Train, validation and test: split by whole classes</h2>
+    <p class="intro">Each square is one class. The <b>test</b> 20% is locked away by a hash of the class id and scored once, at the end. The rest rotate: in each round the model <b>trains</b> on four groups and is checked on the fifth (<b>validation</b>). After five rounds every class has been validated exactly once. Click a round.</p>
+    <div class="dial-card">
+      <div class="btns" id="round-btns" role="group" aria-label="Validation round"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw" style="background:var(--me)"></i>train</span>
+        <span><i class="sw pos"></i>validation (this round)</span>
+        <span><i class="sw" style="background:var(--ink)"></i>test (locked)</span>
+      </div>
+      <div class="chart-scroll" id="split-grid"></div>
+      <p class="readout" id="split-readout"></p>
+      <p class="note">Illustrative: 694 squares stand for the recorded classes. The real split is computed after cleaning, on the classes that pass it, with the same hash rule.</p>
+    </div>
+  </section>
+
+  <section id="models" aria-labelledby="models-h">
+    <div class="eyebrow">The models</div>
+    <h2 id="models-h">Simplest first: each has to beat the ones above it</h2>
+    <div class="table-wrap">
+      <table class="t">
+        <thead><tr><th>ID</th><th>Model</th><th>What it sees</th><th>Why it's there</th><th>Tier</th></tr></thead>
+        <tbody>
+          <tr><td class="id">B0</td><td>Base rate</td><td>nothing</td><td class="q">the "no skill" floor every score is read against</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">R</td><td>Question rule</td><td>"did the professor just ask a question?"</td><td class="q">the obvious answer; the learned models must beat it</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">B1</td><td>Logistic regression</td><td>block ② only: timing and class state</td><td class="q">the "it's about <i>when</i>, not <i>what</i>" model</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">M1</td><td>Naive Bayes</td><td>the words in block ①</td><td class="q">classic text classifier, from class</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">M2</td><td>TF-IDF logistic regression</td><td>words + class state</td><td class="q">readable: shows which words push the probability up</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">M3</td><td>Gradient boosting</td><td>all three blocks</td><td class="q">the headline model; beyond class</td><td><span class="chip core">core</span></td></tr>
+          <tr><td class="id">M4</td><td>Sentence embeddings + logistic regression</td><td>the <i>meaning</i> of block ①, not just its words</td><td class="q">"any thoughts?" ≈ "what do you all think?"</td><td><span class="chip">must</span></td></tr>
+          <tr><td class="id">M5</td><td>Streaming GRU</td><td>the whole class so far, step by step</td><td class="q">your "for loop through the class" idea</td><td><span class="chip">should</span></td></tr>
+          <tr><td class="id">M6</td><td>Fine-tuned small transformer</td><td>block ① text</td><td class="q">strongest text model in principle; stretch</td><td><span class="chip">could</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="review" aria-labelledby="review-h">
+    <div class="eyebrow">Reviewing the pull request</div>
+    <h2 id="review-h">A reading order that builds understanding first</h2>
+    <p class="intro">Read the question before the plumbing. On a first pass, these eight pieces (about 4,700 lines of code) cover the whole idea. Everything else is data plumbing, extra experiments, or tests.</p>
+    <div class="table-wrap">
+      <table class="t">
+        <thead><tr><th>#</th><th>Read</th><th>Why first</th><th>Code lines</th></tr></thead>
+        <tbody>
+          <tr><td class="id">1</td><td><code>config.py</code></td><td class="q">every constant in one place: H, g, the 2-s stride, thresholds</td><td class="num">639</td></tr>
+          <tr><td class="id">2</td><td><code>labels.points</code>, <code>labels.at_risk</code></td><td class="q">what a "moment" is and what its answer is: the question itself</td><td class="num">414</td></tr>
+          <tr><td class="id">3</td><td><code>causal.truncate</code></td><td class="q">the past-only guarantee everything else relies on</td><td class="num">796</td></tr>
+          <tr><td class="id">4</td><td><code>features.build</code></td><td class="q">how the three blocks become numbers</td><td class="num">1,158</td></tr>
+          <tr><td class="id">5</td><td><code>models.make</code> (B0, R, B1, M2, M3 only)</td><td class="q">the comparison that answers the question</td><td class="num">741</td></tr>
+          <tr><td class="id">6</td><td><code>splits.py</code></td><td class="q">why whole classes are held out together</td><td class="num">173</td></tr>
+          <tr><td class="id">7</td><td><code>metrics.firings</code>, <code>metrics.ap_within</code></td><td class="q">how a score turns into "would it have warned me in time?"</td><td class="num">≈ 400 of 1,245</td></tr>
+          <tr><td class="id">8</td><td><code>hands.episodes</code></td><td class="q">how a hand raise is read off the video</td><td class="num">≈ 400 of 1,684</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><b>Skip on the first pass:</b> <code>synthetic.py</code> (the fake test world, 1,284 lines), <code>controls.py</code>, <code>gru.py</code>, <code>xenc.py</code>, <code>edu.py</code>, <code>plots.py</code>, <code>report.py</code>, and the internals of <code>harvest.py</code> and <code>privacy.py</code>. <b>Honest note:</b> about a quarter of the code serves should- and could-tier experiments. If you want a leaner first PR, those files can be left out and added later without changing the core.</div>
+  </section>
+
+  <section id="status" aria-labelledby="status-h">
+    <div class="eyebrow">Where it stands</div>
+    <h2 id="status-h">Built, reviewed and tested on fake data; waiting on real data</h2>
+    <div class="status">
+      <div class="st done"><div class="k">Done</div><ul><li>all 7 stages written; 593 tests pass, linter clean</li><li>runs end to end on a synthetic class world</li><li>3 reviewers audited leakage, labels and statistics</li></ul></div>
+      <div class="st done"><div class="k">Fixed</div><ul><li>all 13 major and 20 minor review findings, each with a new test, e.g. a 0.24 s timing offset in the hand scan and a look-ahead when deleting "Brady, go ahead" phrases</li></ul></div>
+      <div class="st wait"><div class="k">Waiting on you</div><ul><li>Forum cookie and Deepgram key in <code>~/.minerva/.env</code></li><li>Deepgram vs local transcription; Prof. Watson's OK</li><li>approval to push Scribe v3</li></ul></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Forum facts were checked live from my own session on 12 Oct 2026. Line counts were measured from the code on 12 Oct. Sample rows are illustrative: real column names, invented values. No classmate's name, face or words appear on this page.</p>
+    <p>Full design: <code>pipeline1/design/on_cue_spec.md</code> and <code>design/amendments.md</code>. Model research: <code>pipeline1/reports/Hand raise prediction model options.md</code>. Detailed design page: <code>site/design-detail.html</code>.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = (n) => n.toLocaleString("en-US");
+
+  /* ---------------------------------------------------------------- the seven stages (line counts measured 12 Oct) */
+  const STAGES = [
+    {
+      name: "Get the data", sub: "Forum API", code: 1410, tests: 1185,
+      title: "Pull every class's records from Forum, then choose which classes to use",
+      text: "Using your Forum login, it downloads each class's record, its event log (who spoke when, chat, lesson segments), the recording times, and your pre-class workbook. Then it picks the classes to study: whole sections where you talk the most, with a fixed 20% locked away as a final test.",
+      io: [["in", "your Forum session (the cookie in <code>.env</code>)"], ["out", "<code>raw/{class}/*.json</code> per class, and <code>classes.parquet</code>: one row per class"]],
+      cmds: ["harvest", "select"],
+      files: [["harvest.py", 652, "Forum sync, the class page, and the pre-class workbook"], ["loaders.py", 404, "reads only whitelisted fields from the raw files"], ["select.py", 354, "which classes are in, and which go in the locked 20%"]],
+      start: "<code>select.build_classes</code> (select.py:229), then <code>harvest.pcw_fetch</code> (harvest.py:544)",
+      checks: ["it only ever reads from Forum; the one exception is the POST Forum itself sends to open the workbook", "loaders drop any field not on the whitelist, so post-class data can't sneak in", "the locked 20% is chosen by a hash of the class id, not by hand"],
+      sample: { cap: "classes.parquet", cols: ["class_id", "course_code", "term", "session_no", "n_my_voice_main", "in_vault"], rows: [["105076", "CS156", "F26", "10", "14", "False"], ["80274", "CX50", "F23", "25", "13", "False"], ["81102", "B110", "F24", "7", "41", "True"]] },
+    },
+    {
+      name: "Clean", sub: "fix + anonymise", code: 1673, tests: 0, proposed: true,
+      title: "Make the raw records trustworthy and private before anything uses them",
+      text: "Forum's raw records are messy: two key spellings, voice events timed by their end, breakout-room speech that isn't in the recording, system notices in the chat, duplicate and test sessions, and one section with no events at all. This step fixes or drops each problem, replaces every classmate's id with a code, and writes a cleaning report counting what each rule changed.",
+      io: [["in", "<code>raw/{class}/*.json</code>"], ["out", "<code>data/02_clean/</code>: clean tables + <code>cleaning_report.csv</code>"]],
+      cmds: ["clean (proposed)"],
+      files: [["loaders.py", 404, "keeps whitelisted fields, one key spelling"], ["select.py", 354, "duplicates and which classes qualify"], ["events.py", 743, "start times, main room only, system messages out"], ["qa.py", 172, "per-class quality flags"]],
+      start: "today this work is spread over the four files on the right; the proposal is one <code>clean</code> command that calls them in order and writes the report",
+      checks: ["every dropped or fixed record is counted in the report", "nothing is dropped based on whether you raised your hand, which would bias the data", "after this step classmates exist only as codes"],
+      sample: { cap: "cleaning_report.csv", cols: ["rule", "action", "classes", "records"], rows: [["two key spellings", "normalised", "all", "all"], ["voice start = end − duration", "fixed", "all", "every voice event"], ["breakout-room speech", "dropped", "—", "—"], ["system chat notices", "dropped", "—", "—"], ["class with no voice events", "flagged", "—", "—"]] },
+    },
+    {
+      name: "Split", sub: "train / val / test", code: 173, tests: 0, proposed: true,
+      title: "Lock the test classes away before looking at anything else",
+      text: "Whole classes are split, never single moments, so the model is always tested on classes it has never seen. 20% go into a locked test set, chosen by a hash of the class id so nobody can hand-pick them, and it's scored once at the very end. The other 80% are cut into 5 groups: train on 4, validate on the 5th, five times round, so every class is validated once. Model settings are tuned only on training classes.",
+      io: [["in", "the clean class list"], ["out", "<code>data/03_split/split.csv</code>: each class → test, or validation group 1–5"]],
+      cmds: ["split (proposed)"],
+      files: [["splits.py", 173, "the train/validation groups"], ["select.py", 354, "the locked 20% test set (by hash)"], ["labels.py", 414, "currently assigns the groups; would move here"]],
+      start: "<code>config.in_vault</code> (the test rule), then <code>splits.group_folds</code>",
+      checks: ["no class is in two splits (a guard already checks this)", "classes taught the same day stay in the same group", "the test set is untouched until the very end"],
+      sample: { cap: "split.csv", cols: ["class_id", "course", "term", "split"], rows: [["105076", "CS156", "F26", "val group 3"], ["80274", "CX50", "F23", "test (locked)"], ["81102", "B110", "F24", "val group 1"]] },
+    },
+    {
+      name: "Words + events", sub: "one clock", code: 1183, tests: 911,
+      title: "Turn the recording into timed words, and Forum's logs into timed events, on the video's clock",
+      text: "Scribe v3 transcribes the audio into words with start and end times. Forum's own log says who was talking when, and it decides each word's speaker. Everything is shifted onto one clock (the video's), and classes whose clocks don't line up are flagged, never used silently.",
+      io: [["in", "the recording's audio (via Scribe v3) and <code>class-events.json</code>"], ["out", "<code>words.parquet</code>: one row per word, plus voice, chat, segment and poll tables"]],
+      cmds: ["transcribe", "words", "events"],
+      files: [["transcribe.py", 440, "runs Scribe and builds the words table"], ["events.py", 743, "voice, chat, lesson-segment and poll tables from the raw log"]],
+      start: "<code>transcribe.words_table</code> (transcribe.py:542), then <code>events.segments_table</code> (events.py:617)",
+      checks: ["a speaker's role comes from Forum's log as it was known at the time, not from the transcriber's whole-file guess", "a voice event's start is its timestamp minus its duration (the timestamp marks the end)", "the clock check fails loudly when the offset can't be measured"],
+      sample: { cap: "words.parquet", cols: ["class_id", "start_s", "end_s", "role", "text_norm"], rows: [["105076", "2602.41", "2602.66", "prof", "what"], ["105076", "2602.66", "2602.80", "prof", "do"], ["105076", "2602.80", "2603.02", "prof", "you"], ["105076", "2603.02", "2603.39", "prof", "think"]] },
+    },
+    {
+      name: "Find my raises", sub: "the labels", code: 1856, tests: 1014,
+      title: "Read the strip of tiles from the video and record when my hand icon appears",
+      text: "It decodes only the thin strip of tiles at the top of the recording, at 2 frames a second, finds your tile by its name label, and checks the top-left corner for the yellow-green hand. A small state machine turns frames into raises, filters out flickers, and tells real bids from class-wide votes. Each onset is then re-timed at the full frame rate. These times are the answers the model learns from.",
+      io: [["in", "a signed video link per class (never saved)"], ["out", "<code>hand_episodes.parquet</code>: one row per hand raise"]],
+      cmds: ["scan", "track", "episodes", "retime", "qa"],
+      files: [["hands.py", 1684, "strip, tile tracking, the colour test, the state machine, re-timing"], ["qa.py", 172, "per-class quality checks decided before any model runs"]],
+      start: "<code>hands.episodes</code> (hands.py:1151), then <code>hands.track</code> (hands.py:856) and <code>hands.scan</code> (hands.py:579)",
+      checks: ["hand (hue 52–80°) vs poll tick (120–165°) in the same corner", "your tile is found by its name glyphs, not its position, which changes", "a review found a 0.24 s timing offset in the 2 fps scan; fixed, with a test that reads a real encoded video"],
+      sample: { cap: "hand_episodes.parquet", cols: ["class_id", "onset_s", "onset_retimed_s", "ep_type", "outcome", "call_latency_s"], rows: [["105076", "2604.50", "2604.26", "bid", "called", "6.4"], ["105076", "3381.00", "3380.84", "vote", "—", "—"], ["105076", "4410.50", "4410.12", "bid", "withdrawn", "—"]] },
+    },
+    {
+      name: "Make moments", sub: "every 2 s", code: 414, tests: 404,
+      title: "Cut each class into 2-second moments, each with a yes/no answer",
+      text: "Every 2 seconds becomes one row. Its answer is 1 if your hand goes up between g and H seconds later, 0 if it doesn't, and the row is dropped if it can't count: your hand is already up, you're talking, it's a breakout or a break. The dials section below shows exactly which rows are which.",
+      io: [["in", "hand raises, events, words"], ["out", "<code>points.parquet</code>: one row per moment, with an answer column for every H and g"]],
+      cmds: ["labels"],
+      files: [["labels.py", 414, "the 2-second grid, the exclusion rules, and every answer column"]],
+      start: "<code>labels.points</code> (labels.py:460), then <code>labels.at_risk</code> (labels.py:528)",
+      checks: ["every exclusion rule uses only what was known at t, except the label's own observability", "answer columns exist for g = 1, 2, 3, 5 s (your dial)", "the class's total raises is never used, because it isn't known until class ends"],
+      sample: { cap: "points.parquet", cols: ["class_id", "t_s", "at_risk", "excl_reason", "y_H15_g2"], rows: [["105076", "2586", "True", "—", "0"], ["105076", "2590", "True", "—", "1"], ["105076", "2602", "False", "guard", "—"], ["105076", "2606", "False", "hand_up", "—"]] },
+    },
+    {
+      name: "Snapshots", sub: "past only", code: 3508, tests: 2239,
+      title: "For each moment, build the snapshot from things that had already happened",
+      text: "This is where the three blocks come from: the last 60 seconds of words (names masked, punctuation removed), the class state, your own history, and how close the talk is to your workbook answers. The core guarantee lives here: a test deletes everything after t and checks every feature comes out the same.",
+      io: [["in", "words, events, workbook, the 2-second grid"], ["out", "<code>features.parquet</code>: about 150 numbers per moment, plus text embeddings"]],
+      cmds: ["pcw", "frames", "embed", "features"],
+      files: [["text.py", 717, "name masking, cleaning, the 60-second word windows, the question detector"], ["pcw.py", 341, "reads the workbook's questions and your answers"], ["embed.py", 350, "sentence embeddings with a disk cache"], ["edu.py", 146, "Stanford's classroom classifiers as extra scores (optional)"], ["causal.py", 796, "the past-only cut and the slow reference version used by tests"], ["features.py", 1158, "the fast version that builds every feature"]],
+      start: "<code>causal.truncate</code> (causal.py:631), then <code>features.build</code> (features.py:1302) and <code>text.mask</code> (text.py:214)",
+      checks: ["the truncation test: features with the future deleted equal the real features", "names are masked before anything is written to disk", "your usual rate per course uses earlier, training classes only"],
+      sample: { cap: "features.parquet (a few of ~150 columns)", cols: ["t_s", "q_open", "spk_silence_s", "ctx_minute", "me_hand_n", "me_hand_since_s", "pcw_max_sim"], rows: [["2590", "1", "1.8", "43", "2", "380", "0.61"], ["2592", "1", "3.8", "43", "2", "382", "0.61"]] },
+    },
+    {
+      name: "Train + compare", sub: "models", code: 3120, tests: 1312,
+      title: "Fit the models, simplest first, holding out whole classes together",
+      text: "Each model is trained on some classes and tested on classes it has never seen: whole classes are held out, never single moments, so it can't memorise a class. Settings and calibration are chosen inside the training classes only. Then the comparison runs: words vs no words, with vs without your workbook, every H and g.",
+      io: [["in", "features, answers, and which class each row came from"], ["out", "<code>oof/{condition}.parquet</code>: every test moment's predicted probability"]],
+      cmds: ["train", "controls"],
+      files: [["splits.py", 173, "which classes are train vs test in each round"], ["models.py", 741, "B0, R, B1 and M1–M4, plus stacking"], ["experiments.py", 1172, "the list of comparisons and the cross-validation runner"], ["gru.py", 358, "M5, the streaming GRU (should-tier)"], ["xenc.py", 154, "M6, the fine-tuned transformer (could-tier)"], ["controls.py", 522, "sanity experiments, e.g. a planted fake cue the model must find"]],
+      start: "<code>models.make</code> (models.py:638), then <code>experiments.run</code> (experiments.py:813)",
+      checks: ["every split is by class, never random rows (a random split is run once to show how much it would inflate the score)", "a review found tuning leaking test labels in some subset experiments; fixed, and a guard now checks train and test classes never overlap", "skip gru, xenc and controls on a first read"],
+      sample: { cap: "oof/K0-M3.parquet", cols: ["class_id", "t_s", "fold", "y", "p_cal"], rows: [["105076", "2586", "3", "0", "0.04"], ["105076", "2590", "3", "1", "0.31"], ["105076", "2594", "3", "1", "0.44"]] },
+    },
+    {
+      name: "Score honestly", sub: "metrics", code: 2592, tests: 976,
+      title: "Turn predictions into numbers that mean something",
+      text: "Average precision, compared with the base rate. And the headline: at a fixed false-alarm rate per minute, how many of your raises it warned about, and how early. Uncertainty comes from resampling whole classes. Last, it writes a results bundle with hashed ids and no words, and a scan fails the push if any name shows up.",
+      io: [["in", "the predicted probabilities"], ["out", "<code>results.parquet</code>, figures, and the committed results bundle"]],
+      cmds: ["evaluate", "figures", "results-bundle", "privacy"],
+      files: [["metrics.py", 1245, "average precision, the alarm rule, false alarms per minute, lead time, the bootstrap"], ["report.py", 320, "tables for the notebook"], ["plots.py", 604, "one function per figure"], ["privacy.py", 423, "the results bundle and the name scan"]],
+      start: "<code>metrics.firings</code> (metrics.py:676), then <code>metrics.ap_within</code> (metrics.py:268)",
+      checks: ["an always-on predictor can't game the alarm metric (there's a test)", "confidence intervals resample whole classes, not 2-second rows", "nothing committed contains a word or a real id"],
+      sample: { cap: "results.parquet (one row)", cols: ["condition", "model", "n_classes", "n_onsets", "base_rate", "ap", "recall_far05", "lead_med_s"], rows: [["K0-M3", "M3", "—", "—", "—", "—", "—", "—"]] },
+    },
+  ];
+  const PLUMB = { code: 2451, tests: 1118, files: "config 639 · schemas 252 · synthetic 1,284 · driver 198 · CLI 77" };
+
+  /* ---------------------------------------------------------------- diagram */
+  const NODE_W = 112, NODE_H = 72, GAP = 26, X0 = 20, Y = 28;
+  const nx = (i) => X0 + i * (NODE_W + GAP);
+  const EDGE_LABELS = ["raw JSON", "clean tables", "split", "words, events", "hand raises", "moments", "features", "predictions"];
+  const MAXC = Math.max(...STAGES.map((s) => s.code));
+
+  function buildDiagram() {
+    const parts = [];
+    parts.push('<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-arrow" d="M0 0 L10 5 L0 10 z"/></marker><marker id="arr-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker></defs>');
+    for (let i = 0; i < STAGES.length - 1; i++) {
+      const x1 = nx(i) + NODE_W, x2 = nx(i + 1) - 2, y = Y + NODE_H / 2;
+      parts.push(`<path class="dg-edge" data-edge="${i}" d="M ${x1} ${y} H ${x2}" marker-end="url(#arr)"/>`);
+    }
+    STAGES.forEach((s, i) => {
+      const x = nx(i);
+      const bw = Math.max(3, (s.code / MAXC) * (NODE_W - 20));
+      parts.push(`<g class="dg-node" data-i="${i}" role="button" tabindex="0" aria-label="Step ${i + 1}: ${esc(s.name)}">
+        <rect class="box" x="${x}" y="${Y}" width="${NODE_W}" height="${NODE_H}" rx="9"${s.proposed ? ' stroke-dasharray="5 4"' : ""}/>
+        <text class="dg-num" x="${x + 10}" y="${Y + 17}">${i + 1}</text>
+        <text class="dg-name" x="${x + 10}" y="${Y + 38}">${esc(s.name)}</text>
+        <text class="dg-sub" x="${x + 10}" y="${Y + 55}">${esc(s.sub)}</text>
+        <rect class="dg-bar" x="${x + 10}" y="${Y + NODE_H + 10}" width="${bw}" height="6" rx="2"/>
+        <text class="dg-bar-label" x="${x + 10}" y="${Y + NODE_H + 30}">${s.proposed ? "reuses code" : fmt(s.code) + " lines"}</text>
+      </g>`);
+    });
+    for (let i = 0; i < STAGES.length - 1; i++) {
+      parts.push(`<text class="dg-label" data-edge-label="${i}" x="${nx(i) + NODE_W + GAP / 2}" y="${Y - 8}" text-anchor="middle">${EDGE_LABELS[i]}</text>`);
+    }
+    const px0 = nx(0), px1 = nx(STAGES.length - 1) + NODE_W;
+    parts.push(`<rect class="dg-plumb" x="${px0}" y="${Y + NODE_H + 44}" width="${px1 - px0}" height="34" rx="8"/>`);
+    parts.push(`<text class="dg-plumb-label" x="${px0 + 12}" y="${Y + NODE_H + 66}">shared by every step: ${PLUMB.files} lines · tests 10,244 lines</text>`);
+    $("#diagram").innerHTML = `<svg viewBox="0 0 ${px1 + 20} ${Y + NODE_H + 92}" role="img" aria-label="Seven steps in a row: get the data, words and events, find my raises, make moments, describe moments, train and compare, score honestly. Each passes its output to the next. A shared layer of config, schemas and the synthetic test world sits underneath.">${parts.join("")}</svg>`;
+  }
+
+  let current = 0;
+  function select(i, focus) {
+    current = Math.max(0, Math.min(STAGES.length - 1, i));
+    const s = STAGES[current];
+    document.querySelectorAll(".dg-node").forEach((n) => {
+      const on = +n.dataset.i === current;
+      n.classList.toggle("on", on);
+      n.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    document.querySelectorAll("[data-edge]").forEach((e) => {
+      const on = +e.dataset.edge === current - 1;
+      e.classList.toggle("on", on);
+      e.setAttribute("marker-end", on ? "url(#arr-on)" : "url(#arr)");
+    });
+    document.querySelectorAll("[data-edge-label]").forEach((e) => e.classList.toggle("on", +e.dataset.edgeLabel === current - 1));
+    $("#where").innerHTML = `Step <b>${current + 1}</b> of ${STAGES.length} · <b>${esc(s.name)}</b> · ${s.proposed ? "proposed: reuses existing code" : fmt(s.code) + " lines of code, " + fmt(s.tests) + " lines of tests"}`;
+    $("#say").innerHTML = `<h3>${s.title}</h3><p>${s.text}</p>
+      <dl class="io">${s.io.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}<dt>runs</dt><dd><span class="cmds">${s.cmds.map((c) => `<span class="cmd">oncue ${c}</span>`).join("")}</span></dd></dl>
+      <div class="check"><b>When you review it, check that:</b><ul>${s.checks.map((c) => `<li>${c}</li>`).join("")}</ul></div>`;
+    const maxf = Math.max(...s.files.map((f) => f[1]));
+    $("#show").innerHTML = `
+      <div class="show-head"><span class="t">what the output looks like · ${esc(s.sample.cap)}</span><span class="prov illustrative">illustrative</span></div>
+      <div class="mini-wrap"><table class="mini"><thead><tr>${s.sample.cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${s.sample.rows.map((r) => `<tr>${r.map((v) => `<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      ${current === STAGES.length - 1 ? '<p class="note">No real numbers exist yet. This row fills in after the first real run.</p>' : ""}
+      <div class="show-head"><span class="t">the code</span><span class="prov measured">measured</span></div>
+      <div class="files">${s.files.map(([n, c, w]) => `<div class="file"><span class="fn">${n}</span><span class="meter"><i style="width:${Math.max(4, (c / maxf) * 100)}%"></i><span>${fmt(c)}</span></span><span class="what">${w}</span></div>`).join("")}</div>
+      <p class="start"><b>Start reading at</b> ${s.start}</p>`;
+    $("#prev").disabled = current === 0;
+    $("#next").disabled = current === STAGES.length - 1;
+    $("#next").textContent = current === STAGES.length - 1 ? "Last step" : "Next step →";
+    if (focus) { const n = document.querySelector(`.dg-node[data-i="${current}"]`); if (n) n.focus({ preventScroll: true }); }
+  }
+
+  buildDiagram();
+  document.querySelectorAll(".dg-node").forEach((n) => {
+    n.addEventListener("click", () => select(+n.dataset.i));
+    n.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(+n.dataset.i); } });
+  });
+  $("#prev").addEventListener("click", () => select(current - 1));
+  $("#next").addEventListener("click", () => select(current + 1));
+  $("#explorer").addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") { e.preventDefault(); select(current + 1, true); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); select(current - 1, true); }
+  });
+  select(0);
+
+  /* ---------------------------------------------------------------- dials: one raise at 0 s */
+  function drawDials() {
+    const H = +$("#h-range").value, g = +$("#g-range").value;
+    $("#h-out").textContent = H + " s";
+    $("#g-out").textContent = g + " s";
+    const T0 = -40, T1 = 10, W = 1000, padL = 40, padR = 20;
+    const X = (t) => padL + ((t - T0) / (T1 - T0)) * (W - padL - padR);
+    const parts = [];
+    let pos = 0, neg = 0, excl = 0;
+    for (let t = T0; t <= T1; t += 2) {
+      let cls;
+      if (t >= 0) cls = "pt-excl";                 // hand already up (and after)
+      else if (t >= -g) cls = "pt-excl";           // guard: onset in (t, t + g]
+      else if (t >= -H) cls = "pt-pos";            // onset in (t + g, t + H]
+      else cls = "pt-neg";
+      if (cls === "pt-pos") pos++; else if (cls === "pt-neg") neg++; else excl++;
+      parts.push(`<rect class="${cls}" x="${X(t) - 7}" y="44" width="14" height="30" rx="3"/>`);
+    }
+    for (let t = T0; t <= T1; t += 10) parts.push(`<text class="tick" x="${X(t)}" y="96" text-anchor="middle">${t === 0 ? "0 s" : (t > 0 ? "+" : "") + t + " s"}</text>`);
+    parts.push(`<line class="ax" x1="${padL}" y1="82" x2="${W - padR}" y2="82"/>`);
+    parts.push(`<line class="hand-line" x1="${X(0)}" y1="22" x2="${X(0)}" y2="82"/>`);
+    parts.push(`<text class="lbl acc" x="${X(0) + 6}" y="30">hand icon appears</text>`);
+    parts.push(`<text class="lbl" x="${X(-H)}" y="30" text-anchor="middle">−H</text>`);
+    parts.push(`<text class="lbl" x="${X(-g)}" y="30" text-anchor="middle">−g</text>`);
+    parts.push(`<text class="lbl" x="${X(5)}" y="118" text-anchor="middle">hand is up: no new raise possible</text>`);
+    $("#dial-chart").innerHTML = `<svg viewBox="0 0 ${W} 126" role="img" aria-label="Moments every 2 seconds around a hand raise at 0 s: ${pos} positive, ${neg} negative, ${excl} not used, with H = ${H} s and g = ${g} s.">${parts.join("")}</svg>`;
+    $("#dial-readout").innerHTML = `With <b>H = ${H} s</b> and <b>g = ${g} s</b>, this raise gives <b>${pos}</b> positive moments, the ones between ${H} s and ${g} s before the icon. The ${g} s right before it don't count, so the model can't win by seeing the hand go up. A bigger <i>g</i> is a harder, more honest test.`;
+  }
+  ["h-range", "g-range"].forEach((id) => $("#" + id).addEventListener("input", drawDials));
+  drawDials();
+  /* ---------------------------------------------------------------- split grid (illustrative hash) */
+  const N_CLASSES = 694;
+  const hash = (i, salt) => { let h = (i + 1) * 2654435761 ^ salt; h = Math.imul(h ^ (h >>> 15), 2246822519); h = Math.imul(h ^ (h >>> 13), 3266489917); return (h ^ (h >>> 16)) >>> 0; };
+  const CLS = Array.from({ length: N_CLASSES }, (_, i) => ({ test: hash(i, 156) % 100 < 20, group: hash(i, 1560) % 5 }));
+  let round = 0;
+  function drawSplit() {
+    const cols = 47, sz = 18, gap = 3;
+    const rows = Math.ceil(N_CLASSES / cols);
+    const parts = [];
+    let nTest = 0, nVal = 0, nTrain = 0;
+    CLS.forEach((c, i) => {
+      const x = (i % cols) * (sz + gap), y = Math.floor(i / cols) * (sz + gap);
+      let fill;
+      if (c.test) { fill = "var(--ink)"; nTest++; }
+      else if (c.group === round) { fill = "var(--pos)"; nVal++; }
+      else { fill = "var(--me)"; nTrain++; }
+      parts.push(`<rect x="${x}" y="${y}" width="${sz}" height="${sz}" rx="3" fill="${fill}"${c.test ? ' opacity="0.85"' : ""}/>`);
+    });
+    const W = cols * (sz + gap) - gap, H = rows * (sz + gap) - gap;
+    $("#split-grid").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${N_CLASSES} classes: ${nTest} locked for test, ${nVal} validation and ${nTrain} training in round ${round + 1}.">${parts.join("")}</svg>`;
+    $("#split-readout").innerHTML = `Round <b>${round + 1}</b> of 5: train on <b>${nTrain}</b> classes, validate on <b>${nVal}</b>. The <b>${nTest}</b> test classes are never touched until the end.`;
+    document.querySelectorAll("#round-btns button").forEach((b, i) => b.classList.toggle("primary", i === round));
+  }
+  $("#round-btns").innerHTML = [0, 1, 2, 3, 4].map((r) => `<button class="step" type="button">Round ${r + 1}</button>`).join("");
+  document.querySelectorAll("#round-btns button").forEach((b, i) => b.addEventListener("click", () => { round = i; drawSplit(); }));
+  drawSplit();
+})();
+</script>

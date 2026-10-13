@@ -1,0 +1,1120 @@
+<title>On Cue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #edf0f3;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --ink: #12161c;
+  --ink-2: #455061;
+  --muted: #737e8d;
+  --rule: #d6dce3;
+  --rule-strong: #b7c0cb;
+  --accent: #eb6834;
+  --accent-ink: #ad3f17;
+  --accent-wash: rgba(235, 104, 52, 0.12);
+  --me: #2a78d6;
+  --me-wash: rgba(42, 120, 214, 0.12);
+  --prof: #4b5668;
+  --other: #a2abb7;
+  --pos: #eb6834;
+  --neg: #1baf7a;
+  --neg-ink: #0b7a52;
+  --hand: #a9b42c;
+  --hand-ink: #6b7410;
+  --tick: #2fa36b;
+  --breakout: #d3d9e0;
+  --frame-bg: #1d232c;
+  --frame-tile: #2c3440;
+  --frame-label: #46505e;
+  --code-bg: #f2f4f7;
+  --shadow: 0 1px 2px rgba(18, 22, 28, 0.06), 0 6px 24px rgba(18, 22, 28, 0.06);
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1015; --surface: #151a21; --surface-2: #1a2028;
+    --ink: #e8ecf1; --ink-2: #b3bbc6; --muted: #8a94a1; --rule: #28303a; --rule-strong: #3a4450;
+    --accent: #d95926; --accent-ink: #f2895e; --accent-wash: rgba(242, 137, 94, 0.13);
+    --me: #3987e5; --me-wash: rgba(57, 135, 229, 0.16); --prof: #aab4c1; --other: #5d6774;
+    --pos: #d95926; --neg: #199e70; --neg-ink: #3fcf98; --hand: #b6c23a; --hand-ink: #cfd96a; --tick: #39b57a;
+    --breakout: #262e38; --frame-bg: #0b0e12; --frame-tile: #222a34; --frame-label: #3a4452; --code-bg: #10151b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1015; --surface: #151a21; --surface-2: #1a2028;
+  --ink: #e8ecf1; --ink-2: #b3bbc6; --muted: #8a94a1; --rule: #28303a; --rule-strong: #3a4450;
+  --accent: #d95926; --accent-ink: #f2895e; --accent-wash: rgba(242, 137, 94, 0.13);
+  --me: #3987e5; --me-wash: rgba(57, 135, 229, 0.16); --prof: #aab4c1; --other: #5d6774;
+  --pos: #d95926; --neg: #199e70; --neg-ink: #3fcf98; --hand: #b6c23a; --hand-ink: #cfd96a; --tick: #39b57a;
+  --breakout: #262e38; --frame-bg: #0b0e12; --frame-tile: #222a34; --frame-label: #3a4452; --code-bg: #10151b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 20px; padding-block: 0 64px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+a { color: var(--accent-ink); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- top bar + hero ---------- */
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); letter-spacing: 0.02em; }
+.bar .brand { display: flex; align-items: center; gap: 10px; }
+.tally { width: 9px; height: 9px; border-radius: 50%; background: var(--hand); box-shadow: 0 0 0 4px var(--accent-wash); }
+.bar .due { color: var(--accent-ink); font-weight: 500; }
+.hero { padding-block: 48px 28px; display: grid; gap: 22px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(34px, 5.4vw, 64px); line-height: 1.02; letter-spacing: -0.02em; margin: 0; max-width: 17ch; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent-ink); }
+.lede { font-size: 18px; color: var(--ink-2); max-width: 66ch; margin: 0; }
+.lede em { color: var(--ink); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule); margin-top: 8px; }
+.fact { padding: 14px 16px 14px 0; display: grid; gap: 2px; align-content: start; }
+.fact + .fact { padding-left: 16px; border-left: 1px solid var(--rule); }
+.fact > b { font-family: var(--display); font-stretch: 112%; font-size: 30px; font-weight: 750; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+.qs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.q-item { padding: 12px 14px 4px 0; display: grid; gap: 4px; align-content: start; }
+.q-item + .q-item { padding-left: 14px; border-left: 1px solid var(--rule); }
+.q-item .l { font-family: var(--mono); font-size: 12px; color: var(--accent-ink); }
+.q-item p { margin: 0; font-size: 14px; line-height: 1.45; }
+.q-item small { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* ---------- sections ---------- */
+section { padding-block: 44px 8px; }
+h2 { font-family: var(--display); font-stretch: 112%; font-weight: 750; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.01em; line-height: 1.15; margin: 6px 0 10px; text-wrap: balance; }
+h3 { font-family: var(--display); font-stretch: 105%; font-weight: 700; font-size: 18px; margin: 0 0 6px; text-wrap: balance; }
+.intro { color: var(--ink-2); max-width: 70ch; margin: 0 0 22px; }
+
+/* ---------- explorer ---------- */
+.explorer { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+.diagram-scroll { overflow-x: auto; border-bottom: 1px solid var(--rule); background: var(--surface-2); }
+.diagram-scroll svg { display: block; min-width: 940px; width: 100%; height: auto; }
+.dg-band { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; fill: var(--muted); }
+.dg-bracket { stroke: var(--rule-strong); stroke-width: 1; fill: none; }
+.dg-edge { stroke: var(--rule-strong); stroke-width: 1.5; fill: none; }
+.dg-edge.on { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: 6 5; animation: flow 0.9s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -11; } }
+.dg-arrow { fill: var(--rule-strong); }
+.dg-arrow-on { fill: var(--accent); }
+.dg-edge-label { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+.dg-edge-label.on { fill: var(--accent-ink); font-weight: 500; }
+.dg-node { cursor: pointer; outline: none; }
+.dg-node rect { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1.25; transition: fill 0.2s, stroke 0.2s; }
+.dg-node:hover rect { stroke: var(--ink-2); }
+.dg-node:focus-visible rect { stroke: var(--accent); stroke-width: 2.5; }
+.dg-node.on rect { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 2; }
+.dg-node.passive { cursor: default; }
+.dg-node.passive rect { fill: var(--surface-2); stroke-dasharray: 4 3; }
+.dg-name { font-family: var(--display); font-stretch: 108%; font-weight: 700; font-size: 14px; fill: var(--ink); }
+.dg-sub { font-family: var(--mono); font-size: 10px; fill: var(--ink-2); }
+.dg-num { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+.dg-boundary { fill: none; stroke: var(--hand-ink); stroke-width: 1.25; stroke-dasharray: 4 4; }
+.dg-boundary-label { font-family: var(--mono); font-size: 10.5px; fill: var(--hand-ink); letter-spacing: 0.04em; }
+@media (prefers-reduced-motion: reduce) { .dg-edge.on { animation: none; stroke-dasharray: none; } }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid var(--rule); }
+.stepper .where { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.stepper .where b { color: var(--ink); font-weight: 500; }
+.btns { display: flex; gap: 8px; }
+button.step { font: 500 14px/1 var(--body); color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule-strong); border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+button.step:hover { border-color: var(--ink-2); }
+button.step.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+button.step:disabled { opacity: 0.4; cursor: default; }
+.panel { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+.panel .say { padding: 22px 24px 26px; border-right: 1px solid var(--rule); display: grid; gap: 14px; align-content: start; }
+.panel .show { padding: 22px 24px 26px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.say h3 { font-size: 21px; }
+.say p { margin: 0; color: var(--ink-2); }
+.io { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; margin: 0; }
+.io dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.io dd { margin: 0; }
+.trap { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; font-size: 14px; color: var(--ink-2); }
+.trap b { color: var(--ink); }
+.show-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.show-head .t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.prov { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.prov.verified { color: var(--neg-ink); }
+.prov.spec { color: var(--ink-2); }
+.prov.derived { color: var(--me); }
+.prov.illustrative { color: var(--muted); border-style: dashed; }
+pre.code { margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; font: 12.5px/1.6 var(--mono); overflow-x: auto; white-space: pre; }
+.code .k { color: var(--ink-2); }
+.code .s { color: var(--accent-ink); }
+.code .n { color: var(--me); }
+.code .c { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+table.mini { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.mini th, table.mini td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.mini th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+table.mini td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 12.5px; }
+table.mini td.del { color: var(--muted); text-decoration: line-through; }
+.mini-wrap { overflow-x: auto; }
+svg.fig { width: 100%; height: auto; display: block; }
+.fr-bg { fill: var(--frame-bg); }
+.fr-tile { fill: var(--frame-tile); }
+.fr-glyph { fill: var(--frame-label); }
+.fr-me { fill: none; stroke: var(--me); stroke-width: 2; }
+.fr-roi { fill: none; stroke: var(--accent); stroke-width: 1.1; stroke-dasharray: 3 2; }
+.fr-label { font-family: var(--mono); font-size: 9.5px; fill: var(--ink-2); }
+.fr-label.me { fill: var(--me); font-weight: 500; }
+.fr-label.acc { fill: var(--accent-ink); }
+.ic-hand { fill: var(--hand); }
+.ic-tick { fill: var(--tick); }
+.ic-glyph { fill: #ffffff; }
+.lime { fill: var(--hand); opacity: 0.55; }
+.ax { stroke: var(--rule-strong); stroke-width: 1; }
+.grid-l { stroke: var(--rule); stroke-width: 1; }
+.tick { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+.trace { fill: none; stroke: var(--me); stroke-width: 2; }
+.thresh { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
+.h-dot { fill: var(--ink); }
+.h-live { fill: none; stroke: var(--hand-ink); stroke-width: 2; }
+.m-onset { stroke: var(--accent-ink); stroke-width: 1.5; }
+.f-true { fill: var(--pos); }
+.f-false { fill: var(--muted); }
+.f-ref { fill: var(--accent-wash); }
+.notrisk { fill: var(--breakout); }
+
+/* ---------- causal snapshot ---------- */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px 20px; box-shadow: var(--shadow); display: grid; gap: 16px; }
+.snap-head { display: flex; justify-content: space-between; align-items: center; gap: 12px 20px; flex-wrap: wrap; }
+.ctl { display: grid; gap: 4px; min-width: min(100%, 300px); flex: 1; }
+.ctl label { font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; }
+.ctl label output { font-family: var(--mono); color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.ctl small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.badge { font-family: var(--mono); font-size: 12.5px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--rule-strong); max-width: 100%; }
+.badge b { font-weight: 500; }
+.badge.p { background: var(--accent-wash); border-color: var(--pos); color: var(--accent-ink); }
+.badge.n { border-color: var(--neg); color: var(--neg-ink); }
+.badge.u, .badge.x { color: var(--ink-2); background: var(--surface-2); }
+.chart-scroll { overflow-x: auto; }
+.chart-scroll svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.lane-label { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+.w-prof { fill: var(--prof); } .w-student { fill: var(--other); } .w-me { fill: var(--me); }
+.w-heard { fill: none; stroke: var(--ink-2); stroke-width: 1; }
+.w-old { fill: var(--rule-strong); }
+.w-future { opacity: 0.22; }
+.in-view { fill: var(--accent-wash); }
+.future-mask { fill: url(#fhatch); }
+.hatch-line { stroke: var(--rule-strong); stroke-width: 1; }
+.t-line { stroke: var(--accent); stroke-width: 2; }
+.t-label { font-family: var(--mono); font-size: 11px; fill: var(--accent-ink); font-weight: 500; }
+.snap-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+.snap-col { padding: 12px 16px 0 0; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.snap-col + .snap-col { padding-left: 16px; border-left: 1px solid var(--rule); }
+.snap-col h3 { font-size: 15px; margin: 0; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.snap-col h3 span { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+dl.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; margin: 0; font-size: 13px; }
+dl.kv dt { color: var(--ink-2); font-family: var(--mono); font-size: 11.5px; overflow-wrap: anywhere; }
+dl.kv dd { margin: 0; text-align: right; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.quote { font-family: var(--mono); font-size: 12px; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+.chunks { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 12.5px; }
+.chunks li.spent { color: var(--muted); text-decoration: line-through; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.prof { background: var(--prof); } .sw.student { background: var(--other); } .sw.me { background: var(--me); }
+.sw.hand { background: var(--hand); } .sw.pos { background: var(--pos); } .sw.neg { background: var(--neg); }
+.sw.undef { background: repeating-linear-gradient(45deg, var(--rule-strong) 0 2px, var(--surface) 2px 4px); }
+.sw.excl { background: var(--breakout); border: 1px solid var(--rule-strong); }
+.sw.view { background: var(--accent-wash); border: 1px solid var(--accent); }
+
+/* ---------- dials timeline ---------- */
+.controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; }
+.stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.stat { padding: 10px 12px 10px 0; display: grid; }
+.stat + .stat { padding-left: 12px; border-left: 1px solid var(--rule); }
+.stat b { font-family: var(--display); font-stretch: 110%; font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--ink-2); line-height: 1.35; }
+.ov-hit { fill: transparent; cursor: crosshair; }
+.lens-box { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.m-seg { fill: var(--breakout); }
+.m-q { stroke: var(--prof); stroke-width: 1.5; }
+.m-me { fill: var(--me); }
+.m-bid { fill: var(--hand); }
+.m-vote { fill: none; stroke: var(--hand-ink); stroke-width: 1.25; }
+.m-glitch { stroke: var(--hand-ink); stroke-width: 2; }
+.m-na { fill: var(--ink-2); opacity: 0.25; }
+.g-p { fill: var(--pos); } .g-n { fill: var(--neg); } .g-u { fill: url(#uhatch); } .g-u2 { fill: url(#uhatch2); } .g-x { fill: var(--breakout); }
+.pat-bg { fill: var(--surface); }
+.m-hit { fill: transparent; }
+.tip { position: fixed; pointer-events: none; z-index: 10; background: var(--ink); color: var(--surface); font: 12px/1.45 var(--mono); padding: 7px 10px; border-radius: 6px; max-width: 300px; box-shadow: var(--shadow); }
+
+/* ---------- tables, traps, math, schedule ---------- */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; }
+table.cond { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 720px; }
+table.cond th, table.cond td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.cond tr:last-child td { border-bottom: none; }
+table.cond th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+table.cond td:first-child { white-space: nowrap; }
+table.cond td.id { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+table.cond td.wrap { white-space: normal; }
+table.cond td.q { color: var(--ink-2); }
+table.cond tr.head td { font-weight: 600; background: var(--accent-wash); }
+.chip { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--rule-strong); color: var(--ink-2); }
+.chip.mvp { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip.must { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.chip.should { border-color: var(--ink-2); color: var(--ink); }
+.two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; margin-top: 18px; align-items: start; }
+.split-fig { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px 12px; }
+.split-fig svg { width: 100%; height: auto; display: block; min-width: 560px; }
+.sp-train { fill: var(--other); } .sp-test { fill: var(--me); } .sp-vault { fill: none; stroke: var(--accent); stroke-width: 1.2; }
+.sp-label { font-family: var(--display); font-stretch: 105%; font-weight: 700; font-size: 13px; fill: var(--ink); }
+.sp-sub { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+.sp-verdict { font-family: var(--mono); font-size: 11px; }
+.sp-verdict.bad { fill: var(--accent-ink); } .sp-verdict.good { fill: var(--neg-ink); }
+figure { margin: 0; }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.skip { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); max-width: 90ch; }
+.traps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); }
+.trap-item { padding: 18px 22px 18px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 6px; align-content: start; }
+.trap-item:nth-child(2n) { padding-left: 22px; padding-right: 0; border-left: 1px solid var(--rule); }
+.trap-item p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+.trap-item .fix { color: var(--ink); }
+.trap-item .fix::before { content: "Defence: "; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--neg-ink); }
+.trap-item .chk { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.eqs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.eq { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.eq.wide { grid-column: 1 / -1; }
+.eq .math { overflow-x: auto; font-size: 17px; padding-block: 4px; }
+.eq p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+math { font-size: 1.05em; }
+.days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); }
+.day { padding: 14px 14px 16px 0; display: grid; gap: 6px; align-content: start; }
+.day + .day { padding-left: 14px; border-left: 1px solid var(--rule); }
+.day .d { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.day .d .tag { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: #fff; }
+.day .d .gate { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ink-2); color: var(--ink); }
+.day.due .d .tag { background: var(--ink); color: var(--surface); }
+.day h3 { font-size: 15.5px; margin: 0; }
+.day p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.day.today { background: linear-gradient(var(--accent-wash), transparent 70%); }
+.arc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.arc > div { border-top: 3px solid var(--rule-strong); padding-top: 12px; display: grid; gap: 4px; align-content: start; }
+.arc > div.now { border-top-color: var(--accent); }
+.arc .when { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.arc p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 90ch; }
+
+@media (max-width: 860px) {
+  .panel { grid-template-columns: 1fr; }
+  .panel .say { border-right: none; border-bottom: 1px solid var(--rule); }
+  .eqs, .traps, .two, .arc, .controls { grid-template-columns: 1fr; }
+  .trap-item:nth-child(2n) { padding-left: 0; border-left: none; }
+  .qs { grid-template-columns: 1fr; }
+  .q-item + .q-item { padding-left: 0; border-left: none; border-top: 1px solid var(--rule); }
+  .snap-cols { grid-template-columns: 1fr; }
+  .snap-col + .snap-col { padding-left: 0; border-left: none; border-top: 1px solid var(--rule); }
+  .days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .day + .day { padding-left: 0; border-left: none; }
+  .day:nth-child(2n) { padding-left: 14px; border-left: 1px solid var(--rule); }
+  .day { border-bottom: 1px solid var(--rule); }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stat:nth-child(4) { padding-left: 0; border-left: none; }
+  .stat:nth-child(n+4) { border-top: 1px solid var(--rule); }
+}
+@media (max-width: 620px) {
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fact:nth-child(3) { padding-left: 0; border-left: none; }
+  .fact:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><span class="tally" aria-hidden="true"></span><span>ON CUE · CS156 First Pipeline · Brady Rutherford</span></div>
+    <div class="due">Design frozen Mon 12 Oct · due Fri 16 Oct 2026</div>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow">A pre-registered plan for a machine-learning pipeline</div>
+    <h1>Can a model hear <em>my cue</em> before my hand goes up?</h1>
+    <p class="lede">Every two seconds of a Minerva class, On Cue asks whether I will raise my hand in the next 15 seconds, using only what I could have <em>heard</em>, <em>seen in Forum</em>, or <em>written before class</em> up to that second. The labels come from the raised-hand icon in the class recording: no faces, no tone of voice, no other students' hands. The real question is whether <em>what is said</em>, and how it matches my pre-class work, tells the model more than <em>when</em> it is said.</p>
+    <div class="facts" role="list">
+      <div class="fact" role="listitem"><b>694</b><span>recorded class sessions in my Forum history</span></div>
+      <div class="fact" role="listitem"><b>53</b><span>sections, Fall 2023 to Fall 2026</span></div>
+      <div class="fact" role="listitem"><b>0</b><span>student API routes that say when a hand went up: pressing <code>H</code> is a write-only PATCH</span></div>
+      <div class="fact" role="listitem"><b>2 / 2</b><span>raised hands found by a colour test on a real frame, matching Forum's own counter</span></div>
+    </div>
+    <div class="qs" role="list" aria-label="Sub-questions">
+      <div class="q-item" role="listitem"><span class="l">(a) content vs structure</span><p>Within a class, do the words add anything beyond minute, activity and turn-taking?</p><small>H1 · ΔAP_w(F-all − F-struct)</small></div>
+      <div class="q-item" role="listitem"><span class="l">(b) moment vs phase</span><p>Does it know the moment, or only which classes and phases I talk in?</p><small>H2 · TG_local</small></div>
+      <div class="q-item" role="listitem"><span class="l">(c) preparation</span><p>Does the room drifting onto what I wrote before class matter?</p><small>H3 · A-mismatch control</small></div>
+      <div class="q-item" role="listitem"><span class="l">(d) beyond the obvious</span><p>Is it more than "he raises when the professor asks"?</p><small>H4 · M3 vs rule R</small></div>
+      <div class="q-item" role="listitem"><span class="l">(e) lead</span><p>How far ahead, at a guard of 1, 2, 3 or 5 seconds?</p><small>g and H sweeps · lead time</small></div>
+    </div>
+  </div>
+
+  <section id="flow" aria-labelledby="flow-h">
+    <div class="eyebrow">Follow one moment through the pipeline</div>
+    <h2 id="flow-h">From Forum's records to a warning before my hand goes up</h2>
+    <p class="intro">Click any stage, or step through with the buttons or the ← → keys. The bottom row is everything the model may see. The top row turns the recording into labels, and its pixels never become features. Every sample is tagged <span class="prov verified">verified</span> (read live from Forum or checked in code on 12 Oct), <span class="prov spec">spec</span> (the frozen design), <span class="prov derived">derived</span> (computed from verified values or spec constants) or <span class="prov illustrative">illustrative</span> (synthetic: the shape a run will produce).</p>
+    <div class="explorer" id="explorer">
+      <div class="diagram-scroll" id="diagram"></div>
+      <div class="stepper">
+        <div class="where" id="where" aria-live="polite"></div>
+        <div class="btns">
+          <button class="step" id="prev" type="button">← Previous</button>
+          <button class="step primary" id="next" type="button">Next stage →</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="say" id="say"></div>
+        <div class="show" id="show"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="snapshot" aria-labelledby="snap-h">
+    <div class="eyebrow">The causal contract, at one second</div>
+    <h2 id="snap-h">What the model is allowed to know at time <i>t</i></h2>
+    <p class="intro">Three kinds of input, each cut at <i>t</i>: the last 60 seconds of speech, the state of the class so far, and what existed before class. A word counts only once it has ended plus a 0.25 s margin; a word still being spoken shows that someone is talking, not what they said. Drag <i>t</i> across a synthetic two-minute stretch and watch the inputs and the label change.</p>
+    <div class="card">
+      <div class="snap-head">
+        <div class="ctl">
+          <label for="snap-t"><span>Decision time <i>t</i></span> <output id="snap-out" for="snap-t"></output></label>
+          <input type="range" id="snap-t" min="1120" max="1190" step="2" value="1160">
+          <small>Points sit on a 2-second grid. Positive if a bid starts in (t + 2, t + 15].</small>
+        </div>
+        <div class="badge" id="snap-badge" aria-live="polite"></div>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw view"></i>in view: last 60 s</span>
+        <span><i class="sw prof"></i>professor</span>
+        <span><i class="sw student"></i>another student</span>
+        <span><i class="sw me"></i>me</span>
+        <span><i class="sw hand"></i>my hand (label side)</span>
+        <span><i class="sw undef"></i>after <i>t</i>: not visible</span>
+      </div>
+      <div class="chart-scroll" id="snap-svg"></div>
+      <div class="snap-cols" id="snap-cols"></div>
+      <p class="note">Synthetic stretch, illustrative values. Words and timings are invented; <code>[NAME]</code> stands for any masked name. The PCW "spent" test here is a lexical stand-in for the z-scored embedding similarity the run uses.</p>
+    </div>
+  </section>
+
+  <section id="dials" aria-labelledby="dials-h">
+    <div class="eyebrow">The two dials</div>
+    <h2 id="dials-h">Horizon <i>H</i> and guard <i>g</i>: how far ahead, and how early it must commit</h2>
+    <p class="intro">The guard is my dial: the model must fire at least <i>g</i> seconds before the icon, swept over 1, 2, 3 and 5 s (headline 2 s). The horizon sets how far ahead a bid still counts. Every 2-second point in this synthetic 88-minute class is positive, negative, undefined (guard, votes, glitches, unobserved spans), or not at risk at all (breakouts, while I talk, while my hand is up, 10 s after it comes down). Move the dials; click the strip to move the close-up.</p>
+    <div class="card">
+      <div class="controls">
+        <div class="ctl">
+          <label for="h-range"><span>Horizon <i>H</i></span> <output id="h-out" for="h-range">15 s</output></label>
+          <input type="range" id="h-range" min="0" max="4" step="1" value="2">
+          <small>5, 10, 15, 30 or 60 s. Headline 15 s.</small>
+        </div>
+        <div class="ctl">
+          <label for="g-range"><span>Guard <i>g</i></span> <output id="g-out" for="g-range">2 s</output></label>
+          <input type="range" id="g-range" min="0" max="3" step="1" value="1">
+          <small>1, 2, 3 or 5 s. A bid closer than <i>g</i> makes the point undefined.</small>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw pos"></i>positive</span>
+        <span><i class="sw neg"></i>negative</span>
+        <span><i class="sw undef"></i>undefined (still on the alarm grid)</span>
+        <span><i class="sw excl"></i>not at risk</span>
+        <span><i class="sw hand"></i>my bids (outline: vote)</span>
+        <span><i class="sw me"></i>I'm speaking</span>
+      </div>
+      <div class="chart-scroll" id="overview"></div>
+      <div class="chart-scroll" id="lens"></div>
+      <p class="note">Synthetic class (six bids, one vote, one glitch, one stretch where the tracker loses my tile). Each bid yields about (<i>H</i> − <i>g</i>)/Δ positive points, so the base rate π moves with both dials.</p>
+    </div>
+  </section>
+
+  <section id="models" aria-labelledby="models-h">
+    <div class="eyebrow">The model menu</div>
+    <h2 id="models-h">Baselines first, then learners that must beat them</h2>
+    <p class="intro">No published study forecasts a student's hand raise from classroom talk, so simple rules are the yardstick and the honest target is "a few times the base rate". The ranking follows the model-options research: a hazard-style logistic regression and gradient boosting do the heavy lifting; text enters as cues, embeddings and stacked scores rather than end-to-end networks.</p>
+    <div class="table-wrap">
+      <table class="cond">
+        <thead><tr><th>Tier</th><th>ID</th><th>Model</th><th>Sees</th><th>Why it is here</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">B0 · AO · B-min · rand</td><td>prevalence; always-on; minute only; random alarms at a matched rate</td><td>nothing, or the clock</td><td class="q">The floors every curve is read against.</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">R</td><td>professor-question rule, no fitting</td><td>open question, its age</td><td class="q">"He raises when the professor asks", made explicit so it can be beaten.</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">B1</td><td>L2 logistic regression</td><td>structure only: minute, segment, turn-taking, my history</td><td class="q">The discrete-time hazard GLM: history terms can learn a refractory dip and a soft cap.</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">M1</td><td>multinomial naive Bayes</td><td>role-prefixed word counts</td><td class="q">Cheap text baseline, Platt-recalibrated.</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">M2</td><td>TF-IDF logistic regression</td><td>last 15 and 60 s of words + context</td><td class="q">N-grams beat frozen embeddings in the main text+tabular benchmark.</td></tr>
+          <tr class="head"><td><span class="chip mvp">MVP</span></td><td class="id">M3</td><td>gradient boosting (HistGradientBoosting)</td><td>F-all: structure, text cues, PCA'd embeddings, PCW</td><td class="q">The headline. Non-linear timing with no survival library; sklearn's version because libomp is absent.</td></tr>
+          <tr><td><span class="chip must">must</span></td><td class="id">M4</td><td>bge-small embeddings + logistic regression</td><td>recency-pooled sentence embeddings</td><td class="q">Embedding + linear head is exactly what MTEB classification measures.</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">M3+stack</td><td>M3 with M2 and M4 out-of-fold scores</td><td>grouped inner OOF probabilities</td><td class="q">Stacking won the 18-dataset text+tabular benchmark.</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">edu_*</td><td>Stanford EduBehaviors classifiers as features</td><td>professor frames</td><td class="q">Trained to spot invitations, rhetorical questions and cold calls by name.</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">M5</td><td>GRU or causal TCN, 10–50k parameters</td><td>every grid step, loss mask only</td><td class="q">Does sequence modelling add anything over engineered lags?</td></tr>
+          <tr><td><span class="chip">could</span></td><td class="id">kNN</td><td>nearest training windows, metadata only</td><td>embeddings</td><td class="q">Explains hits and false alarms without showing anyone's words.</td></tr>
+          <tr><td><span class="chip">could</span></td><td class="id">M6</td><td>fine-tuned MiniLM cross-encoder</td><td>last 60 s as text</td><td class="q">Expected not to beat M4 at a few hundred bids.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="skip"><b>Left for later, on purpose:</b> LLM prompting (no better than "the last speaker continues" at next-speaker prediction, and privacy), TurnGPT and voice-activity projection (no checkpoints; audio only), neural point processes (blind to the transcript between events), single-event survival networks, and any resampling (it wrecks the calibration the alarm thresholds rely on). Calibration is Platt only, never isotonic: the effective sample is bids, not points.</p>
+  </section>
+
+  <section id="conditions" aria-labelledby="cond-h">
+    <div class="eyebrow">Comparison conditions</div>
+    <h2 id="cond-h">Each one asks a different question</h2>
+    <p class="intro">Defaults: hand target, <i>H</i> = 15 s, <i>g</i> = 2 s, grouped split, F-all, model M3. MVP rows must exist by Wednesday 20:00; must rows by Thursday 18:00; should and could rows run in cut order.</p>
+    <div class="table-wrap">
+      <table class="cond">
+        <thead><tr><th>Tier</th><th>ID</th><th>Condition</th><th>Question it answers</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">K0</td><td>B0, R, B1, M1–M3 with AO and B-min references</td><td class="q">Does anything beat the question rule? (H4)</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">F0</td><td>F-struct vs F-all, with and without my hand history</td><td class="q">Does content add to structure within a class? (H1)</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">TG</td><td>global and local prediction shifts</td><td class="q">The class, the phase, or the moment? (H2)</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">S</td><td>grouped split vs random points</td><td class="q">How much would leakage between neighbouring points inflate AP?</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">EV</td><td>event metric with always-on, minute-only, shifted, random and R references</td><td class="q">Would it have warned me, and at what false-alarm cost?</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">P-clock · P-plant</td><td>offset-sensitive clock curve; a token planted 8 s before 30% of bids</td><td class="q">Positive controls with stop rules: are clocks aligned and can the plumbing see a cue?</td></tr>
+          <tr><td><span class="chip mvp">MVP</span></td><td class="id">CALLON</td><td>rate of "go ahead", "I see a hand" in the 5 s before bids vs matched points</td><td class="q">Are labels late against the audio?</td></tr>
+          <tr><td><span class="chip must">must</span></td><td class="id">G</td><td>guard <i>g</i> ∈ {1, 2, 3, 5} s</td><td class="q">Does the signal survive a longer lead, or is it my own reach for the key?</td></tr>
+          <tr><td><span class="chip must">must</span></td><td class="id">K1 · F1</td><td>M4; F-text; with vs without PCW on verified docs</td><td class="q">Embeddings vs TF-IDF (H5); does preparation add? (H3)</td></tr>
+          <tr><td><span class="chip must">must</span></td><td class="id">A-mismatch</td><td>PCW deranged across classes, retrained ×5</td><td class="q">Does it matter that the workbook is mine and this class's?</td></tr>
+          <tr><td><span class="chip must">must</span></td><td class="id">IH+ · N-name · V</td><td>future-peeking positive control; name mentions; the vault, scored once</td><td class="q">Can the pipeline see a real cue; untouched estimate.</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">+hist · +edu · +stack</td><td>F-all plus my bid rate in earlier classes; EduBehaviors scores; stacked text scores</td><td class="q">Does my cross-class history, or a classroom-discourse classifier, add more?</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">Hs · T · A-stream</td><td><i>H</i> ∈ {5, 10, 30, 60}; speech target; streaming re-transcription of 300 points</td><td class="q">How far ahead; hand vs speech; how much batch ASR inflated AP.</td></tr>
+          <tr><td><span class="chip should">should</span></td><td class="id">M5 · S2 · LS</td><td>GRU; split by time and leave-course-out; labels shifted 1–3 s earlier</td><td class="q">Sequence; drift across years and courses; signal piling up at the onset.</td></tr>
+          <tr><td><span class="chip">could</span></td><td class="id">…</td><td>M6, kNN explainer, N-stale, A-jitter, A-attrib, turn-end grid, WER</td><td class="q">Breadth, only if ahead.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="two">
+      <figure class="split-fig">
+        <div class="chart-scroll"><svg id="splits" viewBox="0 0 860 236" role="img" aria-label="Splits. Random points put neighbouring points of one class on both sides and leak. The headline holds whole classes out. The time split trains on earlier terms. Two hashed vault classes sit out of every development split."></svg></div>
+        <figcaption>Each block is one class and each square a decision point. Points 2 s apart are near-duplicates, so a random split lets the model recognise test points from their neighbours. Vault classes (outlined) are chosen by a hash committed before any label existed and opened once.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table class="cond" style="min-width: 0">
+          <thead><tr><th>Pre-registered</th><th>Test (within-class AP_w)</th></tr></thead>
+          <tbody>
+            <tr><td class="id">H1</td><td class="q">F-all beats F-struct, and still does without my hand history</td></tr>
+            <tr><td class="id">H2</td><td class="q">TG_local &gt; 0, and larger for F-all than F-struct</td></tr>
+            <tr><td class="id">H3</td><td class="q">PCW adds, on classes with verified docs</td></tr>
+            <tr><td class="id">H4</td><td class="q">M3 beats the rule R</td></tr>
+            <tr><td class="id">H5</td><td class="q">M4 beats M2</td></tr>
+            <tr><td colspan="2" class="q wrap">H1 first at α = 0.05; only then H2–H5, Holm-corrected. Paired cluster bootstrap over classes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="traps" aria-labelledby="traps-h">
+    <div class="eyebrow">Ways this could fool us</div>
+    <h2 id="traps-h">Ten leakage traps, and the defence built in against each</h2>
+    <div class="traps">
+      <div class="trap-item"><h3>Words not yet said</h3><p>A 60-second window that ends at <i>t</i> can include a word that ends a moment later.</p><p class="fix">Each word is usable only from end + 0.25 s; two code paths must agree.</p><p class="chk">check · truncation + sentinel tests, blocking</p></div>
+      <div class="trap-item"><h3>Punctuation from the future</h3><p>Batch ASR places a "?" using the pause that follows it: the very pause that opens the floor.</p><p class="fix">Headline text is lowercase with no punctuation; F-punct measures what it would add.</p><p class="chk">check · A-stream re-transcribes [t − 180, t]</p></div>
+      <div class="trap-item"><h3>"[NAME], go ahead"</h3><p>The professor reacts to my hand a second or two before I speak.</p><p class="fix">Call-on phrases and name tokens are deleted; points with my hand up or just lowered are not at risk.</p><p class="chk">check · CALLON rate ratio must include 1</p></div>
+      <div class="trap-item"><h3>The key press in the transcript</h3><p>Scribe can write my <code>H</code> presses into the transcript as events.</p><p class="fix">Event tables come only from raw class-events; the live log is QA-only.</p><p class="chk">check · loader allowlist test</p></div>
+      <div class="trap-item"><h3>A calibration that says zero</h3><p>Scribe's whole-class fallback reports a residual of 0.0 and status "ok".</p><p class="fix">QA needs a windowed fit with ≥ 6 windows and residual p95 ≤ 1.5 s.</p><p class="chk">check · P-clock curve must peak at the border lag</p></div>
+      <div class="trap-item"><h3>Which class, not which moment</h3><p>"He talks a lot in this course" scores well on pooled AP.</p><p class="fix">No class ids or dates; the primary statistic is within-class AP_w.</p><p class="chk">check · TG vs TG_local shifts</p></div>
+      <div class="trap-item"><h3>Votes that look like bids</h3><p>"Raise your hand if…" makes every hand go up at once: trivially predictable.</p><p class="fix">Votes are typed by other tiles rising and by the vote lexicon, and their windows are undefined.</p><p class="chk">check · vote sensitivities, drop-column AP</p></div>
+      <div class="trap-item"><h3>Neighbouring points</h3><p>Points 2 s apart overlap in every window they read.</p><p class="fix">Whole classes are held out; vocabularies count classes, not rows.</p><p class="chk">check · the random-split tax, reported as a number</p></div>
+      <div class="trap-item"><h3>Workbooks edited after class</h3><p>A PCW answer revised during class is future information.</p><p class="fix">Answers come only from docs verified as of class start; status is QA, never a feature.</p><p class="chk">check · funnel by PCW status</p></div>
+      <div class="trap-item"><h3>My history from the test fold</h3><p>"My bid rate in this course" computed from all classes includes the ones being scored.</p><p class="fix">Built from earlier classes in the training fold only.</p><p class="chk">check · fold-aware unit test</p></div>
+    </div>
+  </section>
+
+  <section id="math" aria-labelledby="math-h">
+    <div class="eyebrow">The definitions that matter</div>
+    <h2 id="math-h">Labels, availability, and a metric built for the question</h2>
+    <div class="eqs">
+      <div class="eq wide"><h3>Label at decision point <i>t</i></h3><div class="math" data-tex="y_{H,g}(t)=\begin{cases}1 &amp; o^*\in(t+g,\,t+H]\text{ is the first bid; no onset in }(t,t+g];\ \text{no vote in }(t,o^*];\ (t,o^*]\text{ observed}\\ 0 &amp; \text{no onset, vote or glitch in }(t,t+H];\ (t,t+H]\text{ observed}\\ \text{undefined} &amp; \text{otherwise}\end{cases}"></div><p>Positives need observation only up to their onset; negatives need the whole window. A discrete-time hazard, scored on a 2-second grid.</p></div>
+      <div class="eq wide"><h3>When a word becomes usable</h3><div class="math" data-tex="\text{text}_w\ \text{usable at }t\iff \mathrm{end}_w+\varepsilon_w\le t,\qquad \text{role}_w\ \text{usable}\iff \max(\mathrm{end}_w+\varepsilon_w,\ s_{e(w)}+\varepsilon_F)\le t"></div><p>ε<sub>w</sub> = 0.25 s. The speaker role comes from the Forum voice event <i>e</i>(<i>w</i>) that overlaps the word, available ε<sub>F</sub> after it starts (ε<sub>F</sub> per class, from calibration residuals).</p></div>
+      <div class="eq"><h3>Firing rule</h3><div class="math" data-tex="\mathcal F_\tau=\Big\{s\in\mathcal G:\ p(s)\ge\tau\ \wedge\ \nexists\, s'\in\mathcal F_\tau\cap\big(s-(H-g),\,s\big)\Big\}"></div><p>An alarm then stays quiet for <i>H</i> − <i>g</i> = 13 s. 𝒢 keeps every point not removed by a causal rule.</p></div>
+      <div class="eq"><h3>False alarms per at-risk minute</h3><div class="math" data-tex="\mathrm{FAR}(\tau)=\frac{\#\{s\in\mathcal F_\tau:\,y(s)=0\}}{|\mathcal G_{\mathrm{def}}|\,\Delta/60}"></div><p>Headline budgets 0.1 and 0.5 per minute (6 and 30 per hour); thresholds matched on inner folds, never on test.</p></div>
+      <div class="eq"><h3>Event recall</h3><div class="math" data-tex="\mathrm{Recall}(\tau)=\frac1K\sum_k\mathbb 1\big[\mathcal F_\tau\cap[o_k-H,\,o_k-g)\ne\emptyset\big]"></div><p>A bid counts as caught if some firing lands between <i>H</i> and <i>g</i> seconds before it. Reported with time in warning and median lead.</p></div>
+      <div class="eq"><h3>Chance recall</h3><div class="math" data-tex="R_0(\lambda_f)=\min\!\big(1,\ \lambda_f\,(H-g)/60\big)"></div><p>Any firing process at rate λ<sub>f</sub> that ignores the onsets catches this share of bids. Always-on fires every 14 s and scores ≈ chance.</p></div>
+      <div class="eq"><h3>EventLift</h3><div class="math" data-tex="\mathrm{EventLift}=\frac{\mathrm{Recall}(\tau_\lambda)}{\mathrm{Recall}_{\mathrm{shift}}(\mathrm{FAR}_{\mathrm{realised}})}"></div><p>Primary chance level: the same firing rule on the model's own predictions, shifted in time, at the false-alarm rate it actually reached.</p></div>
+      <div class="eq"><h3>Within-class AP (primary)</h3><div class="math" data-tex="\mathrm{AP}_w=\frac{\sum_c K_c\,\mathrm{AP}_c}{\sum_c K_c}"></div><p><i>K</i><sub>c</sub> is the number of bids in class <i>c</i>. Which classes I talk in cannot inflate it.</p></div>
+      <div class="eq"><h3>The moment, not the phase</h3><div class="math" data-tex="\mathrm{TG}_{\mathrm{local}}=\mathrm{AP}-\mathrm{AP}_{\mathrm{local}}"></div><p>AP<sub>local</sub> shifts predictions by ≥ 30 s inside 3-minute same-segment blocks: it keeps the class, segment and minute, and breaks only second-scale timing.</p></div>
+      <div class="eq"><h3>Brier skill score</h3><div class="math" data-tex="\mathrm{BSS}=1-\frac{\mathrm{Brier}}{\pi(1-\pi)}"></div><p>At π ≈ 2% the constant forecaster already scores a Brier of about 0.02, so raw Brier flatters every model.</p></div>
+      <div class="eq"><h3>Guard and horizon in one number</h3><div class="math" data-tex="\text{positives per bid}\approx\frac{H-g}{\Delta}=\frac{15-2}{2}=6.5"></div><p>Each bid yields this many positive grid points, so π, and every AP read against it, moves with both dials.</p></div>
+      <div class="eq wide"><h3>Unspent preparation</h3><div class="math" data-tex="U(t)=\max_{j\in\mathrm{unspent}(t)} z(x,a_j),\qquad \mathrm{unspent}(t)=\Big\{j:\ \max_{m\in M_{\le t}} z(a_j,m)<\kappa\Big\},\ \ \kappa=2"></div><p><i>a</i><sub>j</sub> are chunks of my PCW answers, <i>x</i> the recency-pooled embedding of the room, <i>M</i><sub>≤t</sub> what I have already said. Similarities are z-scored against earlier classes' chunks. High <i>U</i>: the room has reached something I prepared and have not said yet.</p></div>
+    </div>
+  </section>
+
+  <section id="schedule" aria-labelledby="sched-h">
+    <div class="eyebrow">Four working days, four gates</div>
+    <h2 id="sched-h">The week, built around Friday</h2>
+    <div class="days">
+      <div class="day today"><div class="d">Mon 12 <span class="tag">today</span></div><h3>Freeze + foundation</h3><p>Design frozen; vault rule and G2 rules committed; cookie, sync, Day-1 frames. Package, synthetic world, offline tests.</p></div>
+      <div class="day"><div class="d">Tue 13 <span class="gate">G1 12:00</span><span class="gate">G2 18:00</span></div><h3>Checks + labels</h3><p>Day-1 checks on non-vault pilots; 36-class scan; detector audit by eye. Retune once, fresh confirm, else speech target.</p></div>
+      <div class="day"><div class="d">Wed 14 <span class="gate">G3 20:00</span></div><h3>Pre-register + MVP</h3><p>Truncation test green on real data. Tag <code>prereg</code> ≈ 14:00, then the MVP runs and controls.</p></div>
+      <div class="day"><div class="d">Thu 15 <span class="gate">G4 18:00</span></div><h3>Must items + vault</h3><p>Embeddings, guard sweep, PCW contrasts, controls; results freeze; vault opened once at 19:00.</p></div>
+      <div class="day due"><div class="d">Fri 16 <span class="tag">due</span></div><h3>Write-up</h3><p>Notebook run from cache with outputs, results bundle, README, privacy scan, submit by 18:00.</p></div>
+      <div class="day"><div class="d">Sat 17 – Mon 19</div><h3>Buffer + deletion</h3><p>Fixes only. Monday: delete name-glyph bits and audit clips.</p></div>
+    </div>
+    <p class="skip"><b>Cut order if late:</b> M6 → could items → M5 → stacking → leave-course-out → EduBehaviors → shorter H-sweep → full horizon curve → speech target → smaller A-stream → time split → cross-class history → reliability diagram. <b>Never cut:</b> the MVP set, the causal tests, label QA, the privacy scan.</p>
+  </section>
+
+  <section id="arc" aria-labelledby="arc-h">
+    <div class="eyebrow">Where the next two pipelines go</div>
+    <h2 id="arc-h">When, then how it shows, then what</h2>
+    <div class="arc">
+      <div class="now"><div class="when">Pipeline 1 · now</div><h3>When will my hand go up?</h3><p>From what is said, the state of the class, my own rhythm and my pre-class work. Vision only for the label.</p></div>
+      <div><div class="when">Pipeline 2</div><h3>Does it show on me first?</h3><p>Add vision of my own tile (the archived face plan), on the same labels and the same causal grid.</p></div>
+      <div><div class="when">Pipeline 3</div><h3>What will I say?</h3><p>Retrieval over my assignments, poll answers and past contributions, reusing the same causal view.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Forum API facts tagged verified were checked live from my own session on 12 Oct 2026; Scribe facts were checked in its code. Everything tagged illustrative is synthetic and shows the shape a run will produce. No results exist yet.</p>
+    <p>No classmate's name, face, voice or words appears here. Tiles in the drawings are placeholders, and <code>[NAME]</code> stands for any masked name.</p>
+    <p>Code: <a href="https://github.com/Brady-Rutherford/cs156-ml">cs156-ml</a> (pipeline1/) and Minervas_scribe v3 (harvester and transcriber). The two repositories stay separate.</p>
+  </footer>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const mmss = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), x = s % 60; return m + ":" + String(x).padStart(2, "0"); };
+  const prov = (k) => `<span class="prov ${k}">${k}</span>`;
+  const head = (t, k) => `<div class="show-head"><span class="t">${t}</span>${k ? prov(k) : ""}</div>`;
+  const table = (cols, rows, numCols = []) => `<div class="mini-wrap"><table class="mini"><thead><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((v, i) => `<td${numCols.includes(i) ? ' class="num"' : ""}>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const tip = $("#tip");
+  function bindTips(root, tips) {
+    root.querySelectorAll("[data-tip]").forEach((el) => {
+      const t = tips[+el.dataset.tip];
+      el.addEventListener("mousemove", (e) => {
+        tip.textContent = t; tip.hidden = false;
+        tip.style.left = Math.min(window.innerWidth - 310, e.clientX + 14) + "px"; tip.style.top = e.clientY + 16 + "px";
+      });
+      el.addEventListener("mouseleave", () => { tip.hidden = true; });
+    });
+  }
+
+  /* ------------------------------------------------------------ hand-scan drawing (placeholder tiles, no names) */
+  function handScanSVG() {
+    const p = [];
+    p.push(`<rect class="fr-bg" x="0" y="0" width="324" height="58" rx="5"/>`);
+    for (let i = 0; i < 6; i++) {
+      const x = 8 + i * 52;
+      p.push(`<rect class="fr-tile" x="${x}" y="6" width="48" height="44" rx="3"/>`);
+      p.push(`<rect class="fr-glyph" x="${x + 3}" y="42" width="${16 + ((i * 7) % 13)}" height="5" rx="1"/>`);
+      if (i === 0) p.push(`<circle class="ic-tick" cx="${x + 8}" cy="14" r="5"/>`);
+      if (i === 4) p.push(`<path class="lime" d="M ${x + 20} 50 L ${x + 30} 22 L ${x + 38} 22 L ${x + 30} 50 Z"/>`);
+      if (i === 2) {
+        p.push(`<circle class="ic-hand" cx="${x + 8}" cy="14" r="5"/><path class="ic-glyph" d="M ${x + 6} 16.5 v -4.5 h 1 v 3 h 0.6 v -4 h 1 v 4 h 0.6 v -3 h 1 v 4.5 z"/>`);
+        p.push(`<rect class="fr-roi" x="${x + 1.5}" y="7.5" width="14" height="14" rx="1"/>`);
+        p.push(`<rect class="fr-me" x="${x - 1.5}" y="4.5" width="51" height="47" rx="4"/>`);
+      }
+    }
+    p.push(`<text class="fr-label" x="8" y="68">poll tick: 120–165°</text>`);
+    p.push(`<text class="fr-label me" x="136" y="78" text-anchor="middle">my tile · glyph NCC 0.91</text>`);
+    p.push(`<text class="fr-label acc" x="240" y="68" text-anchor="middle">lime shirt: hue ✓ shape ✗</text>`);
+    const x0 = 40, x1 = 316, T = (t) => x0 + ((t + 10) / 20) * (x1 - x0), y0 = 92, y1 = 152, Y = (f) => y1 - (f / 0.7) * (y1 - y0);
+    const samples = [];
+    for (let k = -20; k <= 20; k++) {
+      const t = k / 2;
+      let f = 0.015 + 0.012 * Math.sin(k * 1.9);
+      if (t === -6) f = 0.15;
+      if (t >= 0 && t < 7.5) f = 0.52 + 0.04 * Math.cos(k);
+      samples.push([t, f]);
+    }
+    p.push(`<line class="thresh" x1="${x0}" y1="${Y(0.2)}" x2="${x1}" y2="${Y(0.2)}"/><text class="tick" x="${x0 - 4}" y="${Y(0.2) + 3}" text-anchor="end">θon</text>`);
+    p.push(`<line class="thresh" x1="${x0}" y1="${Y(0.08)}" x2="${x1}" y2="${Y(0.08)}"/><text class="tick" x="${x0 - 4}" y="${Y(0.08) + 6}" text-anchor="end">θoff</text>`);
+    p.push(`<line class="ax" x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}"/>`);
+    samples.forEach(([t, f]) => p.push(`<circle class="${t === -6 ? "ic-tick" : "h-dot"}" cx="${T(t)}" cy="${Y(f)}" r="1.9"/>`));
+    const yU = 164, yD = 174;
+    p.push(`<path class="h-live" d="M ${T(-10)} ${yD} H ${T(0.5)} V ${yU} H ${T(8)} V ${yD} H ${T(10)}"/>`);
+    p.push(`<text class="tick" x="${x0 - 4}" y="${yU + 7}" text-anchor="end">live</text>`);
+    p.push(`<line class="m-onset" x1="${T(-0.25)}" y1="${y0 - 4}" x2="${T(-0.25)}" y2="${yD + 4}"/>`);
+    p.push(`<text class="fr-label acc" x="${T(-0.25) + 4}" y="${y0 + 2}">onset, re-timed ±40 ms</text>`);
+    p.push(`<text class="fr-label" x="${T(-6)}" y="${Y(0.15) - 14}" text-anchor="middle">blip: no change</text>`);
+    [-10, -5, 0, 5, 10].forEach((t) => p.push(`<text class="tick" x="${T(t)}" y="190" text-anchor="middle">${t === 0 ? "0 s" : (t > 0 ? "+" : "") + t}</text>`));
+    return `<svg class="fig" viewBox="0 0 324 196" role="img" aria-label="Six placeholder tiles with blank name bars. My tile, outlined by the tracker, shows the yellow-green hand icon inside the dashed corner region. Another tile shows a green poll tick, another a lime stripe that passes the hue test but fails the shape test. Below, the icon fraction of my corner sampled at 2 per second crosses the upper threshold at 0 s; the live state switches up half a second later and down at 8 s. A single blip at minus 6 s stays below the upper threshold and changes nothing.">${p.join("")}</svg>`;
+  }
+
+  /* ------------------------------------------------------------ event-metric drawing (illustrative) */
+  function metricSVG() {
+    const H = 15, g = 2, tau = 0.25, o = 58, W = 380, x0 = 34, x1 = 368, y0 = 14, y1 = 128;
+    const X = (t) => x0 + (t / 90) * (x1 - x0), Y = (pp) => y1 - (pp / 0.8) * (y1 - y0);
+    const hand = [o + 0.5, o + 12.5], post = [o + 12.5, o + 22.5];
+    const inG = (s) => !(s >= hand[0] && s < post[1]);
+    const pf = (s) => 0.05 + 0.24 * Math.exp(-((s - 14) ** 2) / 6) + 0.62 / (1 + Math.exp(-(s - 47) / 2.6)) * (s < o + 0.5 ? 1 : 0.2) + 0.012 * Math.sin(s);
+    const pts = [], fires = [];
+    for (let s = 0; s <= 90; s += 2) {
+      if (!inG(s)) continue;
+      const pp = pf(s); pts.push([s, pp]);
+      if (pp >= tau && !fires.some((f) => f > s - (H - g) && f < s)) fires.push(s);
+    }
+    const p = [];
+    p.push(`<rect class="notrisk" x="${X(hand[0])}" y="${y0}" width="${X(post[1]) - X(hand[0])}" height="${y1 - y0}"/>`);
+    p.push(`<text class="tick" x="${(X(hand[0]) + X(post[1])) / 2}" y="${y0 + 10}" text-anchor="middle">not at risk</text>`);
+    fires.forEach((s) => {
+      const tp = o > s + g && o <= s + H;
+      p.push(`<rect class="f-ref" x="${X(s)}" y="${y1 + 8}" width="${X(s + H - g) - X(s)}" height="6"/>`);
+      p.push(`<path class="${tp ? "f-true" : "f-false"}" d="M ${X(s)} ${y1 + 4} l -4 -7 h 8 z"/>`);
+      p.push(`<text class="fr-label ${tp ? "acc" : ""}" x="${X(s) + 6}" y="${y1 + 26}">${tp ? `true · lead ${o - s} s` : "false"}</text>`);
+    });
+    for (let k = 1; k < pts.length; k++) {
+      if (pts[k][0] - pts[k - 1][0] > 2) continue;
+      p.push(`<line class="trace" x1="${X(pts[k - 1][0])}" y1="${Y(pts[k - 1][1])}" x2="${X(pts[k][0])}" y2="${Y(pts[k][1])}"/>`);
+    }
+    p.push(`<line class="thresh" x1="${x0}" y1="${Y(tau)}" x2="${x1}" y2="${Y(tau)}"/><text class="tick" x="${x0 - 4}" y="${Y(tau) + 3}" text-anchor="end">τ</text>`);
+    p.push(`<line class="ax" x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}"/>`);
+    p.push(`<line class="m-onset" x1="${X(o)}" y1="${y0}" x2="${X(o)}" y2="${y1}"/><text class="fr-label acc" x="${X(o) - 4}" y="${y0 + 22}" text-anchor="end">bid</text>`);
+    [0, 30, 60, 90].forEach((t) => p.push(`<text class="tick" x="${X(t)}" y="${y1 + 44}" text-anchor="middle">${t} s</text>`));
+    return `<svg class="fig" viewBox="0 0 ${W} 178" role="img" aria-label="Illustrative p(t) over 90 seconds with threshold tau. A brief bump at 14 seconds fires a false alarm. p rises before a bid at 58 seconds and fires ${o - fires[fires.length - 1]} seconds ahead: a true firing. Each firing is followed by a 13-second quiet period. The grid after the bid is not at risk while the hand is up.">${p.join("")}</svg>`;
+  }
+
+  /* ------------------------------------------------------------ the nine stages */
+  const STAGES = [
+    {
+      name: "Forum API", sub: "event log + content", col: 0, row: 1,
+      title: "Forum logs who spoke and when, but not a single hand raise",
+      text: "Every class has an event log: who spoke and for how long, chat messages, timeline segments. The class edit page holds the learning outcomes, and the pre-class work (PCW) lives in a linked workbook. Pressing <code>H</code> saves the hand state through a write-only PATCH, so the label has to come from the recording.",
+      io: [["in", "my logged-in Forum session (cookie in <code>~/.minerva/.env</code>)"], ["out", "sections → classes → events, class edit page, PCW template and doc, signed video links"], ["tool", "read-only GETs; one allowlisted POST for the PCW link"]],
+      trap: "<b>Never called:</b> <code>/api/v1/class-users/{id}</code> (PATCH-only; GET answers 405). The professor's analytics endpoint has per-student hand-raise <i>counts</i>, not times, and is 403 for students.",
+      show: () => `${head("GET …/class_grader/classes/{cid}/class-events", "verified")}
+<pre class="code"><span class="k">"event-type"</span>: <span class="s">"voice"</span>,
+<span class="k">"actor-id"</span>:   <span class="c">&lt;me&gt;</span>,
+<span class="k">"room-signature"</span>: <span class="s">"Main Classroom"</span>,
+<span class="k">"start-time"</span>: <span class="s">"2026-10-08T15:06:23Z"</span>,  <span class="c">// whole seconds</span>
+<span class="k">"end-time"</span>:   <span class="s">"2026-10-08T15:07:16Z"</span>,
+<span class="k">"timestamp"</span>:  <span class="n">1791472036041</span>,           <span class="c">// the END, in ms</span>
+<span class="k">"event-data"</span>: { <span class="k">"duration"</span>: <span class="n">53000</span> }      <span class="c">// ms</span></pre>
+<p class="note">One of my own turns. Onset = timestamp − duration. Event types a student sees: <code>voice</code>, <code>message</code>, <code>timeline-segment</code>, <code>bookmark-note</code>. From Forum's own frontend code: <code>h</code> → <code>toggleHandRaise()</code> → <code>saveThenPublish("hand-raised", true)</code>.</p>`,
+    },
+    {
+      name: "Harvest", sub: "scribe sync + oncue", col: 1, row: 1,
+      title: "Pull three years of records, then keep only whitelisted paths",
+      text: "<code>scribe sync</code> walks every section and saves each class record and event log. <code>oncue harvest</code> adds the class edit page and the PCW template and doc, once, cached. A loader then keeps only whitelisted JSON paths per source and logs every key it drops.",
+      io: [["in", "53 sections, 694 recorded classes"], ["out", "<code>data/scribe/raw/{cid}/*.json</code>, <code>manifest.csv</code> (gitignored)"], ["tool", "<code>scribe sync</code>; <code>loaders.load_raw</code> with per-source path whitelists"]],
+      trap: "<b>Quirk:</b> unfiltered <code>paginated-classes</code> returns 11,984 classes org-wide back to 2014. Only <code>filter_section_id</code> scopes it.",
+      show: () => `${head("what each source may feed", "spec")}
+${table(["source", "may feed", "blocked"], [
+  ["class-events", "voice, message, timeline-segment", "every other event type"],
+  ["class record", "roles, attendance so far; names for masking only", "class-total attendance"],
+  ["class edit page", "learning outcomes, PCW instructions", "—"],
+  ["PCW template, doc", "prompts; my answers from pre-class docs", "edit times, comments, grades"],
+  ["polls, responses", "prompts; my own answers", "scores, feedback"],
+  ["outcome assessments, analytics", "—", "whole source"],
+])}
+<p class="note">Paths are written after Scribe's <code>kebab()</code>, so <code>actor_id</code> and <code>actor-id</code> are one key. The full whitelist lives in <code>oncue/config.py</code>.</p>`,
+    },
+    {
+      name: "Transcribe", sub: "Scribe v3", col: 2, row: 1,
+      title: "Words on one clock, or the class leaves the headline",
+      text: "Scribe v3 transcribes the recording and calibrates Forum's wall-clock events to its audio. The provider is chosen per course: local ASR by default, Deepgram only for courses I mark as cleared. The hand scan later reads the same rendition, so words and icons share one media clock.",
+      io: [["in", "signed recording + raw voice events"], ["out", "<code>*_asr.json</code> words (start, end, text, conf) and the calibration"], ["tool", "<code>scribe transcribe --privacy ids</code>; never <code>--hand-log</code>"]],
+      trap: "<b>Silent fallback (checked in Scribe's code):</b> with fewer than 3 usable windows, <code>calibrate()</code> fits the whole class and still reports status ok with a max residual of 0.0. QA demands a windowed fit with ≥ 6 windows.",
+      show: () => `${head("calibration QA on three classes", "illustrative")}
+${table(["class", "method", "windows", "max resid.", "p95", "verdict"], [
+  ["A", "windowed", "11", "0.62 s", "0.71 s", "ok · ε<sub>F</sub> = 0.71 s"],
+  ["B", "global", "2", "0.00 s", "—", "cal_method_global"],
+  ["C", "windowed", "8", "1.90 s", "1.40 s", "cal_max_residual"],
+], [2, 3, 4])}
+<pre class="code"><span class="c"># per class, logged in classes.eps_F_s</span>
+ε<sub>F</sub> = max(ε<sub>F,min</sub>, p95, max_residual)   <span class="c"># ε_F,min = 1.0 s (2023), else 0.5 s</span>
+asr_provider(<span class="s">"CS156"</span>)  <span class="c"># → "local" until the course is cleared</span></pre>`,
+    },
+    {
+      name: "Events, words", sub: "masked · causal", col: 3, row: 1,
+      title: "What I could hear, word by word, and when I could have heard it",
+      text: "Event tables are built from raw class-events only. Each word takes its speaker role from the Forum voice event that overlaps it, and gets an availability time: its end plus 0.25 s. Names are masked in memory; feature text is then lowercased, stripped of punctuation, and call-on phrases and name tokens are deleted.",
+      io: [["in", "ASR words + raw voice, message and timeline events"], ["out", "<code>words</code>, <code>frames</code> (with <code>close_s</code>), <code>voice</code>, <code>segments</code> (no end column), <code>chat</code>, <code>polls</code>"], ["tool", "<code>scribe_core</code> parse and calibrate; pandas"]],
+      trap: "<b>Punctuation is future information:</b> batch ASR places '?' and capitals using the pause that follows. Headline text has neither; the F-punct ablation measures what they would add.",
+      show: () => `${head("words table, around a question", "illustrative")}
+${table(["start", "end", "role", "text_norm", "usable at"], [
+  ["1155.40", "1155.66", "prof", "does", "1155.91"],
+  ["1155.70", "1155.96", "prof", "anyone", "1156.21"],
+  ["1156.00", "1156.26", "prof", "want", "1156.51"],
+  ["1157.20", "1157.46", "prof", "that", "1157.71"],
+  ["1170.60", "1170.86", "prof", "<span class=\"mono\">[NAME]</span>", "deleted"],
+  ["1170.90", "1171.46", "prof", "go ahead", "deleted (CALLON)"],
+], [0, 1, 4])}
+<p class="note">Roles come from Forum, never from diarization clusters (fit on the whole file) or Scribe's smoothing (reads 1.2 s ahead).</p>`,
+    },
+    {
+      name: "Hand scan", sub: "label · 2 fps", col: 2, row: 0,
+      title: "Find my tile without a face, then watch its corner",
+      text: "ffmpeg streams the strip of tiles at 2 fps; frames are piped and never stored. My tile is found by matching its binarised name label against a template built from <i>other</i> classes, where Forum's speaker border marked me as the only one talking. A hue test plus a shape test on the tile's top-left corner gives the hand state.",
+      io: [["in", "signed link to the rendition the ASR used"], ["out", "<code>hand_episodes</code>: bid, vote or glitch; onset, offset, outcome (called, withdrawn, open)"], ["tool", "OpenCV HSV + shape test · glyph NCC · hysteresis · full-rate re-timing"]],
+      trap: "<b>Same corner, different meaning:</b> the green poll tick sits where the hand does. Hue separates them, and a round-blob-with-white-glyph test rejects lime shirts and plants that pass the hue test alone.",
+      show: () => `${head("prototype on one real class frame", "verified")}
+${table(["colour test", "blobs", "truth"], [["hand hue 52–80°", "2", "Class Signals counter: 2 raised hands"], ["tick hue 120–165°", "11", "poll ticks + the speaker's green border"]], [1])}
+${head("what the scan does with it", "illustrative")}${handScanSVG()}`,
+    },
+    {
+      name: "Labels, grid", sub: "at-risk · y", col: 4, row: 0,
+      title: "Every 2 seconds: positive, negative, undefined, or not at risk",
+      text: "Decision points sit on a 2-second grid. A point is positive if a bid starts in (t + g, t + H], negative if nothing starts in (t, t + H], and undefined around votes, glitches and unobserved spans. Points where I am talking, my hand is already up, or the class is in breakouts are not at risk at all.",
+      io: [["in", "hand episodes and live state, words, segments, recording gaps"], ["out", "<code>points</code>: 11 label columns (H and g sweeps), <code>excl_reason</code>, fold, vault flag"], ["tool", "<code>labels.points</code>"]],
+      trap: "<b>Only causal rules take points off the alarm grid.</b> Label-side rules (guard, pending onset, votes) leave them on it, so an alarm just before a bid can never be excused.",
+      show: () => `${head("one bid, H = 15 s, g = 2 s", "derived")}
+<pre class="code"><span class="c"># bid onset o = 1165.6 s (re-timed)</span>
+positive  t ∈ [o − 15, o − 2) = [<span class="n">1150.6</span>, <span class="n">1163.6</span>)
+          grid t = 1152, 1154, … , 1162      <span class="c">→ 6 points (6.5 on average)</span>
+guard     t = 1164                          <span class="c">→ undefined: bid 1.6 s ahead</span>
+pending   t = 1166                          <span class="c">→ undefined: not yet live</span>
+hand_up   1166.1 ≤ t &lt; 1172.9              <span class="c">→ not at risk</span>
+post_low  t &lt; 1172.9 + 10                   <span class="c">→ not at risk</span></pre>
+<p class="note">π ≈ 1.6–2.2% at H = 15 from about 4.5 bids per class in 45–60 at-risk minutes. The effective sample is bids and classes, not points.</p>`,
+    },
+    {
+      name: "Causal features", sub: "cut at t", col: 4, row: 1,
+      title: "Four kinds of evidence, all cut at t",
+      text: "Text (the last 15 and 60 s, the professor's last utterance, question cues), structure (minute, segment, speaker, turn-taking), my own history (turns and raises so far this class, and my bid rate in earlier classes) and preparation (how close the room is to the PCW prompts and to my answers). Two code paths compute them, and a test requires they agree.",
+      io: [["in", "tables + grid points"], ["out", "<code>features</code>: allowlisted columns only"], ["tool", "<code>np.searchsorted</code> fast path vs <code>CausalView</code> truncation"]],
+      trap: "<b>Sentinel test:</b> plant a word inside the 0.25 s margin, a segment at t + 1, or my own frame at t + 5. If any feature changes, training is blocked.",
+      show: () => `${head("feature groups", "spec")}
+${table(["group", "examples", "usable from"], [
+  ["ctx, spk", "minute, segment type, current speaker's elapsed time, silence", "event start + ε<sub>F</sub>"],
+  ["q, edu", "open question, its age; invitation and rhetorical-question scores", "frame close"],
+  ["text, emb", "TF-IDF of role-tagged words; recency-pooled embeddings", "word end + ε<sub>w</sub>"],
+  ["me, me_hand", "my turns and raises so far, time since lowering", "lowering confirmed"],
+  ["hist", "my bid rate in earlier training-fold classes", "before class"],
+  ["pcwT, pcwA", "similarity to prompts and to my answers; unspent preparation", "before class"],
+])}`,
+    },
+    {
+      name: "Models", sub: "B0 … M5", col: 5, row: 1,
+      title: "Baselines first, then the learners that must beat them",
+      text: "Every model outputs the same p(t) on the same grid, trained with whole classes held out. Gradient boosting on F-all is the headline. Logistic regression on structure alone, which already carries my own raise history, is the strongest thing it has to beat.",
+      io: [["in", "features, labels, class id as group"], ["out", "out-of-fold p(t), Platt-calibrated per fold"], ["tool", "scikit-learn; PyTorch on MPS for M5"]],
+      trap: "<b>No resampling.</b> SMOTE or undersampling would distort the probabilities the alarm thresholds rely on. Hyperparameters are chosen once per fold on F-all and reused for every ablation.",
+      show: () => `${head("what each sees", "spec")}
+${table(["id", "sees", "model"], [["R", "open question, its age", "rule, no fitting"], ["B1", "structure + my history", "logistic regression"], ["M2", "words, last 15 and 60 s", "TF-IDF + LR"], ["M3", "everything allowlisted", "gradient boosting"], ["M4", "sentence embeddings", "bge-small + LR"], ["M5", "every grid step", "GRU, ≤ 50k params"]])}
+<p class="note">This is the design, not a result. Scores appear only after the run.</p>`,
+    },
+    {
+      name: "Event metric", sub: "recall @ FAR", col: 6, row: 1,
+      title: "Would it have warned me in time, and how often would it cry wolf?",
+      text: "An alarm fires when p(t) crosses τ, then stays quiet for H − g = 13 s. A firing is true if a bid follows inside its window and false if nothing does. The headline is recall at 0.1 and 0.5 false firings per at-risk minute, against shifted predictions and random alarms at the same rate.",
+      io: [["in", "out-of-fold p(t) on held-out classes"], ["out", "recall, false-alarm rate, time in warning, lead, EventLift"], ["tool", "own metric code (seizure-prediction convention)"]],
+      trap: "<b>Always-on is not a cheat code:</b> it fires every 14 s, catches nearly every bid and scores an EventLift of about 1.",
+      show: () => `${head("one minute and a half, one model", "illustrative")}${metricSVG()}`,
+    },
+  ];
+
+  /* ------------------------------------------------------------ diagram */
+  const COLW = 150, NODE_W = 126, NODE_H = 62, X0 = 16, ROW_Y = [58, 200];
+  const nodeX = (c) => X0 + c * COLW, midX = (c) => nodeX(c) + NODE_W / 2;
+  const BANDS = [["SOURCE", 0, 0], ["INGEST + ALIGN", 1, 3], ["PREDICT", 4, 5], ["JUDGE", 6, 6]];
+  const yMid = (r) => ROW_Y[r] + NODE_H / 2;
+  const EDGES = [
+    { id: "api-rec", d: `M ${midX(0)} ${ROW_Y[1]} V ${yMid(0)} H ${nodeX(1) - 2}`, label: "signed link", lx: midX(0) + 6, ly: 146, anchor: "start" },
+    { id: "api-harvest", d: `M ${nodeX(0) + NODE_W} ${yMid(1)} H ${nodeX(1) - 2}` },
+    { id: "rec-hand", d: `M ${nodeX(1) + NODE_W} ${yMid(0)} H ${nodeX(2) - 2}` },
+    { id: "rec-asr", d: `M ${midX(1) + 20} ${ROW_Y[0] + NODE_H} C ${midX(1) + 20} 166, ${nodeX(2) + 24} 156, ${nodeX(2) + 24} ${ROW_Y[1] - 2}`, label: "audio, same file", lx: midX(1) + 4, ly: 176, anchor: "end" },
+    { id: "harvest-asr", d: `M ${nodeX(1) + NODE_W} ${yMid(1)} H ${nodeX(2) - 2}` },
+    { id: "asr-words", d: `M ${nodeX(2) + NODE_W} ${yMid(1)} H ${nodeX(3) - 2}` },
+    { id: "harvest-events", d: `M ${midX(1) + 14} ${ROW_Y[1] + NODE_H} C ${midX(1) + 14} 292, ${midX(3)} 292, ${midX(3)} ${ROW_Y[1] + NODE_H + 2}`, label: "raw class-events only", lx: (midX(1) + midX(3)) / 2 + 8, ly: 302 },
+    { id: "harvest-static", d: `M ${midX(1) - 14} ${ROW_Y[1] + NODE_H} C ${midX(1) - 14} 330, ${midX(4)} 330, ${midX(4)} ${ROW_Y[1] + NODE_H + 2}`, label: "before class: PCW, outcomes, schedule", lx: (midX(1) + midX(4)) / 2, ly: 336 },
+    { id: "hand-labels", d: `M ${nodeX(2) + NODE_W} ${yMid(0)} H ${nodeX(4) - 2}`, label: "episodes · live state", lx: midX(3), ly: yMid(0) - 6 },
+    { id: "words-feat", d: `M ${nodeX(3) + NODE_W} ${yMid(1)} H ${nodeX(4) - 2}` },
+    { id: "labels-feat", d: `M ${midX(4)} ${ROW_Y[0] + NODE_H} V ${ROW_Y[1] - 2}`, label: "grid t · my hand so far", lx: midX(4) + 6, ly: 152, anchor: "start" },
+    { id: "labels-models", d: `M ${nodeX(4) + NODE_W} ${ROW_Y[0] + 46} H ${midX(5) + 22} V ${ROW_Y[1] - 2}`, label: "y", lx: midX(5) + 28, ly: 176, anchor: "start" },
+    { id: "labels-metric", d: `M ${nodeX(4) + NODE_W} ${ROW_Y[0] + 16} H ${midX(6)} V ${ROW_Y[1] - 2}`, label: "onsets", lx: midX(6) + 6, ly: 176, anchor: "start" },
+    { id: "feat-models", d: `M ${nodeX(4) + NODE_W} ${yMid(1)} H ${nodeX(5) - 2}` },
+    { id: "models-metric", d: `M ${nodeX(5) + NODE_W} ${yMid(1)} H ${nodeX(6) - 2}` },
+  ];
+  const INCOMING = [[], ["api-harvest"], ["rec-asr", "harvest-asr"], ["asr-words", "harvest-events"], ["api-rec", "rec-hand"], ["hand-labels"], ["words-feat", "labels-feat", "harvest-static"], ["feat-models", "labels-models"], ["models-metric", "labels-metric"]];
+
+  function buildDiagram() {
+    const parts = [`<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-arrow" d="M0 0 L10 5 L0 10 z"/></marker><marker id="arr-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-arrow-on" d="M0 0 L10 5 L0 10 z"/></marker></defs>`];
+    BANDS.forEach(([label, a, b]) => {
+      parts.push(`<text class="dg-band" x="${nodeX(a)}" y="14">${label}</text><path class="dg-bracket" d="M ${nodeX(a)} 24 V 20 H ${nodeX(b) + NODE_W} V 24"/>`);
+    });
+    parts.push(`<rect class="dg-boundary" x="${nodeX(1) - 10}" y="${ROW_Y[0] - 10}" width="${nodeX(4) + NODE_W + 20 - nodeX(1)}" height="${NODE_H + 20}" rx="10"/>`);
+    parts.push(`<text class="dg-boundary-label" x="${nodeX(1) - 10}" y="${ROW_Y[0] - 16}">LABEL SIDE · video pixels become labels, never features</text>`);
+    EDGES.forEach((e) => {
+      parts.push(`<path class="dg-edge" data-edge="${e.id}" d="${e.d}" marker-end="url(#arr)"/>`);
+      if (e.label) parts.push(`<text class="dg-edge-label" data-edge-label="${e.id}" x="${e.lx}" y="${e.ly}" text-anchor="${e.anchor || "middle"}">${e.label}</text>`);
+    });
+    parts.push(`<g class="dg-node passive" aria-hidden="true"><rect x="${nodeX(1)}" y="${ROW_Y[0]}" width="${NODE_W}" height="${NODE_H}" rx="9"/><text class="dg-name" x="${nodeX(1) + 10}" y="${ROW_Y[0] + 36}">Recording</text><text class="dg-sub" x="${nodeX(1) + 10}" y="${ROW_Y[0] + 52}">screen capture · mp4</text></g>`);
+    STAGES.forEach((s, i) => {
+      const x = nodeX(s.col), y = ROW_Y[s.row];
+      parts.push(`<g class="dg-node" data-i="${i}" role="button" tabindex="0" aria-label="Stage ${i + 1}: ${esc(s.name)}"><rect x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="9"/><text class="dg-num" x="${x + 10}" y="${y + 16}">${String(i + 1).padStart(2, "0")}</text><text class="dg-name" x="${x + 10}" y="${y + 36}">${esc(s.name)}</text><text class="dg-sub" x="${x + 10}" y="${y + 52}">${esc(s.sub)}</text></g>`);
+    });
+    $("#diagram").innerHTML = `<svg viewBox="0 0 1070 346" role="img" aria-label="Pipeline in two rows. Bottom row, everything the model may see: Forum API, harvest, transcription with Scribe v3, events and words, causal features, models, and the event metric. Top row, the label side: the recording, reached through a signed link, is scanned for my hand icon; episodes become labels on a 2-second grid. Labels pass grid times and my own live hand history to the features, the target y to the models, and bid onsets to the metric.">${parts.join("")}</svg>`;
+  }
+
+  let current = 0;
+  function select(i, focus) {
+    current = Math.max(0, Math.min(STAGES.length - 1, i));
+    const s = STAGES[current];
+    document.querySelectorAll(".dg-node[data-i]").forEach((n) => {
+      const on = +n.dataset.i === current;
+      n.classList.toggle("on", on); n.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    const on = new Set(INCOMING[current]);
+    document.querySelectorAll("[data-edge]").forEach((e) => {
+      const isOn = on.has(e.dataset.edge);
+      e.classList.toggle("on", isOn); e.setAttribute("marker-end", isOn ? "url(#arr-on)" : "url(#arr)");
+    });
+    document.querySelectorAll("[data-edge-label]").forEach((e) => e.classList.toggle("on", on.has(e.dataset.edgeLabel)));
+    $("#where").innerHTML = `Stage <b>${current + 1}</b> of ${STAGES.length} · <b>${esc(s.name)}</b>`;
+    $("#say").innerHTML = `<h3>${s.title}</h3><p>${s.text}</p><dl class="io">${s.io.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl><div class="trap">${s.trap}</div>`;
+    $("#show").innerHTML = s.show();
+    $("#prev").disabled = current === 0;
+    $("#next").disabled = current === STAGES.length - 1;
+    $("#next").textContent = current === STAGES.length - 1 ? "Last stage" : "Next stage →";
+    if (focus) { const n = document.querySelector(`.dg-node[data-i="${current}"]`); if (n) n.focus({ preventScroll: true }); }
+  }
+  buildDiagram();
+  document.querySelectorAll(".dg-node[data-i]").forEach((n) => {
+    n.addEventListener("click", () => select(+n.dataset.i));
+    n.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(+n.dataset.i); } });
+  });
+  $("#prev").addEventListener("click", () => select(current - 1));
+  $("#next").addEventListener("click", () => select(current + 1));
+  $("#explorer").addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") { e.preventDefault(); select(current + 1, true); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); select(current - 1, true); }
+  });
+  select(0);
+
+  /* ------------------------------------------------------------ causal snapshot (synthetic) */
+  const EPS_W = 0.25, EPS_F = 0.5, REC_OFFSET = 95, SEG_START = 1020;
+  const SN = (function () {
+    const U = [
+      ["prof", 1104.0, "last time we fit a logistic regression to the admissions data"],
+      ["prof", 1110.0, "today the question is what happens when the classes are imbalanced"],
+      ["prof", 1118.0, "your groups compared three ways to handle that"],
+      ["prof", 1131.5, "what would you change about the model first"],
+      ["student", 1139.0, "we would reweight the classes before fitting"],
+      ["student", 1144.2, "because the minority class barely moves the loss"],
+      ["prof", 1152.0, "okay that is one option"],
+      ["prof", 1155.4, "does anyone want to build on that"],
+      ["prof", 1170.6, "[NAME] go ahead"],
+      ["me", 1172.4, "in my notes i argued that reweighting distorts the probabilities"],
+      ["me", 1178.0, "so i would move the threshold instead"],
+    ];
+    const words = [], utt = [];
+    U.forEach(([role, s0, text], ui) => {
+      const ws = text.split(" ").map((w, k) => ({ role, s: s0 + k * 0.3, e: s0 + k * 0.3 + 0.26, w, ui }));
+      words.push(...ws);
+      utt.push({ role, ui, s: ws[0].s, e: ws[ws.length - 1].e });
+    });
+    const chunks = ["reweighting distorts the predicted probabilities", "move the decision threshold instead of resampling", "precision recall curves suit rare classes", "calibrate with platt scaling on held out data"];
+    return { words, utt, chunks, bid: { o: 1165.6, live: 1166.1, off: 1172.4, offLive: 1172.9 }, prev: { offLive: 641.5 } };
+  })();
+  const CALLON = /\b(go ahead|i see (a|your) hand|you'?re up|unmute|take it away)\b/g;
+  const normFeat = (t) => t.replace(/\[name\]/gi, " ").toLowerCase().replace(CALLON, " ").replace(/\s+/g, " ").trim();
+  const isQ = (t) => { const w = t.split(" ").filter(Boolean); return (w.length >= 4 && /^(what|why|how|which|who|where|when|is|are|do|does|did|can|could|would|should|have|has)$/.test(w[0])) || /\b(right|yeah|okay|isn'?t it|don'?t you think)$/.test(t); };
+  const INVITE = /\b(any(one|body)|some(one|body)|who( (wants|would like|can|has)|'?d like)|thoughts on|what do (you|we|people)( all)? think|would anyone|does anyone|can someone|build on|jump in|feel free)\b/;
+
+  function snapLabel(t) {
+    const b = SN.bid, H = 15, g = 2;
+    const meWord = SN.words.some((w) => w.role === "me" && w.e > t - 3 && w.e <= t - EPS_W);
+    const meOn = SN.utt.some((u) => u.role === "me" && u.s + EPS_F <= t && t <= u.e && SN.words.some((w) => w.ui === u.ui && w.e + EPS_W <= t));
+    if (meWord || meOn) return ["x", "not at risk · me_speaking", "I spoke in the last 3 s"];
+    if (t >= b.live && t < b.offLive) return ["x", "not at risk · hand_up", "my hand is already up (live state)"];
+    if (t >= b.offLive && t < b.offLive + 10) return ["x", "not at risk · post_lowering", "within 10 s of lowering"];
+    if (b.o > t && b.o <= t + g) return ["u", "undefined · guard", `the bid is ${(b.o - t).toFixed(1)} s ahead, inside the ${g} s guard`];
+    if (b.o <= t && t < b.o + 1.5) return ["u", "undefined · onset_pending", "the icon is up but not yet confirmed"];
+    if (b.o > t + g && b.o <= t + H) return ["p", "y = 1", `a bid starts ${(b.o - t).toFixed(1)} s later`];
+    return ["n", "y = 0", "no onset in the next 15 s"];
+  }
+
+  function drawSnapshot() {
+    const t = +$("#snap-t").value;
+    $("#snap-out").textContent = `${mmss(t)} · ${t} s`;
+    const [cls, lab, why] = snapLabel(t);
+    const badge = $("#snap-badge");
+    badge.className = "badge " + cls; badge.innerHTML = `<b>${lab}</b> · ${why}`;
+    const A = 1098, B = 1192, W = 1000, padL = 70, padR = 12;
+    const X = (s) => padL + ((s - A) / (B - A)) * (W - padL - padR);
+    const lanes = { prof: 22, student: 44, me: 66, hand: 90 };
+    const p = [`<defs><pattern id="fhatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="pat-bg" width="6" height="6" opacity="0.6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>`];
+    p.push(`<rect class="in-view" x="${X(Math.max(A, t - 60))}" y="8" width="${X(t) - X(Math.max(A, t - 60))}" height="100"/>`);
+    [["professor", lanes.prof], ["student", lanes.student], ["me", lanes.me], ["my hand", lanes.hand]].forEach(([n, y]) => p.push(`<text class="lane-label" x="0" y="${y + 9}">${n}</text>`));
+    SN.words.forEach((w) => {
+      const x = X(w.s), wd = Math.max(1.2, X(w.e) - X(w.s)), y = lanes[w.role];
+      let c = "w-" + w.role, extra = "";
+      if (w.e + EPS_W <= t) { if (w.e <= t - 60) c = "w-old"; }
+      else if (w.s + EPS_W <= t) c = "w-heard";
+      else extra = " w-future";
+      p.push(`<rect class="${c}${extra}" x="${x}" y="${y}" width="${wd}" height="11" rx="1"/>`);
+    });
+    const b = SN.bid;
+    p.push(`<rect class="m-bid${t >= b.live ? "" : " w-future"}" x="${X(b.o)}" y="${lanes.hand}" width="${X(b.off) - X(b.o)}" height="11" rx="2"/>`);
+    p.push(`<rect class="future-mask" x="${X(t)}" y="8" width="${X(B) - X(t)}" height="100"/>`);
+    p.push(`<line class="t-line" x1="${X(t)}" y1="4" x2="${X(t)}" y2="112"/><text class="t-label" x="${X(t) + 5}" y="120">t</text>`);
+    if (t - 60 > A) p.push(`<text class="tick" x="${X(t - 60) + 4}" y="120">t − 60 s</text>`);
+    for (let s = 1100; s <= 1190; s += 10) p.push(`<text class="tick" x="${X(s)}" y="134" text-anchor="middle">${mmss(s)}</text>`);
+    $("#snap-svg").innerHTML = `<svg viewBox="0 0 ${W} 140" role="img" aria-label="Synthetic two-minute stretch with professor, student and my words, and my hand. Words from the last 60 seconds before t are in view; anything after t is hatched out."><title>Causal snapshot at t = ${t} s</title>${p.join("")}</svg>`;
+
+    const avail = SN.words.filter((w) => w.e + EPS_W <= t), in60 = avail.filter((w) => w.e > t - 60);
+    const n = (r) => in60.filter((w) => w.role === r).length;
+    const heard = SN.words.filter((w) => w.s + EPS_W <= t), lastW = heard[heard.length - 1];
+    const talking = lastW && lastW.e + EPS_W > t;
+    const silence = !lastW || talking ? 0 : t - lastW.e;
+    const profU = SN.utt.filter((u) => u.role === "prof" && u.s + EPS_W <= t), lu = profU[profU.length - 1];
+    const luText = lu ? normFeat(avail.filter((w) => w.ui === lu.ui).map((w) => w.w).join(" ")) : "";
+    const luDone = lu && lu.e + EPS_W <= t;
+    const studSince = lu && SN.utt.some((u) => u.role !== "prof" && u.s > lu.e && avail.filter((w) => w.ui === u.ui).length >= 3);
+    const qOpen = luDone && isQ(luText) && silence >= 0.8 && !studSince;
+    const cur = SN.utt.find((u) => u.s + EPS_F <= t && t <= u.e);
+    const myAvail = avail.filter((w) => w.role === "me").map((w) => w.w);
+    const myTurns = 1 + SN.utt.filter((u) => u.role === "me" && u.s + EPS_W <= t).length;
+    const raises = 1 + (t >= b.offLive ? 1 : 0);
+    const sinceLow = t - (t >= b.offLive ? b.offLive : SN.prev.offLive);
+    const spent = SN.chunks.map((c) => c.split(" ").filter((w) => w.length >= 5 && myAvail.includes(w)).length >= 2);
+    const kv = (rows) => `<dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+    $("#snap-cols").innerHTML = `
+      <div class="snap-col"><h3>Last 60 s <span>heard</span></h3>
+        ${kv([["n_words prof / student / me", `${n("prof")} / ${n("student")} / ${n("me")}`], ["spk_silence_s", silence.toFixed(1)], ["q_open", qOpen ? "1" : "0"], ["q_age_s", luDone && isQ(luText) ? (t - lu.e).toFixed(1) : "—"], ["invite cue", INVITE.test(luText) ? "yes" : "no"]])}
+        <div class="quote">X_lastprof: ${luText ? esc(luText) : "—"}${lu && !luDone ? " …" : ""}</div></div>
+      <div class="snap-col"><h3>Class so far <span>seen</span></h3>
+        ${kv([["ctx_min", ((t + REC_OFFSET) / 60).toFixed(1)], ["ctx_seg_type", "debrief"], ["ctx_seg_elapsed_s", String(t - SEG_START)], ["spk_cur_role", cur ? cur.role : "none"], ["spk_cur_elapsed_s", cur ? (t - cur.s).toFixed(1) : "—"], ["poll_n_so_far", "1"], ["me_turns_so_far", String(myTurns)], ["me_hand_n_so_far", String(raises)], ["me_hand_since_down_s", sinceLow.toFixed(0)]])}</div>
+      <div class="snap-col"><h3>Before class <span>known</span></h3>
+        ${kv([["PCW prompts (template)", "4 blocks"], ["my answers (doc verified at start)", "4 blocks"], ["learning outcomes", "2"], ["hist_bid_rate_course", "0.09 / min"]])}
+        <p class="note">Prepared chunks, struck out once I have said them (unspent → U(t)):</p>
+        <ul class="chunks">${SN.chunks.map((c, i) => `<li class="${spent[i] ? "spent" : ""}">${esc(c)}</li>`).join("")}</ul></div>`;
+  }
+  $("#snap-t").addEventListener("input", drawSnapshot);
+  drawSnapshot();
+
+  /* ------------------------------------------------------------ the two dials (synthetic class) */
+  const CL = {
+    T: 88 * 60,
+    segs: [[0, "Intro", "intro"], [600, "Activity", "activity"], [1500, "Breakout instructions", "breakout_instr"], [1560, "Breakouts", "breakout"], [2460, "Debrief", "debrief"], [3300, "Poll", "poll"], [3480, "Eye rest break", "break"], [3600, "Activity", "activity"], [4500, "Wrap-up", "wrapup"]],
+    bids: [{ o: 700.4, off: 712.4 }, { o: 2580.6, off: 2596.6 }, { o: 2905.2, off: 2911.2 }, { o: 3790.8, off: 3803.8 }, { o: 4630.4, off: 4641.4 }, { o: 4890.6, off: 4897.6 }],
+    votes: [{ o: 3350.2, off: 3362.2 }],
+    glitches: [{ o: 4100.4, off: 4101.0 }],
+    na: [[4300, 4380]],
+    speech: [[714, 745], [1250, 1270], [2598, 2630], [3805, 3840], [4643, 4660]],
+    qs: [400, 688, 1180, 1240, 2566, 2700, 2893, 3020, 3340, 3776, 3950, 4250, 4618, 4880, 5100],
+  };
+  const HS = [5, 10, 15, 30, 60], GS = [1, 2, 3, 5];
+  const segAt = (t) => { let s = CL.segs[0]; CL.segs.forEach((x) => { if (x[0] <= t) s = x; }); return s; };
+  function gridStatus(t, H, g) {
+    if (t < 120) return ["x", "opening: first 120 s"];
+    if (t + H > CL.T) return ["x", "end: window runs past the recording"];
+    const st = segAt(t)[2];
+    if (st === "breakout" || st === "break") return ["x", st + " segment"];
+    if (CL.speech.some(([s, e]) => (e > t - 3 && e <= t - EPS_W) || (s + EPS_W <= t && t <= e))) return ["x", "me_speaking"];
+    const eps = CL.bids.concat(CL.votes);
+    if (eps.some((q) => t >= q.o + 0.5 && t < q.off + 0.5)) return ["x", "hand_up (live state)"];
+    if (eps.some((q) => t >= q.off + 0.5 && t < q.off + 10.5)) return ["x", "post_lowering: 10 s refractory"];
+    if (CL.glitches.some((q) => t >= q.off + 0.5 && t < q.off + 10.5)) return ["x", "post_glitch"];
+    if (CL.na.some(([a, b]) => t >= a && t < b)) return ["u", "unobservable: tile not tracked"];
+    const all = eps.concat(CL.glitches);
+    const gd = all.find((q) => q.o > t && q.o <= t + g);
+    if (gd) return ["u", `guard: onset ${(gd.o - t).toFixed(1)} s ahead`];
+    if (all.some((q) => q.o <= t && t < q.o + 1.5)) return ["u", "onset_pending"];
+    const bid = CL.bids.find((q) => q.o > t + g && q.o <= t + H);
+    const end = bid ? bid.o : t + H;
+    if (CL.votes.concat(CL.glitches).some((q) => q.o > t && q.o <= end)) return ["u", "vote or glitch in the window"];
+    if (CL.na.some(([a, b]) => a < end && b > t)) return ["u", "unobservable span in the window"];
+    return bid ? ["p", `positive: bid ${(bid.o - t).toFixed(1)} s ahead`] : ["n", "negative: nothing starts in the window"];
+  }
+  let lensCenter = 690;
+  const LENS = 180;
+  function drawDials() {
+    const H = HS[+$("#h-range").value], g = GS[+$("#g-range").value];
+    $("#h-out").textContent = H + " s"; $("#g-out").textContent = g + " s";
+    const pts = [];
+    for (let t = 0; t <= CL.T; t += 2) pts.push([t, ...gridStatus(t, H, g)]);
+    const c = { p: 0, n: 0, u: 0, x: 0 };
+    pts.forEach((q) => c[q[1]]++);
+    const pi = c.p / Math.max(1, c.p + c.n);
+    $("#stats").innerHTML = [[c.p, "positive points"], [c.n.toLocaleString(), "negative points"], [c.u, "undefined, still on the alarm grid"], [c.x.toLocaleString(), "not at risk"], [(pi * 100).toFixed(2) + "%", "base rate π (= AP of a random ranker)"], [((H - g) / 2).toFixed(1), "positives per bid, (H − g)/Δ"]].map(([v, k]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join("");
+
+    const W = 1000, padL = 78, padR = 12;
+    const X = (t) => padL + (t / CL.T) * (W - padL - padR);
+    const ly = { seg: 8, q: 28, me: 44, hand: 60, grid: 78 };
+    const hatch = `<defs><pattern id="uhatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="pat-bg" width="4" height="4"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="4"/></pattern></defs>`;
+    const lanes = () => [["segments", ly.seg], ["questions", ly.q], ["I speak", ly.me], ["my hand", ly.hand], ["grid", ly.grid]].map(([nm, y]) => `<text class="lane-label" x="0" y="${y + 9}">${nm}</text>`).join("");
+    const ov = [hatch, lanes()];
+    CL.segs.forEach(([s, , ty], i) => { if (ty === "breakout" || ty === "break") ov.push(`<rect class="m-seg" x="${X(s)}" y="${ly.seg - 2}" width="${X(CL.segs[i + 1][0]) - X(s)}" height="94"/>`); });
+    CL.qs.forEach((q) => ov.push(`<line class="m-q" x1="${X(q)}" y1="${ly.q}" x2="${X(q)}" y2="${ly.q + 11}"/>`));
+    CL.speech.forEach(([s, e]) => ov.push(`<rect class="m-me" x="${X(s)}" y="${ly.me}" width="${Math.max(1.5, X(e) - X(s))}" height="10"/>`));
+    CL.bids.forEach((q) => ov.push(`<rect class="m-bid" x="${X(q.o)}" y="${ly.hand}" width="${Math.max(2, X(q.off) - X(q.o))}" height="11"/>`));
+    CL.votes.forEach((q) => ov.push(`<rect class="m-vote" x="${X(q.o)}" y="${ly.hand}" width="${Math.max(2, X(q.off) - X(q.o))}" height="11"/>`));
+    CL.glitches.forEach((q) => ov.push(`<line class="m-glitch" x1="${X(q.o)}" y1="${ly.hand}" x2="${X(q.o)}" y2="${ly.hand + 11}"/>`));
+    CL.na.forEach(([a, b]) => ov.push(`<rect class="m-na" x="${X(a)}" y="${ly.hand}" width="${X(b) - X(a)}" height="11"/>`));
+    let run = null;
+    const flush = () => { if (run) ov.push(`<rect class="g-${run.k}" x="${X(run.a)}" y="${ly.grid}" width="${Math.max(1, X(run.b) - X(run.a))}" height="11"/>`); };
+    pts.forEach(([t, k]) => { if (run && run.k === k && run.b === t) run.b = t + 2; else { flush(); run = { k, a: t, b: t + 2 }; } });
+    flush();
+    for (let m = 0; m <= 88; m += 10) ov.push(`<text class="tick" x="${X(m * 60)}" y="112" text-anchor="middle">${m}:00</text>`);
+    const l0 = Math.max(0, Math.min(CL.T - LENS, lensCenter - LENS / 2)), l1 = l0 + LENS;
+    ov.push(`<rect class="lens-box" x="${X(l0)}" y="2" width="${Math.max(3, X(l1) - X(l0))}" height="96" rx="2"/>`);
+    ov.push(`<rect class="ov-hit" id="ov-hit" x="${padL}" y="0" width="${W - padL - padR}" height="100"/>`);
+    $("#overview").innerHTML = `<svg viewBox="0 0 ${W} 118" role="img" aria-label="Synthetic 88-minute class at H = ${H} s and g = ${g} s: segments, professor questions, my speech, my hand episodes and the label of every 2-second point. Click to move the close-up."><title>Full class</title>${ov.join("")}</svg>`;
+    $("#ov-hit").addEventListener("click", (e) => {
+      const svg = e.currentTarget.ownerSVGElement, pt = svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+      lensCenter = ((loc.x - padL) / (W - padL - padR)) * CL.T;
+      drawDials();
+    });
+
+    const LX = (t) => padL + ((t - l0) / LENS) * (W - padL - padR);
+    const vis = (a, b) => b > l0 && a < l1, cl = (v) => Math.max(l0, Math.min(l1, v));
+    const lz = [hatch.replace(/uhatch/g, "uhatch2"), lanes()];
+    CL.segs.forEach(([s, , ty], i) => { const e = (CL.segs[i + 1] || [CL.T])[0]; if ((ty === "breakout" || ty === "break") && vis(s, e)) lz.push(`<rect class="m-seg" x="${LX(cl(s))}" y="${ly.seg - 2}" width="${LX(cl(e)) - LX(cl(s))}" height="94"/>`); });
+    CL.qs.filter((q) => vis(q, q)).forEach((q) => lz.push(`<line class="m-q" x1="${LX(q)}" y1="${ly.q}" x2="${LX(q)}" y2="${ly.q + 11}"/>`));
+    CL.speech.filter(([s, e]) => vis(s, e)).forEach(([s, e]) => lz.push(`<rect class="m-me" x="${LX(cl(s))}" y="${ly.me}" width="${LX(cl(e)) - LX(cl(s))}" height="10"/>`));
+    CL.bids.concat(CL.votes).filter((q) => vis(q.o, q.off)).forEach((q) => lz.push(`<rect class="${CL.votes.includes(q) ? "m-vote" : "m-bid"}" x="${LX(cl(q.o))}" y="${ly.hand}" width="${LX(cl(q.off)) - LX(cl(q.o))}" height="11"/>`));
+    CL.glitches.filter((q) => vis(q.o, q.o)).forEach((q) => lz.push(`<line class="m-glitch" x1="${LX(q.o)}" y1="${ly.hand}" x2="${LX(q.o)}" y2="${ly.hand + 11}"/>`));
+    CL.na.filter(([a, b]) => vis(a, b)).forEach(([a, b]) => lz.push(`<rect class="m-na" x="${LX(cl(a))}" y="${ly.hand}" width="${LX(cl(b)) - LX(cl(a))}" height="11"/>`));
+    const tips = [];
+    pts.filter(([t]) => t >= l0 && t + 2 <= l1).forEach(([t, k, why]) => {
+      const w = LX(t + 2) - LX(t);
+      lz.push(`<rect class="g-${k.replace("u", "u2")}" x="${LX(t) + 0.5}" y="${ly.grid}" width="${w - 1}" height="13"/>`);
+      tips.push(`t = ${mmss(t)} · ${why}`);
+      lz.push(`<rect class="m-hit" data-tip="${tips.length - 1}" x="${LX(t)}" y="${ly.grid - 2}" width="${w}" height="17"/>`);
+    });
+    for (let t = Math.ceil(l0 / 30) * 30; t <= l1; t += 30) lz.push(`<text class="tick" x="${LX(t)}" y="112" text-anchor="middle">${mmss(t)}</text>`);
+    $("#lens").innerHTML = `<svg viewBox="0 0 ${W} 118" role="img" aria-label="Three-minute close-up from ${mmss(l0)} to ${mmss(l1)}. Hover a grid cell for its label or exclusion reason."><title>Close-up</title>${lz.join("")}</svg>`;
+    bindTips($("#lens"), tips);
+  }
+  ["h-range", "g-range"].forEach((id) => $("#" + id).addEventListener("input", drawDials));
+  drawDials();
+
+  /* ------------------------------------------------------------ split figure */
+  (function drawSplits() {
+    const vault = (c) => c === 3 || c === 8;
+    const rows = [
+      { name: "Random points", sub: "S-rand, run once", verdict: "leaks: neighbours on both sides", cls: "bad", test: (c, f) => ((c * 7 + f * 13) % 10) < 2 },
+      { name: "By class", sub: "S-group, headline", verdict: "honest: whole classes held out", cls: "good", test: (c) => c === 1 || c === 6 },
+      { name: "By term", sub: "S-time, should", verdict: "harder: does it survive new years?", cls: "good", test: (c) => c >= 7 },
+    ];
+    const p = [], x0 = 150, cw = 64, gap = 6, sq = 9.5;
+    rows.forEach((r, ri) => {
+      const y = 26 + ri * 68;
+      p.push(`<text class="sp-label" x="0" y="${y + 12}">${r.name}</text><text class="sp-sub" x="0" y="${y + 28}">${r.sub}</text>`);
+      for (let c = 0; c < 10; c++) {
+        const cx = x0 + c * (cw + gap);
+        if (vault(c)) { p.push(`<rect class="sp-vault" x="${cx - 2}" y="${y + 1}" width="${cw - 2}" height="30" rx="3"/>`); continue; }
+        for (let f = 0; f < 10; f++) p.push(`<rect class="${r.test(c, f) ? "sp-test" : "sp-train"}" x="${cx + (f % 5) * (sq + 2)}" y="${y + 4 + Math.floor(f / 5) * 12}" width="${sq}" height="9" rx="1.5"/>`);
+      }
+      p.push(`<text class="sp-verdict ${r.cls}" x="${x0}" y="${y + 48}">${r.verdict}</text>`);
+    });
+    p.push(`<rect class="sp-train" x="${x0 + 420}" y="2" width="10" height="9" rx="1.5"/><text class="sp-sub" x="${x0 + 434}" y="10">train</text>`);
+    p.push(`<rect class="sp-test" x="${x0 + 480}" y="2" width="10" height="9" rx="1.5"/><text class="sp-sub" x="${x0 + 494}" y="10">test</text>`);
+    p.push(`<rect class="sp-vault" x="${x0 + 536}" y="2" width="10" height="9" rx="1.5"/><text class="sp-sub" x="${x0 + 550}" y="10">vault</text>`);
+    $("#splits").innerHTML = p.join("");
+  })();
+
+  /* ------------------------------------------------------------ equations (KaTeX → MathML) */
+  document.querySelectorAll(".math[data-tex]").forEach((el) => {
+    const tex = el.getAttribute("data-tex");
+    if (window.katex) {
+      try { el.innerHTML = window.katex.renderToString(tex, { output: "mathml", displayMode: true, throwOnError: false }); return; } catch (e) { /* fall through */ }
+    }
+    el.innerHTML = `<code>${esc(tex)}</code>`;
+  });
+})();
+</script>

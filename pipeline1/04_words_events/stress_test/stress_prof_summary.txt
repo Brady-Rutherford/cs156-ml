@@ -1,0 +1,17 @@
+                                                            speaker_acc  prof_recall  prof_precision  offmic_called_prof
+family                         mode                                                                                     
+prof split in 2 clusters (30%) biggest only                       0.803        0.702           1.000               0.000
+                               all quiet                          1.000        1.000           1.000               0.000
+                               shipped: all quiet + spread        1.000        1.000           1.000               0.000
+prof split in 2 clusters (50%) biggest only                       0.712        0.562           1.000               0.000
+                               all quiet                          1.000        1.000           1.000               0.000
+                               shipped: all quiet + spread        1.000        1.000           1.000               0.000
+3-min video/guest, no mic      biggest only                       0.981        1.000           1.000               0.000
+                               all quiet                          0.981        1.000           0.972               0.833
+                               shipped: all quiet + spread        0.981        1.000           1.000               0.000
+split 30% + 3-min video        biggest only                       0.794        0.706           1.000               0.000
+                               all quiet                          0.982        1.000           0.974               0.767
+                               shipped: all quiet + spread        0.982        1.000           1.000               0.000
+worst case (2023, all messy)   biggest only                       0.716        0.669           0.999               0.000
+                               all quiet                          0.938        0.957           0.999               0.000
+                               shipped: all quiet + spread        0.938        0.957           0.999               0.000

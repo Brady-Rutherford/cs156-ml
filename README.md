@@ -21,6 +21,12 @@ needs.
 | 1 | Introduction and overview of machine learning concepts | [PCW/Session 1](<PCW/Session 1 - Introduction and overview of machine learning concepts/README.md>) |
 | 2 | Linear Algebra 1: Tensors, Classification, and Regression | [PCW/Session 2](<PCW/Session 2 - Linear Algebra 1 - Tensors, Classification, and Regression/README.md>) |
 
+## Pipelines
+
+| # | Title | Due | Work |
+|---|---|---|---|
+| 1 | Can a model tell, from what is being said in class, that I am about to raise my hand? (working name On Cue) | Fri 16 Oct 2026 | [pipeline1/](pipeline1/README.md) · [plan](pipeline1/PLAN.md) · [progress](pipeline1/PROCESS.md) |
+
 ## How the repo is organised
 
 ```
@@ -40,6 +46,17 @@ PCW/                              pre-class work, one folder per class session
     badness-measures.ipynb        follow-up Q4, how badly each model fits
     claude-ai-transcript-for-pcw.md   the LLM conversation behind the session
     assets/
+
+pipeline1/                        First Pipeline (working name On Cue)
+  README.md                       the write-up
+  PLAN.md                         design, verified data facts, schedule
+  PROCESS.md                      where the work stands and the next step
+  01_get_data/ … 09_score/        one folder per pipeline step: README, run commands, scripts
+  oncue/                          the pipeline's code (one package), tests in tests/
+  design/                         frozen spec + amendments that override it
+  site/index.html                 interactive pipeline and data-flow explorer
+  data/                           Forum data: raw stays local (gitignored); the cleaning
+                                  and split CSVs (data/02_clean, data/03_split) are committed
 
 src/cs156/                        shared code the notebooks import
   data.py                         dataset loaders (Iris, MNIST)
