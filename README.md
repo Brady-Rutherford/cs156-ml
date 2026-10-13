@@ -25,7 +25,7 @@ needs.
 
 | # | Title | Due | Work |
 |---|---|---|---|
-| 1 | Can a model tell, from what is being said in class, that I am about to raise my hand? (working name On Cue) | Fri 16 Oct 2026 | [pipeline1/](pipeline1/README.md) · [plan](pipeline1/PLAN.md) |
+| 1 | Can a model tell, from what is being said in class, that I am about to raise my hand? (working name On Cue) | Fri 16 Oct 2026 | [pipeline1/](pipeline1/README.md) · [plan](pipeline1/PLAN.md) · [progress](pipeline1/PROCESS.md) |
 
 ## How the repo is organised
 
@@ -50,6 +50,7 @@ PCW/                              pre-class work, one folder per class session
 pipeline1/                        First Pipeline (working name On Cue)
   README.md                       the write-up
   PLAN.md                         design, verified data facts, schedule
+  PROCESS.md                      where the work stands and the next step
   01_get_data/ … 09_score/        one folder per pipeline step: README, run commands, scripts
   oncue/                          the pipeline's code (one package), tests in tests/
   design/                         frozen spec + amendments that override it
