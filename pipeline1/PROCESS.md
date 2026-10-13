@@ -1,6 +1,6 @@
 # Pipeline 1: process so far, and the next step
 
-*Handoff note, 13 Oct 2026. Due Fri 16 Oct (closes Sun 18 Oct). Start a new chat with:
+*Handoff note, updated 13 Oct 2026 (evening, after the pilot). Due Fri 16 Oct (closes Sun 18 Oct). Start a new chat with:
 "Read `pipeline1/PROCESS.md` and `pipeline1/design/amendments.md`, then run the next step."*
 
 ## The question
@@ -16,16 +16,16 @@ image check. There is no face recognition in this pipeline.
 
 | Step | Folder | Status |
 |---|---|---|
-| 1 Get data | `01_get_data/` | **Done on real data.** 739 classes synced from Forum (0 failures). `exploration/` lists every table and field with masked examples. Row counts were checked against an independent recount. |
-| 2 Clean | `02_clean/` | **Done.** 739 → 477 usable. Set aside: summer program 77, too few classes 17, TA section (B145 Fall 2026) 10, absent 76, not enrolled 73, not recorded 8, no attendance data 1. Reasons are in `data/02_clean/`. |
-| 3 Split | `03_split/` | **Done.** Each course split 60/20/20 by a seeded hash: 289 train / 94 validation / 94 test across 26 courses. `data/03_split/split.csv` |
-| 4 Words + events | `04_words_events/` | Code built and tested on synthetic classes. **Not run on real classes yet: this is the next step.** |
-| 5 Hand raises | `05_hand_raises/` | Code built and tested on synthetic video only. The detector's colour and size settings are placeholders until checked on real frames. **Runs together with step 4 on the first class.** |
-| 6–9 Moments, snapshots, train, score | `06_…` to `09_…` | Code built and tested. Run after step 5. |
+| 1 Get data | `01_get_data/` | **Done on real data.** 739 classes synced from Forum (0 failures). |
+| 2 Clean | `02_clean/` | **Done.** 739 → 477 usable classes. Reasons in `data/02_clean/`. |
+| 3 Split | `03_split/` | **Done.** 289 train / 94 validation / 94 test across 26 courses (`data/03_split/split.csv`). |
+| 4 Words + events | `04_words_events/` | **Piloted on 20 train classes (13 Oct).** Deepgram (upload mode), words, Forum events, one clock: all 20 calibrate (windowed, no drift), 18/20 pass the residual rule. |
+| 5 Hand raises | `05_hand_raises/` | **Rebuilt for the real Forum UI (`oncue/strip.py`) and piloted on the same 20.** 0 wrong tiles, 118 raises timed to the frame, 18/20 classes pass QA. Method: `05_hand_raises/METHOD.md`. |
+| 6–9 Moments, snapshots, train, score | `06_…` to `09_…` | Built and tested on synthetic data. Run after steps 4–5 on all classes. |
 
-The code is one package, `oncue/` (to be renamed once the name is chosen); tests are in
-`tests/` (600 pass). The design is `design/on_cue_spec.md`. `design/amendments.md` (A1–A12)
-overrides the spec.
+The pilot's metrics and the decisions to approve: `QUALITY.md`. Every question asked during
+the pilot, with its answer: `QUESTIONS.md`. The pilot itself lives in `data/pilot/`
+(gitignored; delete it once its PDFs and clips have been looked at).
 
 ## What the data showed
 
@@ -57,119 +57,31 @@ overrides the spec.
 - **Secrets** live in `~/.minerva/.env` (FORUM_COOKIE, DEEPGRAM_API_KEY, ONCUE_ID_SALT), linked
   as `pipeline1/.env` and `~/Minervas_scribe/.env`. Pre-commit hooks in both repos refuse
   secrets. To refresh the cookie, copy it from DevTools, then run `~/.minerva/set_secret`.
-- **Scribe stays my own repo.** The transcriber upgrade (Scribe v3: Deepgram, clock
-  calibration, speaker fusion, the A12 professor fix) is on the local `v3` branch of
-  `~/Minervas_scribe` as new files. The pipeline imports it from there. Nothing there has been
-  committed or pushed; it's a public repo, so it needs an explicit go-ahead.
+- **Scribe stays my own repo.** The transcriber (Scribe v3: Deepgram, clock calibration,
+  speaker fusion, the A12 professor fix) is merged into `main` of
+  `Brady-Rutherford/Minervas_scribe` (PR #1, 13 Oct). The pipeline imports it from the local
+  clone `~/Minervas_scribe`. Never merge it with any other transcriber repo.
 
-## Next step: transcripts and exact hand-raise times on one clock (steps 4 + 5)
+## Next step: run steps 4 + 5 on every class
 
-The data isn't complete until each class has three things on the **same clock**:
-1. the transcript (Deepgram, step 4)
-2. the Forum events (step 4)
-3. the exact moment the hand icon appears on my tile in the video (step 5)
-
-Getting that alignment right is the hardest part of the data work. Steps 4 and 5 are separate
-folders, but on the first class they run together and are checked together.
-
-**The clock is the video's own time.**
-
-| Source | How it gets onto video time | What can go wrong |
-|---|---|---|
-| Transcript words | Deepgram reads the audio of the same recording file (lowres, `strict_res`), so its times are already video times | an A/V offset inside the recording: `av_lag` checks it by comparing the green speaking border on my tile with when the transcript has me talking |
-| Hand icon | frames are read with their own timestamps (ffmpeg pts − audio start). Scanned at 2 fps, then each raise is re-read at full frame rate (`retime`) to find its first frame | missed or false detections (poll ticks, class-wide votes); the delay between my key press and the icon appearing; the placeholder settings |
-| Forum events | wall clock → video time through the recording sessions, plus the calibrated offset (A12) | calibration error: ~0.03 s on ms timestamps, ~0.5 s on whole seconds (2023); recording restarts |
-
-
-**0. Before the first run**
-
-- The cookie must work. `~/Minervas_scribe/.venv/bin/scribe me` should print your name; it did
-  on 13 Oct.
-- **Choose which courses may use Deepgram.** The pipeline sends a course to Deepgram only if it
-  appears in `ASR_PROVIDER_BY_COURSE` in `oncue/config.py`. That map is empty now, so
-  everything would run on local Whisper. Don't batch-run local Whisper: it can't tell voices
-  apart, and the stress test shows the clock can't be synced without that. Deepgram audio
-  leaves the machine (EU endpoint, model-improvement opt-out on), so clear the course first.
-  Emailing Prof. Watson covers CS156. Then set:
-  ```python
-  ASR_PROVIDER_BY_COURSE: dict[str, str] = {"CS156": "deepgram"}
-  ```
-- Cost is roughly $0.40 per 90-minute class (check the Deepgram console). Time is about a
-  minute per class.
-
-**1. One class end to end:** CS156 Session 2 (class 104619, train split)
+One command per split, train first. Each class: Deepgram transcript (upload mode), words,
+events, the strip scan, tracking, episodes, re-timing, audit clips, QA:
 
 ```
 cd ~/cs156-ml/pipeline1
-../.venv/bin/python -m oncue transcribe --class 104619
-../.venv/bin/python -m oncue words --class 104619
-../.venv/bin/python -m oncue events --class 104619
+caffeinate -i ../.venv/bin/python -m oncue ingest --split train --workers 6
+caffeinate -i ../.venv/bin/python -m oncue ingest --split validation --workers 6
+caffeinate -i ../.venv/bin/python -m oncue ingest --split test --workers 6
+../.venv/bin/python -m oncue ingest-report      # checks A-E per class -> data/logs/ingest_report.csv
+../.venv/bin/python -m oncue pdf                # readable PDF per class (local only)
 ```
 
-Then scan the same class for the hand icon:
-
-```
-../.venv/bin/python -m oncue scan --class 104619
-../.venv/bin/python -m oncue track --class 104619
-../.venv/bin/python -m oncue episodes --class 104619
-../.venv/bin/python -m oncue retime --class 104619
-../.venv/bin/python -m oncue qa --class 104619
-```
-
-Then check that it worked:
-
-```
-../.venv/bin/python - <<'EOF'
-import pandas as pd
-t = pd.read_parquet("data/tables/class_timing.parquet")
-print(t.T)                                     # cal_qa_pass True, method windowed, offset
-w = pd.read_parquet("data/tables/words.parquet")
-print(w["role"].value_counts(normalize=True))  # prof should be the largest share
-print(w["how"].value_counts(normalize=True))   # teacher-cluster large, "none" small
-v = pd.read_parquet("data/tables/voice.parquet")
-print(v.groupby(["inferred", "role"]).size())  # inferred rows = professor turns
-e = pd.read_parquet("data/tables/hand_episodes.parquet")
-print(e[e.class_id == 104619])                 # every raise: onset, re-timed onset, outcome
-EOF
-```
-
-**Check the hand times by eye before trusting any label.** For this class:
-- Watch a short clip around every detected raise (`hands.onset_clips` writes them to
-  `audit/`, with every tile except mine pixelated). Is the icon really mine, and does the
-  re-timed onset land on the first frame it shows?
-- Look for raises the scan missed: go through the transcript for moments you remember
-  raising your hand.
-- Check alignment against the transcript. After each raise, does the professor call on you
-  (your name, "go ahead") and do your words follow a few seconds later? The gap should be
-  steady from raise to raise; a drifting gap means a clock problem.
-- Look at `av_lag` for this class. It should be small and steady.
-- Count the raises against the fresh turns: how many raises went uncalled, and how many
-  turns were cold calls? This replaces the rough size guess above.
-- If the colour or size settings miss or misfire, fix the placeholder values in `hands.py`
-  (`UiSpec`, `Detector`) and rerun the scan.
-
-
-Scribe's readable transcript is `data/transcripts/*class104619_ids.json`. Skim it against your
-memory of the class. Look for: the professor labelled as such, your own turns where you spoke,
-"Unattributed" rare. This is the first real check of A12. It also shows the real rates of mic
-noise and of speech with no mic event, which the stress test could only guess.
-
-**2. The rest:** once the one class's transcript **and** hand times look right, and more courses
-are cleared, run steps 4 and 5 on every class in `data/03_split/split.csv` whose split isn't
-`excluded`. Each course uses the provider its map entry says.
-
-```
-ids=$(../.venv/bin/python -c "import pandas as pd; s = pd.read_csv('data/03_split/split.csv'); print(' '.join(f'--class {c}' for c in s.loc[s.split != 'excluded', 'class_id']))")
-../.venv/bin/python -m oncue transcribe $ids --workers 4
-../.venv/bin/python -m oncue words
-../.venv/bin/python -m oncue events
-for c in scan track episodes retime qa; do ../.venv/bin/python -m oncue $c $ids --workers 4; done
-```
-
-(`--phase` still selects the old rotating phases; use the class list above until it is switched
-to `split.csv`.)
-
-**3. After that:** steps 6–9 (moments, snapshots, training, scoring).
+- On this Mac: about 3–4 h of transcription and ~14 h of scanning (34 classes/hour). It must
+  stay plugged in with the lid open; `caffeinate` stops idle sleep.
+- On a rented CPU pod (e.g. Prime Intellect GH200: 72 Arm cores, $1.99/h): about 2–3 h. Test one
+  class first: the Forum cookie may not work from a datacenter IP.
+- A throwaway run: `--work-dir data/pilot` (everything it writes stays there); `--sample N`
+  takes a seeded sample spread over terms.
 
 ## Still open
 
@@ -178,9 +90,6 @@ to `split.csv`.)
 - **The fixed split in `oncue/experiments.py`.** It still uses rotating folds and a vault;
   switch it (and `--phase`) to `data/03_split/split.csv`. This is a small separate diff.
 - **Consent email** to Prof. Watson (Deepgram; data from other courses).
-- **PR history.** Commit `c252b62` still contains unmasked student ids in the exploration
-  examples (fixed in `f90a93f`). Rewriting the branch before merging would remove them from
-  GitHub.
 - **Left out of the PR on purpose:** local changes to the Session 2 notebook (they delete the
   overfitting analysis from `57fff38` and look like an accidental revert; restore them with
   `git checkout -- "PCW/Session 2 - Linear Algebra 1 - Tensors, Classification, and Regression/drawing-lines.ipynb"`)
