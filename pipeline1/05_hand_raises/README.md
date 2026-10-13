@@ -27,3 +27,5 @@ Streams each recording, decodes only the strip of tiles, finds your tile, and ch
 
 - hand (hue 52–80°) vs poll tick (120–165°) in the same corner
 - you hand-check a sample of detected raises before trusting the labels
+- the hand times line up with the transcript: after a raise, the professor's call and your words follow with a steady gap (a drifting gap means a clock problem); `av_lag` is small
+- raises are counted from the icon, never from speaking turns (a turn can be a cold call, and a raise can go uncalled)

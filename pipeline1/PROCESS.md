@@ -20,7 +20,7 @@ image check. There is no face recognition in this pipeline.
 | 2 Clean | `02_clean/` | **Done.** 739 → 477 usable. Set aside: summer program 77, too few classes 17, TA section (B145 Fall 2026) 10, absent 76, not enrolled 73, not recorded 8, no attendance data 1. Reasons are in `data/02_clean/`. |
 | 3 Split | `03_split/` | **Done.** Each course split 60/20/20 by a seeded hash: 289 train / 94 validation / 94 test across 26 courses. `data/03_split/split.csv` |
 | 4 Words + events | `04_words_events/` | Code built and tested on synthetic classes. **Not run on real classes yet: this is the next step.** |
-| 5 Hand raises | `05_hand_raises/` | Code built and tested on synthetic video. Runs after step 4. |
+| 5 Hand raises | `05_hand_raises/` | Code built and tested on synthetic video only. The detector's colour and size settings are placeholders until checked on real frames. **Runs together with step 4 on the first class.** |
 | 6–9 Moments, snapshots, train, score | `06_…` to `09_…` | Code built and tested. Run after step 5. |
 
 The code is one package, `oncue/` (to be renamed once the name is chosen); tests are in
@@ -31,10 +31,13 @@ overrides the spec.
 
 - **Size.** The 477 usable classes hold 103,005 voice events, 5,192 of them mine in the main
   room. Those merge into 4,286 speaking turns, 2,811 of them "fresh" (after 30+ s of silence).
-  Forum doesn't log hand raises, but fresh turns suggest about **2,500–4,000 hand-raise
-  onsets**. The 2-s decision grid gives about 1.3M moments, about 2% positive at H = 15 s.
+  Forum doesn't log hand raises. Fresh turns are **only a rough guess at the size**
+  (perhaps 2,500–4,000 raises), **never labels**: a fresh turn can be a cold call, a raise can
+  go uncalled, and a turn starts seconds after the hand went up. The labels and their times
+  come only from the hand icon in the video (step 5). The 2-s decision grid gives about 1.3M
+  moments; the positive share is known once the real raises are counted.
   Moments within a class are correlated, so the class is the unit of evaluation: test is
-  94 classes with about 590 events.
+  94 classes (about 590 fresh turns; the real number of raises comes from step 5).
 - **Forum never logs the professor's microphone** (0 of 717 classes; amendment A12). Voice
   events are students only. Three fixes follow:
   1. *Clock sync:* the clock is fitted without the professor's voice cluster. A stress test
@@ -59,7 +62,24 @@ overrides the spec.
   `~/Minervas_scribe` as new files. The pipeline imports it from there. Nothing there has been
   committed or pushed; it's a public repo, so it needs an explicit go-ahead.
 
-## Next step: run the transcriber (step 4)
+## Next step: transcripts and exact hand-raise times on one clock (steps 4 + 5)
+
+The data isn't complete until each class has three things on the **same clock**:
+1. the transcript (Deepgram, step 4)
+2. the Forum events (step 4)
+3. the exact moment the hand icon appears on my tile in the video (step 5)
+
+Getting that alignment right is the hardest part of the data work. Steps 4 and 5 are separate
+folders, but on the first class they run together and are checked together.
+
+**The clock is the video's own time.**
+
+| Source | How it gets onto video time | What can go wrong |
+|---|---|---|
+| Transcript words | Deepgram reads the audio of the same recording file (lowres, `strict_res`), so its times are already video times | an A/V offset inside the recording: `av_lag` checks it by comparing the green speaking border on my tile with when the transcript has me talking |
+| Hand icon | frames are read with their own timestamps (ffmpeg pts − audio start). Scanned at 2 fps, then each raise is re-read at full frame rate (`retime`) to find its first frame | missed or false detections (poll ticks, class-wide votes); the delay between my key press and the icon appearing; the placeholder settings |
+| Forum events | wall clock → video time through the recording sessions, plus the calibrated offset (A12) | calibration error: ~0.03 s on ms timestamps, ~0.5 s on whole seconds (2023); recording restarts |
+
 
 **0. Before the first run**
 
@@ -86,6 +106,16 @@ cd ~/cs156-ml/pipeline1
 ../.venv/bin/python -m oncue events --class 104619
 ```
 
+Then scan the same class for the hand icon:
+
+```
+../.venv/bin/python -m oncue scan --class 104619
+../.venv/bin/python -m oncue track --class 104619
+../.venv/bin/python -m oncue episodes --class 104619
+../.venv/bin/python -m oncue retime --class 104619
+../.venv/bin/python -m oncue qa --class 104619
+```
+
 Then check that it worked:
 
 ```
@@ -98,30 +128,48 @@ print(w["role"].value_counts(normalize=True))  # prof should be the largest shar
 print(w["how"].value_counts(normalize=True))   # teacher-cluster large, "none" small
 v = pd.read_parquet("data/tables/voice.parquet")
 print(v.groupby(["inferred", "role"]).size())  # inferred rows = professor turns
+e = pd.read_parquet("data/tables/hand_episodes.parquet")
+print(e[e.class_id == 104619])                 # every raise: onset, re-timed onset, outcome
 EOF
 ```
+
+**Check the hand times by eye before trusting any label.** For this class:
+- Watch a short clip around every detected raise (`hands.onset_clips` writes them to
+  `audit/`, with every tile except mine pixelated). Is the icon really mine, and does the
+  re-timed onset land on the first frame it shows?
+- Look for raises the scan missed: go through the transcript for moments you remember
+  raising your hand.
+- Check alignment against the transcript. After each raise, does the professor call on you
+  (your name, "go ahead") and do your words follow a few seconds later? The gap should be
+  steady from raise to raise; a drifting gap means a clock problem.
+- Look at `av_lag` for this class. It should be small and steady.
+- Count the raises against the fresh turns: how many raises went uncalled, and how many
+  turns were cold calls? This replaces the rough size guess above.
+- If the colour or size settings miss or misfire, fix the placeholder values in `hands.py`
+  (`UiSpec`, `Detector`) and rerun the scan.
+
 
 Scribe's readable transcript is `data/transcripts/*class104619_ids.json`. Skim it against your
 memory of the class. Look for: the professor labelled as such, your own turns where you spoke,
 "Unattributed" rare. This is the first real check of A12. It also shows the real rates of mic
 noise and of speech with no mic event, which the stress test could only guess.
 
-**2. The rest:** once the one class looks right and more courses are cleared, transcribe every
-class in `data/03_split/split.csv` whose split isn't `excluded`. Each course uses the provider
-its map entry says.
+**2. The rest:** once the one class's transcript **and** hand times look right, and more courses
+are cleared, run steps 4 and 5 on every class in `data/03_split/split.csv` whose split isn't
+`excluded`. Each course uses the provider its map entry says.
 
 ```
 ids=$(../.venv/bin/python -c "import pandas as pd; s = pd.read_csv('data/03_split/split.csv'); print(' '.join(f'--class {c}' for c in s.loc[s.split != 'excluded', 'class_id']))")
 ../.venv/bin/python -m oncue transcribe $ids --workers 4
 ../.venv/bin/python -m oncue words
 ../.venv/bin/python -m oncue events
+for c in scan track episodes retime qa; do ../.venv/bin/python -m oncue $c $ids --workers 4; done
 ```
 
 (`--phase` still selects the old rotating phases; use the class list above until it is switched
 to `split.csv`.)
 
-**3. After that:** step 5 (`05_hand_raises/README.md`) scans the videos for the hand icon to
-make the labels. Then steps 6–9.
+**3. After that:** steps 6–9 (moments, snapshots, training, scoring).
 
 ## Still open
 
