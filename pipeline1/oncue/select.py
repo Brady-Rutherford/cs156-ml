@@ -471,6 +471,10 @@ def cli(args) -> int:
                                exclude_sections=ns.exclude_section)
     pilots = [int(c) for c in ns.pilot.split(",") if c.strip()]
     classes = assign_phases(classes, sections, pilot_ids=pilots)
+    if config.SPLIT_PATH.exists():
+        from .splits import split_of
+
+        classes["split"] = classes["class_id"].map(split_of()).astype("string")
     out = ns.out or config.table_path("classes")
     out.parent.mkdir(parents=True, exist_ok=True)
     schemas.validate(classes, "classes")

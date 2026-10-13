@@ -45,6 +45,34 @@ FIGURES_DIR = PIPELINE_DIR / "figures"              # committed, aggregate-only 
 AUDIT_DIR = PIPELINE_DIR / "audit"                  # gitignored: contact sheets, clips
 
 
+SPLIT_PATH = DATA_DIR / "03_split" / "split.csv"     # step 3: class -> train/validation/test
+SPLITS = ("train", "validation", "test")
+WORK_DIR_ENV = "ONCUE_WORK_DIR"
+
+
+def use_work_dir(root: Path | str) -> Path:
+    """Send everything a run writes (transcripts, tables, caches, logs, OOF, results, figures,
+    audit) to `root`, so a throwaway pilot never mixes with the real dataset. Inputs (the
+    Scribe sync and the split) are still read from data/. Delete `root` to discard the run."""
+    root = Path(root).resolve()
+    if root == DATA_DIR.resolve():
+        raise ValueError(f"the work dir must not be {DATA_DIR} itself")
+    g = globals()
+    for name, path in (("TRANSCRIPTS_DIR", root / "transcripts"), ("TABLES_DIR", root / "tables"),
+                       ("CACHE_DIR", root / "cache"), ("EMB_CACHE_DIR", root / "cache" / "emb"),
+                       ("EDU_CACHE_DIR", root / "cache" / "edu"), ("LOGS_DIR", root / "logs"),
+                       ("DROPPED_KEYS_LOG", root / "logs" / "dropped_keys.csv"),
+                       ("OOF_DIR", root / "oof"), ("RESULTS_DIR", root / "results"),
+                       ("FIGURES_DIR", root / "figures"), ("AUDIT_DIR", root / "audit")):
+        g[name] = path
+    os.environ[WORK_DIR_ENV] = str(root)
+    return root
+
+
+if os.environ.get(WORK_DIR_ENV):
+    use_work_dir(os.environ[WORK_DIR_ENV])
+
+
 def table_path(name: str) -> Path:
     """`data/tables/{name}.parquet`."""
     return TABLES_DIR / f"{name}.parquet"
@@ -306,9 +334,9 @@ VOTE_LEX_LOOKBACK_S = 60.0            # VOTE lexicon in the professor's words in
 CONTESTED_LOOKBACK_S = 60.0
 
 
-def vote_threshold(n_tiles: int, frac: float = VOTE_FRAC) -> int:
-    """Δn_others needed for a vote: max(4, ceil(frac * (n_tiles - 1)))."""
-    return max(VOTE_MIN_DN, math.ceil(frac * (int(n_tiles) - 1)))
+def vote_threshold(n_tiles: int, frac: float = VOTE_FRAC, min_dn: int = VOTE_MIN_DN) -> int:
+    """Δn_others needed for a vote: max(min_dn, ceil(frac * (n_tiles - 1)))."""
+    return max(int(min_dn), math.ceil(frac * (int(n_tiles) - 1)))
 
 
 STATE_UP, STATE_DOWN, STATE_NA = "UP", "DOWN", "NA"
@@ -508,12 +536,19 @@ KNN_OUTPUT_COLUMNS = ("seg_type", "minute", "bid_followed", "distance")
 ASR_PROVIDERS = ("deepgram", "local")
 ASR_DEFAULT_PROVIDER = "local"
 # course code -> provider. Brady adds a course here ONLY once its consent covers third-party
-# ASR (D10). Anything absent runs locally.
-ASR_PROVIDER_BY_COURSE: dict[str, str] = {}
+# ASR (D10). Anything absent runs locally. Brady (13 Oct): every course in the split runs on
+# Deepgram (EU endpoint, mip_opt_out); local Whisper can't sync the clock.
+ASR_PROVIDER_BY_COURSE: dict[str, str] = dict.fromkeys(
+    ("B110", "B111", "B112", "B113", "B145", "B155", "B165", "CP191", "CP192", "CS110",
+     "CS111", "CS113", "CS114", "CS142", "CS156", "CX50", "CX51", "EA50", "EA51", "FA50",
+     "FA51", "IL18102", "MC50", "MC51", "PR50", "PR51"), "deepgram")
 SRC_RES = "lowres"
 TRANSCRIBE_PRIVACY = "ids"
 TRANSCRIBE_FORMATS = ("json", "jsonl")
 TRANSCRIBE_LANGUAGE = "en"
+# Upload a locally extracted audio track instead of letting Deepgram fetch the video (URL mode
+# took > 15 min for 2023-24 recordings and hit the client's 900 s read timeout).
+TRANSCRIBE_URL_MODE = False
 
 
 def asr_provider(course_code: str | None, mapping: dict[str, str] | None = None) -> str:
@@ -706,10 +741,14 @@ RAW_PATH_WHITELIST: dict[str, dict[str, str]] = {
         "[].id": USE_META, "[].title": USE_FEATURE, "[].prompt": USE_FEATURE,
         "[].choices[].id": USE_META, "[].choices[].text": USE_FEATURE,
         "[].timing-text": USE_FEATURE,  # "started at 0:32:39" strings (reference: D9)
+        # the real layout (checked 13 Oct): the question text and one session per opening
+        "[].question": USE_FEATURE, "[].poll-sessions[].id": USE_META,
+        "[].poll-sessions[].started-at": USE_FEATURE,
     },
     "poll_responses": {
         "[].id": USE_META, "[].poll-id": USE_FEATURE, "[].user-id": USE_FEATURE,
         "[].choice-id": USE_FEATURE, "[].answer": USE_FEATURE, "[].submitted-at": USE_FEATURE,
+        "[].poll-session-id": USE_FEATURE, "[].response": USE_FEATURE, "[].is-draft": USE_META,
     },
     "breakouts": {
         "[].id": USE_META, "[].name": USE_META, "[].room-id": USE_FEATURE,

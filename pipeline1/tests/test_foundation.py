@@ -48,7 +48,8 @@ def test_amendments_applied():
         for k, v in C.EDU_CHECKPOINTS.items())
     assert all(C.feature_allowed(c) for c in C.STACK_COLUMNS)              # A4
     assert "text" not in C.KNN_OUTPUT_COLUMNS                               # A5
-    assert C.asr_provider("CS156") == "local"                               # A8
+    assert C.asr_provider("CS156") == "deepgram"                            # A8
+    assert C.asr_provider("SS999") == "local"                               # A8
     assert C.CALIBRATION_METHOD == "sigmoid"                                # A9
     assert C.GRU_PARAM_RANGE == (10_000, 50_000)
 
@@ -573,7 +574,7 @@ SPEC_SUBCOMMANDS = ["harvest", "harvest-import", "select", "transcribe", "words"
                     "results-bundle", "privacy"]
 
 
-INTEGRATION_SUBCOMMANDS = {"pcw", "qa", "e2e"}     # added by the integration pass
+INTEGRATION_SUBCOMMANDS = {"pcw", "qa", "e2e", "ingest", "ingest-report", "audit", "pdf"}     # added after the spec
 
 
 def test_cli_lists_every_spec_subcommand():

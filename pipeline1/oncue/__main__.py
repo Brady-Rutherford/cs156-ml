@@ -1,4 +1,8 @@
-"""CLI: `python -m oncue <subcommand> [--phase A|B|C] [--workers N] [--class CID ...]`.
+"""CLI: `python -m oncue <subcommand> [--split S] [--workers N] [--class CID ...] [--work-dir D]`.
+
+`--split train|validation|test|all` picks the classes of step 3 (`data/03_split/split.csv`);
+`--class` overrides it. `--work-dir DIR` writes every output under DIR instead of data/ (a
+throwaway pilot), reading the Scribe sync and the split from data/ as usual.
 
 Each subcommand is dispatched lazily to `oncue.<module>.<function>(args) -> int | None`, so a
 stage module can be written later and plug in without touching this file. Options a stage
@@ -12,6 +16,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import sys
+from pathlib import Path
 
 # subcommand -> (module under oncue, function, one-line help). Order follows spec §13.
 COMMANDS: dict[str, tuple[str, str, str]] = {
@@ -20,6 +25,12 @@ COMMANDS: dict[str, tuple[str, str, str]] = {
     "harvest-import": ("harvest", "cli_import",
                        "import Route C console exports into data/scribe/raw/{cid}/"),
     "select": ("select", "cli", "build classes.parquet: population, sections, vault, phases"),
+    "ingest": ("ingest", "cli",
+               "steps 4-5 for one split: transcribe, words, events, classes, hand scan, QA"),
+    "ingest-report": ("ingest_qa", "cli",
+                      "per-class timing checks of an ingest run -> logs/ingest_report.csv"),
+    "audit": ("strip", "cli_audit", "grey-view clip + frame sheet around every raise onset"),
+    "pdf": ("transcript_pdf", "cli", "readable PDF transcript + class summary (local only)"),
     "transcribe": ("transcribe", "cli_transcribe",
                    "Scribe transcription per class (provider per course, never --hand-log)"),
     "words": ("transcribe", "cli_words", "words.parquet from *_asr.json + raw voice events"),
@@ -57,8 +68,12 @@ def build_parser() -> argparse.ArgumentParser:
     for name, (module, func, help_text) in COMMANDS.items():
         p = sub.add_parser(name, help=help_text, description=f"{help_text} "
                            f"(oncue.{module}.{func})")
+        p.add_argument("--split", choices=("train", "validation", "test", "all"),
+                       default=None, help="classes of this step-3 split (split.csv)")
         p.add_argument("--phase", choices=("A", "B", "C"), default=None,
-                       help="selection phase to process (§10)")
+                       help="old selection phase (§10); superseded by --split")
+        p.add_argument("--work-dir", type=Path, default=None, metavar="DIR",
+                       help="write every output under DIR instead of data/ (pilot runs)")
         p.add_argument("--workers", type=int, default=1, help="parallel workers")
         p.add_argument("--class", dest="class_ids", action="append", default=None,
                        metavar="CID", help="restrict to this class id (repeatable)")
@@ -89,6 +104,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return EXIT_NOT_IMPLEMENTED
     args.extra = extra
+    if args.work_dir is not None:
+        from . import config
+
+        config.use_work_dir(args.work_dir)
     fn = resolve(args.command)
     if fn is None:
         module, func = COMMANDS[args.command][:2]

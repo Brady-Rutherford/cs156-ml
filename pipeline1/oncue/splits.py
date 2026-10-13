@@ -331,3 +331,29 @@ def course_split(classes: pd.DataFrame, *, seed: int = config.SEED,
         df.loc[grp.index, "split"] = grp["unit"].map(split_of)
     return df[["class_id", "course_code", "split", "reason"]]
 
+
+
+# --------------------------------------------------------------------------- the step-3 split
+
+
+def split_table(path=None) -> pd.DataFrame:
+    """`data/03_split/split.csv` (step 3): class_id, course_code, ..., split."""
+    return pd.read_csv(path or config.SPLIT_PATH)
+
+
+def split_ids(split: str | None = None, *, path=None) -> list[int]:
+    """Class ids of one split (train / validation / test), or of all three when `split` is
+    None or "all". Excluded classes are never returned."""
+    s = split_table(path)
+    s = s[s["split"].isin(config.SPLITS)]
+    if split not in (None, "all"):
+        if split not in config.SPLITS:
+            raise ValueError(f"unknown split {split!r}; use one of {config.SPLITS} or 'all'")
+        s = s[s["split"] == split]
+    return sorted(int(c) for c in s["class_id"])
+
+
+def split_of(path=None) -> dict[int, str]:
+    """class id -> split name, for every class in split.csv (excluded ones included)."""
+    s = split_table(path)
+    return dict(zip(s["class_id"].astype(int), s["split"].astype(str), strict=True))

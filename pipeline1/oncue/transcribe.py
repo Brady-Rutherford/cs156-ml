@@ -69,6 +69,17 @@ log = logging.getLogger(__name__)
 SCRIBE_BUNDLE_PARTS = ("class", "events", "polls", "poll_responses", "breakouts", "listing")
 RUN_LOG_NAME = "transcribe_runs.csv"
 TIMING_TABLE = "class_timing"
+# Transient network failures are retried (an SSL reset during a Deepgram upload, a timeout).
+TRANSIENT_RE = re.compile(r"SSLError|ConnectionError|Read timed out|Max retries|"
+                          r"Connection reset|HTTP 5\d\d|HTTP 429|RemoteDisconnected")
+TRANSCRIBE_ATTEMPTS = 3
+# Error texts may carry a request URL whose query holds the roster keyterms or a signature.
+_QUERY_RE = re.compile(r"(https?://[^\s'\"<>?#]+|(?<![\w/])/[\w.\-/]+)\?[^\s'\"<>#)]*")
+
+
+def redact_error(text: str) -> str:
+    """An error message with every URL / request-path query string removed."""
+    return _QUERY_RE.sub(r"\1?<redacted>", str(text))
 
 
 # =========================================================================== transcription
@@ -103,7 +114,7 @@ def transcribe_options(provider: str, salt: str, *, require_strict_res: bool = T
     kw = {"provider": provider, "privacy": config.TRANSCRIBE_PRIVACY,
           "formats": tuple(config.TRANSCRIBE_FORMATS), "language": config.TRANSCRIBE_LANGUAGE,
           "debug_html": False, "save_asr": True, "res": config.SRC_RES, "salt": salt,
-          "workdir_root": workdir_root}
+          "workdir_root": workdir_root, "url_mode": config.TRANSCRIBE_URL_MODE}
     if scribe_has_strict_res():
         kw["strict_res"] = True
     elif require_strict_res:
@@ -155,7 +166,8 @@ def transcribe_many(class_ids: Iterable, workers: int = 1, provider: str | None 
                     client_factory: Callable | None = None,
                     provider_factory: Callable[[str], object] | None = None,
                     workdir_root: Path | None = None,
-                    run_log: Path | str | bool | None = None) -> list[dict]:
+                    run_log: Path | str | bool | None = None,
+                    split_of: dict[int, str] | None = None) -> list[dict]:
     """Transcribe classes with Scribe; returns one status row per class.
 
     * provider: None = per-course map (A8); "local" forces local; "deepgram" only for cleared
@@ -167,6 +179,8 @@ def transcribe_many(class_ids: Iterable, workers: int = 1, provider: str | None 
     * Local ASR jobs run one at a time (a lock), Deepgram jobs use up to `workers` threads.
     * Classes whose `*_asr.json` and `*_ids.json` already exist are skipped unless `force`.
     * run_log: CSV of the status rows (default data/logs/transcribe_runs.csv; False = none).
+    * split_of: class id -> split name; each class's files go to `out_dir/{split}/`
+      (classes missing from it to `out_dir/unsplit/`). None: everything in `out_dir`.
     """
     if transcribe_fn is None:
         from scribe_core.pipeline import transcribe_class as transcribe_fn
@@ -181,28 +195,39 @@ def transcribe_many(class_ids: Iterable, workers: int = 1, provider: str | None 
     local_lock = threading.Lock()
 
     def one(cid) -> dict:
-        row = {"class_id": int(cid), "provider": None, "status": "error", "n_words": None,
-               "calibration_status": None, "error": None}
+        split = None if split_of is None else split_of.get(int(cid), "unsplit")
+        row = {"class_id": int(cid), "split": split, "provider": None, "status": "error",
+               "n_words": None, "calibration_status": None, "error": None}
+        cdir = out if split is None else out / split
         try:
             if not force and find_transcript(cid, "asr", out) and find_transcript(cid, "ids", out):
                 row["status"] = "skipped"
                 return row
+            cdir.mkdir(parents=True, exist_ok=True)
             bundle = load_bundle(cid, raw_dir=raw_dir, scribe_dir=scribe_dir)
             name = provider_for(course_code_of(bundle), provider, provider_map)
             row["provider"] = name
             opts = transcribe_options(name, salt, require_strict_res=require_strict_res,
                                       workdir_root=workdir_root)
-            kwargs = {"out_dir": out, "options": opts, "bundle": bundle,
+            kwargs = {"out_dir": cdir, "options": opts, "bundle": bundle,
                       "provider": provider_factory(name) if provider_factory else None,
                       "progress": _progress_logger(cid)}
             _assert_no_hand_log(kwargs)
-            with local_lock if name == "local" else nullcontext():
-                result = transcribe_fn(int(cid), client_factory(), **kwargs)
+            for attempt in range(1, TRANSCRIBE_ATTEMPTS + 1):
+                try:
+                    with local_lock if name == "local" else nullcontext():
+                        result = transcribe_fn(int(cid), client_factory(), **kwargs)
+                    break
+                except Exception as exc:  # noqa: BLE001 - retried only when transient
+                    if attempt == TRANSCRIBE_ATTEMPTS or not TRANSIENT_RE.search(str(exc)):
+                        raise
+                    log.warning("class %s: transient error (attempt %d), retrying: %s", cid,
+                                attempt, redact_error(exc)[:200])
             summary = (result or {}).get("summary") or {}
             row.update(status="ok", n_words=summary.get("n_words"),
                        calibration_status=summary.get("calibration_status"))
         except Exception as exc:  # noqa: BLE001 - one failed class must not stop the batch
-            row["error"] = f"{type(exc).__name__}: {exc}"
+            row["error"] = redact_error(f"{type(exc).__name__}: {exc}")
             log.error("transcribe class %s failed: %s", cid, row["error"])
         return row
 
@@ -235,12 +260,13 @@ def _append_run_log(rows: list[dict], path: Path) -> None:
 
 def find_transcript(class_id, kind: str = "asr", transcripts_dir: Path | str | None = None
                     ) -> Path | None:
-    """`{base}_asr.json` or `{base}_ids.json` for a class (Scribe's base ends in class{id})."""
+    """`{base}_asr.json` or `{base}_ids.json` for a class (Scribe's base ends in class{id}),
+    in the transcripts dir or one of its split folders."""
     root = Path(transcripts_dir or config.TRANSCRIPTS_DIR)
     if not root.exists():
         return None
     rx = re.compile(rf"(?:^|_)class{int(class_id)}_{kind}\.json$")
-    hits = sorted(p for p in root.glob(f"*class{int(class_id)}_{kind}.json") if rx.search(p.name))
+    hits = sorted(p for p in root.rglob(f"*class{int(class_id)}_{kind}.json") if rx.search(p.name))
     return hits[-1] if hits else None
 
 
@@ -571,11 +597,11 @@ def timing_frame(rows: list[dict]) -> pd.DataFrame:
 
 
 def _class_ids(args) -> list[int]:
-    if getattr(args, "class_ids", None) or getattr(args, "phase", None):
+    if any(getattr(args, k, None) for k in ("class_ids", "split", "phase")):
         return events._class_ids(args)
     root = config.TRANSCRIPTS_DIR
     ids = set()
-    for p in root.glob("*_asr.json") if root.exists() else []:
+    for p in root.rglob("*_asr.json") if root.exists() else []:
         m = re.search(r"class(\d+)_asr\.json$", p.name)
         if m:
             ids.add(int(m.group(1)))
@@ -583,19 +609,23 @@ def _class_ids(args) -> list[int]:
 
 
 def cli_transcribe(args) -> int:
-    """`python -m oncue transcribe --class CID ... [--provider local|deepgram] [--force]
-    [--allow-no-strict-res] [--workers N]`."""
+    """`python -m oncue transcribe --split S | --class CID ... [--provider local|deepgram]
+    [--force] [--allow-no-strict-res] [--workers N]`. Transcripts land in
+    data/transcripts/{split}/."""
     p = argparse.ArgumentParser(prog="oncue transcribe")
     p.add_argument("--provider", choices=config.ASR_PROVIDERS, default=None)
     p.add_argument("--force", action="store_true")
     p.add_argument("--allow-no-strict-res", action="store_true")
     opts = p.parse_args(args.extra)
-    if not (getattr(args, "class_ids", None) or getattr(args, "phase", None)):
-        print("oncue transcribe: pass --class CID (repeatable) or --phase P")
+    if not any(getattr(args, k, None) for k in ("class_ids", "split", "phase")):
+        print("oncue transcribe: pass --class CID (repeatable) or --split S")
         return 2
     config.load_env()
+    from .splits import split_of
+
     rows = transcribe_many(events._class_ids(args), args.workers, opts.provider,
-                           force=opts.force, require_strict_res=not opts.allow_no_strict_res)
+                           force=opts.force, require_strict_res=not opts.allow_no_strict_res,
+                           split_of=split_of())
     bad = [r for r in rows if r["status"] == "error"]
     for r in bad:
         print(f"class {r['class_id']}: {r['error']}")

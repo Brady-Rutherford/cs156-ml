@@ -768,6 +768,9 @@ def polls_table(class_id: int, polls, poll_responses, clock: VideoClock, roster:
     eps_poll = config.eps_f_poll(eps_f_s)
     rows = []
     for p in polls:
+        if isinstance(p.get("poll-sessions"), list) and p["poll-sessions"]:
+            rows += _poll_session_rows(class_id, p, mine, clock, seg_starts, eps_poll, masker)
+            continue
         pid = str(p.get("id"))
         timing = p.get("timing-text")
         open_s = _poll_time(parse_clock_string(timing), clock, reference, klass)
@@ -793,8 +796,49 @@ def polls_table(class_id: int, polls, poll_responses, clock: VideoClock, roster:
         rows.append({"class_id": int(class_id), "poll_id": pid, "open_s": open_s,
                      "close_s": close_s, "prompt_masked": masker.mask_text(prompt),
                      "my_answer_text": masker.mask_text(answer), "my_answer_avail_s": avail})
+    if not rows:
+        return schemas.empty("polls")
     df = pd.DataFrame(rows).sort_values("open_s", kind="stable").reset_index(drop=True)
     return schemas.coerce(df, "polls")
+
+
+POLL_MIN_OPEN_S = 10.0          # a poll stays open at least this long (close = next segment)
+
+
+def _poll_session_rows(class_id: int, p: dict, mine: list[dict], clock: VideoClock,
+                       seg_starts: np.ndarray, eps_poll: float, masker) -> list[dict]:
+    """Forum's real poll layout: one row per poll session (an opening of the poll). open_s =
+    the session's `started-at` on the master clock; close_s = the first segment start after
+    it (sessions carry no end). Brady's answer: his latest non-draft response to that session,
+    available at its submit time (else close_s) + eps_F,poll. poll_id is "poll/session" when
+    a poll was opened more than once."""
+    sessions = [s for s in p["poll-sessions"] if isinstance(s, dict)]
+    prompt = next((x for x in (p.get("question"), p.get("prompt"), p.get("title"))
+                   if isinstance(x, str) and x.strip()), None)
+    out = []
+    for s in sessions:
+        sid = str(s.get("id"))
+        ms = iso_to_ms(s.get("started-at"))
+        open_s = clock.master(ms) if ms is not None else float("nan")
+        # the poll's own segment starts within a second of the opening: skip it
+        later = (seg_starts[seg_starts > open_s + POLL_MIN_OPEN_S] if np.isfinite(open_s)
+                 else np.array([]))
+        close_s = float(later[0]) if len(later) else float("nan")
+        resp = [r for r in mine if str(r.get("poll-session-id")) == sid and not r.get("is-draft")]
+        answer, avail = None, float("nan")
+        if resp:
+            resp.sort(key=lambda r: iso_to_ms(r.get("submitted-at")) or 0)
+            r = resp[-1]
+            answer = r.get("response") if isinstance(r.get("response"), str) else None
+            submit_ms = iso_to_ms(r.get("submitted-at"))
+            submit = clock.master(submit_ms) if submit_ms is not None else float("nan")
+            base = submit if np.isfinite(submit) else close_s
+            avail = base + eps_poll if np.isfinite(base) else float("nan")
+        pid = str(p.get("id")) if len(sessions) == 1 else f"{p.get('id')}/{sid}"
+        out.append({"class_id": int(class_id), "poll_id": pid, "open_s": open_s,
+                    "close_s": close_s, "prompt_masked": masker.mask_text(prompt),
+                    "my_answer_text": masker.mask_text(answer), "my_answer_avail_s": avail})
+    return out
 
 
 def poll_reference_check(polls: pd.DataFrame, segments: pd.DataFrame) -> pd.DataFrame:
@@ -1002,8 +1046,14 @@ def event_tables(class_id, *, raw_dir=None, scribe_dir=None, tables_dir=None,
 
 
 def _class_ids(args, *, raw_dir=None) -> list[int]:
+    """--class ids, else the classes of --split (split.csv), else of --phase, else every
+    synced class."""
     if getattr(args, "class_ids", None):
         return [int(c) for c in args.class_ids]
+    if getattr(args, "split", None):
+        from .splits import split_ids
+
+        return split_ids(args.split)
     if getattr(args, "phase", None):
         cpath = config.table_path("classes")
         if not cpath.exists():

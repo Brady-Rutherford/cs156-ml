@@ -79,7 +79,9 @@ TABLES: dict[str, tuple[Col, ...]] = {
                note="size of the section's full schedule (ctx_session_frac)"),
            Col("run_order", _NI, required=False, note="select.assign_phases processing order"),
            Col("cv_group", _NI, required=False,
-               note="L18: same-section same-date twins share one CV group (select.dedupe)")]
+               note="L18: same-section same-date twins share one CV group (select.dedupe)"),
+           Col("split", _S, required=False,
+               note="step 3 (split.csv): train | validation | test | excluded")]
     ),
     "words": (
         Col("class_id", _I), Col("w_idx", _I), Col("start_s", _F), Col("end_s", _F),
