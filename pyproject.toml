@@ -23,6 +23,7 @@ dependencies = [
     "tqdm>=4.70.1",
     "requests>=2.34.2",
     "setfit>=1.2.0",
+    "reportlab>=5.0.1",
 ]
 
 [build-system]
