@@ -99,7 +99,7 @@ def sandbox(root: Path | str, *, world=None, salt: str = SYNTH_SALT) -> Iterator
     saved = {k: getattr(config, k) for k in sandbox_paths(root)}
     saved_env = {k: os.environ.get(k) for k in (*config.ID_SALT_ENV, "HF_HUB_OFFLINE",
                                                 "TRANSFORMERS_OFFLINE")}
-    saved_hooks = (config.load_env, hands._sources, hands._forum_client)
+    saved_hooks = (config.load_env, hands._sources, hands._forum_client, hands.SCANNER)
     try:
         for k, v in sandbox_paths(root).items():
             setattr(config, k, v)
@@ -111,11 +111,12 @@ def sandbox(root: Path | str, *, world=None, salt: str = SYNTH_SALT) -> Iterator
         if world is not None:
             hands._sources = synthetic_sources(world)
             hands._forum_client = lambda: None
+            hands.SCANNER = "glyph"               # synthetic frames draw the glyph-era UI
         yield root
     finally:
         for k, v in saved.items():
             setattr(config, k, v)
-        config.load_env, hands._sources, hands._forum_client = saved_hooks
+        config.load_env, hands._sources, hands._forum_client, hands.SCANNER = saved_hooks
         for k, v in saved_env.items():
             if v is None:
                 os.environ.pop(k, None)

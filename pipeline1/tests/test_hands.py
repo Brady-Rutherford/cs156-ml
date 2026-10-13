@@ -976,6 +976,7 @@ def test_cli_scan_track_episodes_offline(small_world, tmp_path, monkeypatch, cap
 
     monkeypatch.setattr(hands, "_forum_client", lambda: None)
     monkeypatch.setattr(hands, "_sources", fake_sources)
+    monkeypatch.setattr(hands, "SCANNER", "glyph")       # synthetic frames: the glyph-era UI
     assert cli.main(["scan", "--workers", "2"]) == 0
     for sc in small_world:
         assert hands.hand_tiles_path(sc.class_id).exists()

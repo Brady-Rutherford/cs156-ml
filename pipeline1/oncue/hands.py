@@ -117,6 +117,15 @@ class Detector:
     me_hand_min_s: float = config.ME_HAND_MIN_S
     me_hand_min_shape: int = config.ME_HAND_MIN_SHAPE_SAMPLES
     na_hold: int = causal.NA_HOLD           # live state holds through NA runs this short
+    # Real UI (`oncue.strip`): the raise animation can hide the name label at the onset, so
+    # an onset reached through an NA run of at most this length, itself preceded by D_pre of
+    # confirmed DOWN, is not left-censored; its onset is the start of that NA run (the
+    # earliest the raise can have begun) and re-timing finds the first frame. 0 = off.
+    pre_na_onset_s: float = 0.0
+    # Votes (§2.5): Δn_others >= max(vote_min_dn, ceil(vote_frac * (n_tiles - 1))) within
+    # VOTE_DN_WINDOW_S, or the professor's VOTE lexicon.
+    vote_min_dn: int = config.VOTE_MIN_DN
+    vote_frac: float = config.VOTE_FRAC
     # An UP run shorter than k samples ("blip") never starts, extends or ends an episode.
     # The spec's glitch ("confirmed episode < 1.0 s") cannot happen at k = 2 / 2 fps, so a
     # blip that is isolated from every confirmed UP run (DOWN gaps >= merge_gap_s on both
@@ -891,6 +900,8 @@ def track(hand_tiles: pd.DataFrame, template: np.ndarray | None = None, *,
     white = (real[f"white_{roi}"] if f"white_{roi}" in real else
              pd.Series(np.nan, index=real.index))
     real["shape_ok"] = shape_ok(real[f"shape_{roi}"].astype(float), white.astype(float), det)
+    if "overlay" in real:              # the real UI's full-tile raise animation (oncue.strip)
+        real["shape_ok"] |= real["overlay"].fillna(False).astype(bool)
 
     srt = real.sort_values(["fi", "ncc"], ascending=[True, False], kind="stable")
     first = srt.groupby("fi", sort=True).head(1).set_index("fi")
@@ -1057,6 +1068,15 @@ def _segment_episodes(t: np.ndarray, codes: np.ndarray, shape_pass: np.ndarray,
         first, last = ups[0][0], ups[-1][1]            # [first, last) spans the episode
         onset = (float(t[first - 1] + t[first]) / 2 if first > 0 and conf[first - 1] == _DOWN_C
                  else float(t[first]))
+        censored = _censored(t, conf, first, det.d_pre_s, dt)
+        if censored and det.pre_na_onset_s > 0:
+            g = first
+            while g > 0 and conf[g - 1] == _NA_C:
+                g -= 1
+            if (g < first and (first - g) * dt <= det.pre_na_onset_s + 1e-9 and g > 0
+                    and conf[g - 1] == _DOWN_C and not _censored(t, conf, g, det.d_pre_s, dt)):
+                censored = False
+                onset = float(t[g - 1] + t[g]) / 2
         ended = "down" if last < n and conf[last] == _DOWN_C else ("na" if last < n else "end")
         offset = float(t[last]) if ended == "down" else float(t[last - 1] + dt)
         after = np.flatnonzero(live[last:] != _UP_C) + last if last < n else np.zeros(0, int)
@@ -1066,7 +1086,7 @@ def _segment_episodes(t: np.ndarray, codes: np.ndarray, shape_pass: np.ndarray,
         dur = offset - onset
         out.append({"onset_s": onset, "t_up_s": float(t[first]), "offset_s": offset,
                     "offset_live_s": offset_live, "dur_s": dur, "n_toggles": toggles,
-                    "left_censored": _censored(t, conf, first, det.d_pre_s, dt),
+                    "left_censored": censored,
                     "glitch": bool(dur < det.min_episode_s), "ended": ended,
                     "n_shape": int(shape[up_idx].sum()), "i_first": first, "i_last": last})
     if det.blips_as_glitches:
@@ -1153,7 +1173,7 @@ def q_open_window(words: pd.DataFrame | None, *,
 def episodes(hand_frames: pd.DataFrame, *, words: pd.DataFrame | None = None,
              voice: pd.DataFrame | None = None, segments: pd.DataFrame | None = None,
              q_open: Callable[[float], bool] | None = None, det: Detector = DETECTOR,
-             vote_frac: float = config.VOTE_FRAC) -> pd.DataFrame:
+             vote_frac: float | None = None) -> pd.DataFrame:
     """Episode state machine, vote typing and outcomes -> `hand_episodes` (§2.4, §2.5).
 
     Label side only: merged episodes, their offsets and their types look at samples after
@@ -1178,7 +1198,9 @@ def episodes(hand_frames: pd.DataFrame, *, words: pd.DataFrame | None = None,
     for k, e in enumerate(eps):
         o = e["onset_s"]
         dn = delta_n_others(t, n_oth, o)
-        thr = config.vote_threshold(int(n_tiles[min(e["i_first"], len(t) - 1)]), vote_frac)
+        thr = config.vote_threshold(int(n_tiles[min(e["i_first"], len(t) - 1)]),
+                                    det.vote_frac if vote_frac is None else vote_frac,
+                                    det.vote_min_dn)
         prof = _prof_text(words, o - config.VOTE_LEX_LOOKBACK_S, o)
         vote_lex = bool(config.VOTE_RE.search(prof))
         dn_vote = dn >= thr
@@ -1401,7 +1423,10 @@ def ffmpeg_cmd(url: str, *, crop: tuple[int, int] | None = None, fps: float | No
     sample never shows content from after its label (at most one source frame earlier)."""
     cmd = [ffmpeg, "-hide_banner", "-nostdin", "-nostats", "-loglevel", "info"]
     if _is_remote(url):
-        cmd += ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "30"]
+        cmd += ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "30",
+                # a stream that stays open but sends nothing (the Mac slept) errors out after
+                # 30 s, and the reader restarts with a fresh signed URL
+                "-rw_timeout", "30000000"]
     cmd += ["-copyts"]
     if hwaccel:
         cmd += ["-hwaccel", hwaccel]
@@ -1595,8 +1620,10 @@ def probe(url: str, *, runner=subprocess.run, ffprobe: str = "ffprobe",
            "format=start_time,duration:stream=codec_type,start_time,width,height", url]
     proc = runner(cmd, capture_output=True, text=True, timeout=timeout_s, check=False)
     if proc.returncode != 0:
-        raise ScanError(redact(f"ffprobe failed (exit {proc.returncode}): "
-                               f"{(proc.stderr or '')[-300:]}", url))
+        # redact the whole message first: a cut taken first can split the URL so that
+        # neither the URL nor the query-string pattern matches any more
+        err = redact(proc.stderr or "", url)
+        raise ScanError(f"ffprobe failed (exit {proc.returncode}): {err[-300:]}")
     data = json.loads(proc.stdout or "{}")
     streams = data.get("streams") or []
     vid = next((s for s in streams if s.get("codec_type") == "video"), {})
@@ -1995,6 +2022,10 @@ def _selected_classes(args) -> pd.DataFrame:
         raise SystemExit("oncue hands: data/tables/classes.parquet is missing (run select)")
     if getattr(args, "class_ids", None):
         classes = classes[classes["class_id"].isin([int(c) for c in args.class_ids])]
+    elif getattr(args, "split", None):             # the classes of one step-3 split
+        from .splits import split_ids
+
+        classes = classes[classes["class_id"].isin(split_ids(args.split))]
     elif "phase" in classes:                       # the selected population only
         classes = classes[classes["phase"].notna()]
     if getattr(args, "phase", None):
@@ -2010,6 +2041,11 @@ def _era(row) -> str:
 def load_pass1(cid) -> Pass1 | None:
     p = _pass1_dir() / f"{int(cid)}.json"
     return Pass1.from_json(json.loads(p.read_text())) if p.exists() else None
+
+
+def _pass1_json(cid) -> dict:
+    p = _pass1_dir() / f"{int(cid)}.json"
+    return json.loads(p.read_text()) if p.exists() else {}
 
 
 def save_pass1(res: Pass1) -> Path:
@@ -2042,6 +2078,19 @@ def floors_for(classes: pd.DataFrame, templates: dict) -> dict:
     return ncc_floors(anchors, templates, eras)
 
 
+
+# "strip": the real Forum UI (`oncue.strip`, labels read by OCR); "glyph": the synthetic
+# world's UI (name-glyph NCC, below). The synthetic end-to-end run switches to "glyph".
+SCANNER = "strip"
+
+
+def _detector() -> Detector:
+    """The thresholds of the active scanner (`strip.FORUM_DETECTOR` for real recordings)."""
+    if SCANNER == "strip":
+        from .strip import FORUM_DETECTOR
+
+        return FORUM_DETECTOR
+    return DETECTOR
 
 _URL_LOCK = threading.Lock()          # one Forum request at a time across scan workers
 URL_REUSE_S = 120.0                   # PROVISIONAL: well under the URL lifetime D2 measures
@@ -2116,8 +2165,14 @@ def _scan_one(cid: int, src: dict, res: Pass1, template) -> Path:
 
 def cli_scan(args) -> int:
     """`oncue scan`: pass 1 for every selected class (cached), LOCO era templates from all
-    cached anchors, then pass 2 for classes without hand_tiles (`--workers` in parallel)."""
+    cached anchors, then pass 2 for classes without hand_tiles (`--workers` in parallel).
+    Real recordings go to `strip.cli_scan` (SCANNER = "strip")."""
     from concurrent.futures import ThreadPoolExecutor
+
+    if SCANNER == "strip":
+        from . import strip
+
+        return strip.cli_scan(args)
 
     classes = _selected_classes(args)
     voice_all, presence_all = _read_table("voice"), _read_table("presence")
@@ -2176,11 +2231,14 @@ def cli_track(args) -> int:
         if not path.exists() or res is None:
             continue
         ht = pd.read_parquet(path)
-        hf = track(ht, templates.get(cid), ncc_floor=floors.get(cid))
+        hf = track(ht, templates.get(cid), ncc_floor=floors.get(cid), det=_detector())
         if hf.attrs.get("n_lookalike_frames", 0):
             log.warning("class %s: %d frames with a lookalike name label (audit the section)",
                         cid, hf.attrs["n_lookalike_frames"])
         share, _ = validate_tracking(res.anchors, templates.get(cid), ncc_floor=floors.get(cid))
+        info = _pass1_json(cid)
+        if info.get("scanner") == "strip":    # anchor check made during the strip scan
+            share = float("nan") if info.get("valid_share") is None else info["valid_share"]
         words = _for_class(words_all, cid)
         lag = av_lag(hf, words) if words is not None else float("nan")
         lag_me = av_lag_brady(hf, ht, words) if words is not None else float("nan")
@@ -2213,8 +2271,8 @@ def cli_episodes(args) -> int:
             continue
         w = _for_class(words, cid)
         out.append(episodes(hf, words=w, voice=_for_class(voice, cid),
-                            segments=_for_class(segs, cid),
-                            q_open=q_open_window(w)).assign(class_id=cid))
+                            segments=_for_class(segs, cid), q_open=q_open_window(w),
+                            det=_detector()).assign(class_id=cid))
     if not out:
         return 0
     eps = pd.concat(out, ignore_index=True)
@@ -2242,6 +2300,10 @@ def cli_episodes(args) -> int:
 
 def cli_retime(args) -> int:
     """`oncue retime`: full-frame-rate re-read around every onset (fresh signed URLs)."""
+    if SCANNER == "strip":
+        from . import strip
+
+        return strip.cli_retime(args)
     classes = _selected_classes(args)
     eps_all = _read_table("hand_episodes")
     if eps_all is None:
