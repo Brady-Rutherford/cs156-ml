@@ -15,6 +15,9 @@ SC="$HOME/Minervas_scribe"
 LIST="$(mktemp)"
 trap 'rm -f "$LIST"' EXIT
 
+echo "== rsync on the pod (some images lack it)"
+$SSH "$HOST" 'command -v rsync >/dev/null 2>&1 || { S=""; [ "$(id -u)" -ne 0 ] && S=sudo; \
+  $S apt-get update -qq >/dev/null && $S env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rsync >/dev/null; }'
 echo "== code: cs156-ml"
 (cd "$CS" && git ls-files -co --exclude-standard) > "$LIST"
 rsync -az --files-from="$LIST" -e "$SSH" "$CS/" "$HOST:cs156-ml/"

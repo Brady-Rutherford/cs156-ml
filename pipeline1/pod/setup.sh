@@ -18,5 +18,5 @@ echo "== Scribe (scribe_core) into the same environment"
 uv pip install --python .venv/bin/python -e "$HOME/Minervas_scribe"
 .venv/bin/python -c "import oncue, scribe_core, cv2, pandas, pyarrow, reportlab; print('imports ok')"
 chmod 600 pipeline1/.env 2>/dev/null || true
-echo "== $(nproc) CPU cores, $(free -g | awk '/Mem:/{print $2}') GB RAM, $(df -h ~ | awk 'NR==2{print $4}') disk free"
+Q=$(cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo max); echo "== cgroup CPU limit: $Q (nproc says $(nproc)); $(free -g | awk '/Mem:/{print $2}') GB RAM, $(df -h ~ | awk 'NR==2{print $4}') disk free"
 echo "done. Next: cd ~/cs156-ml/pipeline1 && ../.venv/bin/python pod/preflight.py"

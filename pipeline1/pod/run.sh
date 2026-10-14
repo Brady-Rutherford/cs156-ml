@@ -9,11 +9,25 @@
 set -uo pipefail
 cd "$HOME/cs156-ml/pipeline1"
 PY=../.venv/bin/python
+# CPUs this pod may really use: a container's CPU quota (RunPod reports the whole host in
+# nproc), else nproc.
+cpus() {
+  if [ -r /sys/fs/cgroup/cpu.max ]; then
+    read -r q p < /sys/fs/cgroup/cpu.max
+    [ "$q" != "max" ] && { echo $(( q / p )); return; }
+  elif [ -r /sys/fs/cgroup/cpu/cpu.cfs_quota_us ]; then
+    q=$(cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us); p=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)
+    [ "$q" -gt 0 ] && { echo $(( q / p )); return; }
+  fi
+  nproc
+}
+CPUS="$(cpus)"
 TW="${TRANSCRIBE_WORKERS:-24}"
-SW="${SCAN_WORKERS:-$(( $(nproc) * 2 / 5 ))}"
+SW="${SCAN_WORKERS:-$(( CPUS * 2 / 5 ))}"
+[ "$SW" -ge 1 ] || SW=1
 export ONCUE_FFMPEG_THREADS="${ONCUE_FFMPEG_THREADS:-2}"
 LOG="$HOME/ingest.log"
-echo "== $(date -u +%FT%TZ) start: transcribe workers $TW, scan workers $SW" | tee -a "$LOG"
+echo "== $(date -u +%FT%TZ) start: $CPUS CPUs, transcribe workers $TW, scan workers $SW" | tee -a "$LOG"
 $PY pod/preflight.py 2>&1 | tee -a "$LOG"
 [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "preflight failed: fix it before running" | tee -a "$LOG"; exit 1; }
 for split in train validation test; do
