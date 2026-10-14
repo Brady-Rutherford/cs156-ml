@@ -33,6 +33,7 @@ from __future__ import annotations
 import difflib
 import json
 import logging
+import os
 import re
 import subprocess
 from collections.abc import Callable, Iterable, Sequence
@@ -73,6 +74,11 @@ LABEL_S_MAX, LABEL_V_MIN = 40, 225   # name text: near-pure white
 WORD_H, WORD_W = 16, 96
 WORD_BLUR = 1.0
 SAME_LABEL_NCC = 0.85            # same person at the same width: median 0.93; others <= 0.69
+# ... but a label is taken as Brady's without OCR only when it is this close to one of his. Full
+# run, 14 Oct (80193): a classmate's label scored 0.91 against his stored labels, so it was
+# taken as his, two tiles were his, and his tile went unread in 57% of his solo speech. Below
+# this, the label is read once, and the classmate's label gets its own entry.
+ME_SAME_LABEL_NCC = 0.95
 SAME_WIDTH_PX = 2
 ME_LABEL_NCC = 0.80              # a tile matching one of Brady's read labels at this width,
 ME_LABEL_NCC_ANY = 0.88          # or at any width (a reaction tints the label; tiles resize)
@@ -86,6 +92,11 @@ STRICT_ME_LABEL_COURSES = frozenset({"B111"})
 ME_CONFIRM_NCC = 0.75
 NAME_MATCH_MIN = 0.60            # difflib ratio between the OCR text and a roster name ...
 NAME_MATCH_MARGIN = 0.12         # ... that beats every other person's best ratio by this
+# A label counts as Brady's only when its OCR text is this close to his name. Full run, 14 Oct
+# (83098): a classmate whose display name is not on the roster read as him at 0.67, so her
+# label joined his, both tiles then matched him, and his tile went unread for minutes at a
+# time. His own label reads at 0.80-1.00 ("Bradl y", "° Brady"); names at 0.67 ("Andy").
+ME_NAME_MIN = 0.75
 # Tesseract's usual confusions on small white-on-video text ("Bracly" for "Brady").
 OCR_FIXES = (("cl", "d"), ("ci", "d"), ("rn", "m"), ("0", "o"), ("1", "l"), ("|", "l"))
 
@@ -343,7 +354,9 @@ class LabelBook:
             return None                                   # never confirmed as anyone's
         self.n_ocr += 1
         self.version += 1
-        uid, _ = match_name(self.ocr(white), self.names)
+        uid, score = match_name(self.ocr(white), self.names)
+        if uid == self.me_id and score < ME_NAME_MIN:
+            uid = None                                    # too far from his name to be his
         if k is None:
             ok = not (self.strict and uid == self.me_id and not self._like_me(patch))
             self.widths.append(int(width))
@@ -374,7 +387,8 @@ class LabelBook:
             return None
         s = _ncc_rows(np.stack([self.patches[i] for i in idx]), patch)
         j = int(np.argmax(s))
-        return idx[j] if s[j] >= SAME_LABEL_NCC else None
+        need = ME_SAME_LABEL_NCC if self.uids[idx[j]] == self.me_id else SAME_LABEL_NCC
+        return idx[j] if s[j] >= need else None
 
     def me_patches(self) -> tuple[np.ndarray, np.ndarray]:
         """(widths, patches) of the labels read as Brady's."""
@@ -482,6 +496,45 @@ def mark_overlays(ht: pd.DataFrame) -> pd.DataFrame:
     return ht
 
 
+# A live view of the scan (Brady, 14 Oct: "see the video of the tile as it gets scraped"):
+# every minute of video, the grey view of the strip goes to {logs}/live/scan_{cid}.png.
+LIVE_EVERY_FRAMES = 120          # 60 s at 2 fps
+LIVE = os.environ.get("ONCUE_LIVE") == "1"      # pod/run.sh turns it on
+
+
+def live_snapshot(cid: int, t: float, strip_img: np.ndarray, band: Band, k: int, st: dict,
+                  det: hands.Detector | None = None) -> None:
+    """Write the strip as the scan sees it (grey view: only teal and green in colour, every
+    tile but Brady's pixelated) with a caption: class, video time, tile, hand state."""
+    det = det or FORUM_DETECTOR
+    try:
+        view = grey_view(strip_img, band, k)
+        hand = "-"
+        if k >= 0:
+            a, b = band.tiles[k]
+            cv2.rectangle(view, (int(a) - 2, 0), (int(b) + 1, band.h - 1), (40, 40, 40), 2)
+            up = (st["frac_hand_s1"][k] >= det.theta_on and hands.shape_ok(
+                st["shape_s1"][k:k + 1], st["white_s1"][k:k + 1], det)[0]) or (
+                st["frac_hand_s1"][k] >= OVERLAY_MIN and st["frac_hand_s2"][k] >= OVERLAY_MIN)
+            hand = "HAND UP" if up else "hand down"
+        view = view[:, :int(band.tiles[-1, 1]) + 4]
+        w = 1400
+        view = cv2.resize(view, (w, max(1, round(view.shape[0] * w / view.shape[1]))),
+                          interpolation=cv2.INTER_NEAREST)
+        head = np.full((34, w, 3), 255, np.uint8)
+        cap = (f"class {cid}   video {int(t // 60):3d}:{int(t % 60):02d}   "
+               f"my tile {'found' if k >= 0 else 'NOT found'}   {hand}")
+        cv2.putText(head, cap, (10, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                    (0, 120, 0) if hand == "HAND UP" else (40, 40, 40), 2, cv2.LINE_AA)
+        out = config.LOGS_DIR / "live" / f"scan_{cid}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_name(out.stem + ".tmp.png")
+        cv2.imwrite(str(tmp), np.vstack([head, view]))
+        tmp.replace(out)
+    except Exception as exc:  # noqa: BLE001 - a preview must never stop the scan
+        log.debug("live snapshot failed: %s", exc)
+
+
 # --------------------------------------------------------------------------- one class
 
 
@@ -492,6 +545,66 @@ def _anchor_windows(voice: pd.DataFrame | None) -> list[tuple[float, float]]:
         return []
     ev = hands.anchor_times(voice, max_events=10 ** 6)
     return [(min(ts), max(ts)) for ts in ev if ts]
+
+
+def ring_check_read(ht: pd.DataFrame, voice: pd.DataFrame | None) -> tuple[float, int]:
+    """The ring check over the frames where Brady's tile is read (QA; Brady, 14 Oct: breakouts
+    and unread stretches must not drop a class, a wrong tile must). Inside his isolated speech,
+    of the frames with exactly one bordered tile and his tile identified, the share where the
+    bordered tile is his. Returns (share, n frames); share is NaN when there are none."""
+    windows = _anchor_windows(voice)
+    if not windows or ht is None or not len(ht):
+        return float("nan"), 0
+    wa = np.array([a for a, _ in windows])
+    wb = np.array([b for _, b in windows])
+    h = ht[ht["tile_idx"] >= 0]
+    t = h["pts_s"].to_numpy(float)
+    j = np.searchsorted(wa, t, side="right") - 1
+    h = h[(j >= 0) & (t <= wb[np.clip(j, 0, None)])]
+    if not len(h):
+        return float("nan"), 0
+    bordered = np.nan_to_num(h["border"].to_numpy(float)) >= FORUM_DETECTOR.border_min
+    mine = h["ncc_me"].to_numpy(float) >= 1
+    g = pd.DataFrame({"t": h["pts_s"].to_numpy(float), "b": bordered, "bm": bordered & mine,
+                      "m": mine}).groupby("t")[["b", "bm", "m"]].sum()
+    use = (g["b"] == 1) & (g["m"] >= 1)
+    n = int(use.sum())
+    return (float(g.loc[use, "bm"].sum()) / n if n else float("nan")), n
+
+
+def cli_ringcheck(args) -> int:
+    """`oncue ringcheck`: re-score the ring check of scanned classes over the frames where
+    Brady's tile is read (`ring_check_read`) and update hand_qc (track_valid_share,
+    tile_status, template_validated) in place. Nothing else changes: the raises and their
+    re-timing stay. Then run `oncue qa`."""
+    classes = hands._selected_classes(args)
+    qc = hands._read_table("hand_qc")
+    voice = hands._read_table("voice")
+    if qc is None:
+        raise SystemExit("oncue ringcheck: run `oncue track` first")
+    qc = qc.copy()
+    changed = 0
+    for cid in (int(c) for c in classes["class_id"]):
+        row = qc["class_id"] == cid
+        p = hands.hand_tiles_path(cid)
+        if not row.any() or not p.exists() or p.stat().st_size == 0:
+            continue
+        ht = pd.read_parquet(p, columns=["pts_s", "tile_idx", "border", "ncc_me"])
+        share, _n = ring_check_read(ht, hands._for_class(voice, cid))
+        r = qc.loc[row].iloc[0]
+        n_anchor = int(r["n_anchor_events"]) if pd.notna(r["n_anchor_events"]) else 0
+        geom = hands.StripGeometry(found=bool(r["strip_found"]) if pd.notna(r["strip_found"])
+                                   else False)
+        cov = float(r["coverage"]) if pd.notna(r["coverage"]) else 0.0
+        status, validated = hands.tile_status(geom, cov, n_anchor, share)
+        changed += int(status != r["tile_status"])
+        qc.loc[row, "track_valid_share"] = share
+        qc.loc[row, "tile_status"] = status
+        qc.loc[row, "template_validated"] = validated
+    hands._upsert("hand_qc", qc)
+    print(f"oncue ringcheck: {int(qc['class_id'].isin(classes['class_id']).sum())} classes "
+          f"re-scored over read frames, {changed} changed tile status", flush=True)
+    return 0
 
 
 def scan_class(cid: int, frames: Iterable[tuple[float, np.ndarray]], book: LabelBook, *,
@@ -527,6 +640,8 @@ def scan_class(cid: int, frames: Iterable[tuple[float, np.ndarray]], book: Label
         me = np.arange(len(band.tiles)) == k
         st["ncc_me"] = me.astype(np.float32)
         bands.append((band.y0, band.h, len(band.tiles), float(np.median(widths))))
+        if LIVE and n_frames % LIVE_EVERY_FRAMES == 1:
+            live_snapshot(cid, float(t), strip, band, int(k), st)
         n = len(band.tiles)
         cols["pts_s"].extend([float(t)] * n)
         cols["tile_idx"].extend(range(n))
@@ -821,11 +936,22 @@ def pass1_info(cid) -> dict | None:
 # --------------------------------------------------------------------------- CLI
 
 
+def _one_thread() -> None:
+    """Worker processes run one thread each (the parallelism is the process pool). Without
+    this, OpenCV, BLAS and Tesseract each start a thread per visible core: in a container that
+    is the whole host (96), and 16 workers buried 40 CPUs under a load of 200."""
+    cv2.setNumThreads(1)
+    for k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "OMP_THREAD_LIMIT"):
+        os.environ.setdefault(k, "1")
+
+
 def _scan_job(cid: int) -> tuple[int, dict | None]:
     """Scan one class (run in its own process: the per-frame work is Python and holds the
     GIL, so threads would share one core). The work dir arrives through ONCUE_WORK_DIR."""
     from . import events
 
+    _one_thread()
+    _pick_gpu(cid)
     try:
         voice_all = hands._read_table("voice")
         from .transcribe import course_code_of
@@ -839,7 +965,8 @@ def _scan_job(cid: int) -> tuple[int, dict | None]:
             src["url_fn"], width=int(m["width"]), strip_y=0,
             strip_h=min(SCAN_ROWS, int(m["height"])), fps=config.F_SCAN,
             a_start=float(m.get("a_start") or 0.0), fmt_start=m.get("fmt_start"),
-            hwaccel=None)                      # software decode: 33x vs 13x real time (M-series)
+            hwaccel=config.HWACCEL)            # software unless ONCUE_HWACCEL=cuda (the pod's GPUs);
+                                               # on the Mac software beats VideoToolbox, 33x vs 13x
         ht, info = scan_class(cid, reader, book, voice=hands._for_class(voice_all, cid))
         info["media"] = {k: m.get(k) for k in ("a_start", "v_start", "fmt_start", "width",
                                                "height", "duration")}
@@ -881,67 +1008,120 @@ def cli_scan(args) -> int:
     return 0 if not bad else 1
 
 
+def _pick_gpu(cid: int) -> None:
+    """With ONCUE_HWACCEL=cuda and ONCUE_GPUS=n, this job's ffmpeg decodes on the next GPU in turn
+    (a counter shared by every worker on the machine, so the streams spread evenly)."""
+    if config.HWACCEL == "cuda" and config.GPUS > 1:
+        import fcntl
+
+        path = config.LOGS_DIR / ".gpu_turn"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a+") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            f.seek(0)
+            n = int(f.read().strip() or 0)
+            f.seek(0)
+            f.truncate()
+            f.write(str(n + 1))
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(n % config.GPUS)
+
+
+def _clip_reader(cid: int, client) -> hands.FfmpegClipReader:
+    src = hands._sources(cid, client)
+    m = src["media"]
+    _pick_gpu(cid)
+    return hands.FfmpegClipReader(
+        src["url_fn"], width=int(m["width"]), height=int(m["height"]),
+        crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
+        fmt_start=m.get("fmt_start"), hwaccel=config.HWACCEL)
+
+
+def _retime_job(job: tuple[int, pd.DataFrame, float]) -> pd.DataFrame | None:
+    """Re-time one class's onsets (own process, own Forum client)."""
+    cid, eps, base = job
+    _one_thread()
+    try:
+        labels = load_me_labels(cid)
+        htp = hands.hand_tiles_path(cid)
+        return retime_class(eps, _clip_reader(cid, hands._forum_client()), base=base,
+                            me_widths=labels[0], me_patches=labels[1],
+                            hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
+    except Exception as exc:  # noqa: BLE001 - one bad class must not stop the batch
+        log.error("retime class %s failed: %s", cid, hands.redact(f"{type(exc).__name__}: {exc}"))
+        return None
+
+
+def _pool(workers: int):
+    import multiprocessing
+    from concurrent.futures import ProcessPoolExecutor
+
+    return ProcessPoolExecutor(max_workers=max(1, workers),
+                               mp_context=multiprocessing.get_context("spawn"))
+
+
 def cli_retime(args) -> int:
-    """`oncue retime` on real recordings: full-frame-rate re-read around every onset."""
+    """`oncue retime` on real recordings: full-frame-rate re-read around every onset,
+    `--workers` classes at a time."""
     classes = hands._selected_classes(args)
     eps_all = hands._read_table("hand_episodes")
     if eps_all is None:
         raise SystemExit("oncue retime: run `oncue episodes` first")
     qc = hands._read_table("hand_qc")
-    client = hands._forum_client()
-    out = []
+    jobs = []
     for cid in (int(c) for c in classes["class_id"]):
         eps, labels = hands._for_class(eps_all, cid), load_me_labels(cid)
         if eps is None or not len(eps) or labels is None or not len(labels[0]):
             continue
-        src = hands._sources(cid, client)
-        m = src["media"]
-        reader = hands.FfmpegClipReader(
-            src["url_fn"], width=int(m["width"]), height=int(m["height"]),
-            crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
-            fmt_start=m.get("fmt_start"))
         base = 0.0
         if qc is not None and (qc["class_id"] == cid).any():
             base = float(qc.loc[qc["class_id"] == cid, "down_baseline"].iloc[0])
-        htp = hands.hand_tiles_path(cid)
-        out.append(retime_class(eps, reader, base=base, me_widths=labels[0],
-                                me_patches=labels[1],
-                                hand_tiles=pd.read_parquet(htp) if htp.exists() else None))
+        jobs.append((cid, eps, base))
+    with _pool(int(getattr(args, "workers", 1) or 1)) as pool:
+        out = [r for r in pool.map(_retime_job, jobs) if r is not None]
     if out:
         eps = pd.concat(out, ignore_index=True)
         hands._upsert("hand_episodes", eps)
         hands.update_retime_qc(eps)
-    return 0
+    print(f"oncue retime: {len(out)} classes re-timed, {len(jobs) - len(out)} failed",
+          flush=True)
+    return 0 if len(out) == len(jobs) else 1
+
+
+def _audit_job(job: tuple[int, pd.DataFrame]) -> int:
+    """Clips and frame sheets for one class's raises (own process, own Forum client)."""
+    cid, eps = job
+    _one_thread()
+    try:
+        labels = load_me_labels(cid)
+        htp = hands.hand_tiles_path(cid)
+        rows = onset_audit(cid, eps, _clip_reader(cid, hands._forum_client()),
+                           me_widths=labels[0], me_patches=labels[1],
+                           hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
+        if rows:
+            pd.DataFrame(rows).to_csv(config.AUDIT_DIR / str(cid) / "raises.csv", index=False)
+        return len(rows)
+    except Exception as exc:  # noqa: BLE001 - audit is best effort
+        log.error("audit class %s failed: %s", cid, hands.redact(f"{type(exc).__name__}: {exc}"))
+        return 0
 
 
 def cli_audit(args) -> int:
     """`oncue audit`: a grey-view clip and frame sheet around every bid onset (audit/{cid}/),
-    plus audit/{cid}/raises.csv. Local only (audit/ is gitignored)."""
+    plus audit/{cid}/raises.csv, `--workers` classes at a time. Local only (audit/ is
+    gitignored)."""
     classes = hands._selected_classes(args)
     eps_all = hands._read_table("hand_episodes")
     if eps_all is None:
         raise SystemExit("oncue audit: run `oncue episodes` (and `retime`) first")
-    client = hands._forum_client()
-    n = 0
+    jobs = []
     for cid in (int(c) for c in classes["class_id"]):
         eps, labels = hands._for_class(eps_all, cid), load_me_labels(cid)
         if eps is None or labels is None or not len(labels[0]):
             continue
         eps = eps[(eps["ep_type"] == config.EP_BID) & ~eps["left_censored"].astype(bool)]
-        if not len(eps):
-            continue
-        src = hands._sources(cid, client)
-        m = src["media"]
-        reader = hands.FfmpegClipReader(
-            src["url_fn"], width=int(m["width"]), height=int(m["height"]),
-            crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
-            fmt_start=m.get("fmt_start"))
-        htp = hands.hand_tiles_path(cid)
-        rows = onset_audit(cid, eps, reader, me_widths=labels[0], me_patches=labels[1],
-                           hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
-        if rows:
-            out = config.AUDIT_DIR / str(cid) / "raises.csv"
-            pd.DataFrame(rows).to_csv(out, index=False)
-            n += len(rows)
-    print(f"oncue audit: {n} raise clips under {config.AUDIT_DIR}")
+        if len(eps):
+            jobs.append((cid, eps))
+    with _pool(int(getattr(args, "workers", 1) or 1)) as pool:
+        n = sum(pool.map(_audit_job, jobs))
+    print(f"oncue audit: {n} raise clips under {config.AUDIT_DIR}", flush=True)
     return 0

@@ -91,6 +91,38 @@ def test_label_book_reads_once_per_label_and_width():
     assert sorted(w.tolist()) == [90, 150] and p.shape[1:] == (strip.WORD_H, strip.WORD_W)
 
 
+def test_label_book_needs_a_close_read_for_my_name():
+    # a classmate whose display name is not on the roster: "Andy" is closest to "brady" (0.67),
+    # enough for anyone else's name but not for mine
+    book = strip.LabelBook({"1": ["brady"], "2": ["grace"]}, "1", ocr=lambda w: ["Andy"])
+    patch = np.zeros((strip.WORD_H, strip.WORD_W), np.float32)
+    patch[4:12, 2:30] = 1
+    assert strip.match_name("Andy", book.names) == ("1", strip.match_name("Andy", book.names)[1])
+    assert book.identify(90, patch, np.ones((10, 40), bool)) is None
+    assert len(book.me_patches()[0]) == 0
+    mine = strip.LabelBook({"1": ["brady"], "2": ["grace"]}, "1", ocr=lambda w: ["Bradl y"])
+    assert mine.identify(90, patch, np.ones((10, 40), bool)) == "1"
+
+
+def test_label_book_reads_a_label_that_only_resembles_mine():
+    # a classmate's label close to mine (NCC between 0.85 and 0.95) is read, not taken as mine
+    reads = {"n": 0}
+
+    def ocr(white):
+        reads["n"] += 1
+        return ["Brady"] if reads["n"] == 1 else ["Grace"]
+
+    book = strip.LabelBook({"1": ["brady"], "2": ["grace"]}, "1", ocr=ocr)
+    rng = np.random.default_rng(0)
+    mine = rng.random((strip.WORD_H, strip.WORD_W)).astype(np.float32)
+    assert book.identify(90, mine, np.ones((10, 40), bool)) == "1"
+    near = (mine + 0.45 * rng.random(mine.shape)).astype(np.float32)
+    s = float(strip._ncc_rows(mine[None], near)[0])
+    assert strip.SAME_LABEL_NCC <= s < strip.ME_SAME_LABEL_NCC, s
+    assert book.identify(90, near, np.ones((10, 40), bool)) == "2"
+    assert book.identify(90, mine, np.ones((10, 40), bool)) == "1" and reads["n"] == 2
+
+
 def test_label_book_retries_unread_labels_then_gives_up():
     book = strip.LabelBook({"1": ["brady"]}, "1", ocr=lambda w: [""])
     patch = np.ones((strip.WORD_H, strip.WORD_W), np.float32)
@@ -248,3 +280,21 @@ def test_strict_book_needs_a_second_read_before_a_label_is_mine():
     once.widths, once.patches, once.uids, once.tries, once.confirmed = [84], [patch], ["1"], [1], [True]
     assert once.identify(84, stray, white) is None
     assert len(once.me_patches()[0]) == 1
+
+
+def test_ring_check_counts_only_frames_where_my_tile_is_read():
+    voice = pd.DataFrame([{"class_id": 1, "spk_hash": "me", "role": config.ROLE_ME, "start_s": 0.0,
+                           "end_s": 10.0, "room_main": True, "precise": True, "inferred": False,
+                           "word_bearing": True}])
+    rows = []
+    for t in np.arange(0.0, 10.0, 0.5):
+        read = t < 6.0                                    # my tile unread from 6 s on
+        wrong = 4.0 <= t < 4.5                            # one frame: another tile bordered
+        rows += [{"pts_s": t, "tile_idx": 0, "border": 0.0 if wrong else 0.9,
+                  "ncc_me": 1.0 if read else 0.0},
+                 {"pts_s": t, "tile_idx": 1, "border": 0.9 if wrong else 0.0, "ncc_me": 0.0}]
+    share, n = strip.ring_check_read(pd.DataFrame(rows), voice)
+    win = strip._anchor_windows(voice)[0]
+    read_in = [t for t in np.arange(0.0, 6.0, 0.5) if win[0] <= t <= win[1]]
+    assert n == len(read_in) and share == pytest.approx((n - 1) / n)
+    assert np.isnan(strip.ring_check_read(pd.DataFrame(rows), None)[0])

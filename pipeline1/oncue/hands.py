@@ -1428,7 +1428,12 @@ def ffmpeg_cmd(url: str, *, crop: tuple[int, int] | None = None, fps: float | No
                 # 30 s, and the reader restarts with a fresh signed URL
                 "-rw_timeout", "30000000"]
     cmd += ["-copyts"]
-    if hwaccel:
+    if config.FFMPEG_THREADS > 0:
+        cmd += ["-threads", str(config.FFMPEG_THREADS),
+                "-filter_threads", str(config.FFMPEG_THREADS)]
+    if hwaccel == "cuda":                 # decode on the GPU, download only the frames kept
+        cmd += ["-hwaccel", "cuda", "-hwaccel_output_format", "cuda"]
+    elif hwaccel:
         cmd += ["-hwaccel", hwaccel]
     if seek is not None:
         cmd += ["-ss", f"{max(0.0, seek):.3f}"]
@@ -1436,10 +1441,19 @@ def ffmpeg_cmd(url: str, *, crop: tuple[int, int] | None = None, fps: float | No
         cmd += ["-t", f"{duration:.3f}"]
     cmd += ["-i", url]
     filters = []
-    if crop is not None:
-        filters.append(f"crop=iw:{int(crop[1])}:0:{int(crop[0])}")
-    if fps:
-        filters.append(f"fps={fps:g}:round=up")
+    if hwaccel == "cuda":
+        # fps first (it only picks frames), then download and convert exactly as the software
+        # path does (nv12 -> yuv420p is lossless), then the same crop: identical pixels
+        if fps:
+            filters.append(f"fps={fps:g}:round=up")
+        filters += ["hwdownload", "format=nv12", "format=yuv420p"]
+        if crop is not None:
+            filters.append(f"crop=iw:{int(crop[1])}:0:{int(crop[0])}")
+    else:
+        if crop is not None:
+            filters.append(f"crop=iw:{int(crop[1])}:0:{int(crop[0])}")
+        if fps:
+            filters.append(f"fps={fps:g}:round=up")
     filters.append("showinfo")
     cmd += ["-vf", ",".join(filters), "-an", "-sn"]
     if frames:
@@ -2224,6 +2238,7 @@ def cli_track(args) -> int:
     templates = templates_for(all_classes)
     floors = floors_for(all_classes, templates)
     words_all, segs_all = _read_table("words"), _read_table("segments")
+    voice_all = _read_table("voice")
     frames, qc = [], []
     for r in classes.itertuples():
         cid = int(r.class_id)
@@ -2237,8 +2252,10 @@ def cli_track(args) -> int:
                         cid, hf.attrs["n_lookalike_frames"])
         share, _ = validate_tracking(res.anchors, templates.get(cid), ncc_floor=floors.get(cid))
         info = _pass1_json(cid)
-        if info.get("scanner") == "strip":    # anchor check made during the strip scan
-            share = float("nan") if info.get("valid_share") is None else info["valid_share"]
+        if info.get("scanner") == "strip":    # ring check over the frames his tile is read
+            from . import strip
+
+            share, _ = strip.ring_check_read(ht, _for_class(voice_all, cid))
         words = _for_class(words_all, cid)
         lag = av_lag(hf, words) if words is not None else float("nan")
         lag_me = av_lag_brady(hf, ht, words) if words is not None else float("nan")

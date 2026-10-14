@@ -1,6 +1,6 @@
 # Pipeline 1: process so far, and the next step
 
-*Handoff note, updated 13 Oct 2026 (evening, after the pilot). Due Fri 16 Oct (closes Sun 18 Oct). Start a new chat with:
+*Handoff note, updated 15 Oct 2026 (night, after the full run of steps 4-5). Due Fri 16 Oct (closes Sun 18 Oct). Start a new chat with:
 "Read `pipeline1/PROCESS.md` and `pipeline1/design/amendments.md`, then run the next step."*
 
 ## The question
@@ -19,9 +19,9 @@ image check. There is no face recognition in this pipeline.
 | 1 Get data | `01_get_data/` | **Done on real data.** 739 classes synced from Forum (0 failures). |
 | 2 Clean | `02_clean/` | **Done.** 739 → 477 usable classes. Reasons in `data/02_clean/`. |
 | 3 Split | `03_split/` | **Done.** 289 train / 94 validation / 94 test across 26 courses (`data/03_split/split.csv`). |
-| 4 Words + events | `04_words_events/` | **Piloted on 20 train classes (13 Oct).** Deepgram (upload mode), words, Forum events, one clock: all 20 calibrate (windowed, no drift), 18/20 pass the residual rule. |
-| 5 Hand raises | `05_hand_raises/` | **Rebuilt for the real Forum UI (`oncue/strip.py`) and piloted on the same 20.** 0 wrong tiles, 118 raises timed to the frame, 18/20 classes pass QA. Method: `05_hand_raises/METHOD.md`. |
-| 6–9 Moments, snapshots, train, score | `06_…` to `09_…` | Built and tested on synthetic data. Run after steps 4–5 on all classes. |
+| 4 Words + events | `04_words_events/` | **Done on all 477 classes (14 Oct).** 477 transcripts (Deepgram, upload mode); 474 with words: 98590, 101578 and 102735 (CP191/CP192) were recorded without sound. 457 pass the clock rule. |
+| 5 Hand raises | `05_hand_raises/` | **Done on all 477 (14-15 Oct, rented pod).** 2,774 raises with a known start, all re-timed to the frame and with an audit clip (`pipeline1/audit/`); 1,295 called. QA: 446/477 classes pass (train 274, validation 86, test 86); 2,674 raises in passing classes. |
+| 6–9 Moments, snapshots, train, score | `06_…` to `09_…` | Built and tested on synthetic data. **Next:** run them on the real tables. |
 
 The pilot's metrics and the decisions to approve: `QUALITY.md`. Every question asked during
 the pilot, with its answer: `QUESTIONS.md`. The pilot itself lives in `data/pilot/`
@@ -62,7 +62,23 @@ the pilot, with its answer: `QUESTIONS.md`. The pilot itself lives in `data/pilo
   `Brady-Rutherford/Minervas_scribe` (PR #1, 13 Oct). The pipeline imports it from the local
   clone `~/Minervas_scribe`. Never merge it with any other transcriber repo.
 
-## Next step: run steps 4 + 5 on every class
+## Steps 4 + 5 on every class: how it was run (14-15 Oct)
+
+Done on a rented Prime Intellect pod (5×A40), see `pod/README.md`. What changed on the way, all
+recorded in `QUESTIONS.md`:
+
+- **Two label fixes** (`oncue/strip.py`): a classmate's label must not pass as Brady's, neither by
+  OCR (`ME_NAME_MIN = 0.75`) nor by a near look-alike patch (`ME_SAME_LABEL_NCC = 0.95`). Classes
+  scanned before a fix with long unread stretches were scanned again (old results in
+  `data/rescan_backup*/`).
+- **GPU decoding** (`ONCUE_HWACCEL=cuda`): bit-identical frames, ~4x less CPU for ffmpeg.
+- **QA rules (Brady, 14 Oct):** clock limits 2.5 s (max residual and p95; was 1.5 s); the ring
+  check is judged over the frames where his tile is read (`oncue ringcheck`), so breakouts and
+  unread stretches never drop a class, a wrong tile does; coverage >= 30% stays.
+
+The original instructions follow.
+
+## (Original) Next step: run steps 4 + 5 on every class
 
 One command per split, train first. Each class: Deepgram transcript (upload mode), words,
 events, the strip scan, tracking, episodes, re-timing, audit clips, QA:

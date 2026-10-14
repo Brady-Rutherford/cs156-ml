@@ -127,3 +127,18 @@ residuals ≤ 3 s are kept).
 Moving it needs the Forum cookie and the Deepgram key on the rented machine, and classmates'
 audio and video would be processed there (in memory, not stored). That is a privacy and
 security decision to make deliberately.
+
+## 6. Decisions taken and the full run (14-15 Oct)
+
+- **Approved by Brady:** clock limits 2.5 s (max residual and p95, was 1.5 s; median <= 0.5 s
+  stays); ring check over the frames where his tile is read (`oncue ringcheck`); coverage >= 30%;
+  drop no class for breakouts or unread stretches; vote = the professor calls one or 6+ others
+  raise within [-5, +10] s; left-censored raises stay out of the labels (84% of them are pieces
+  of a raise already counted; a "single DOWN reading" rule would add ~1% and was not adopted).
+- **Still open:** the 0.17 s onset offset (leave, subtract, or detect the white hand).
+- **Result, all 477 classes:** 446 pass QA (train 274/289, validation 86/94, test 86/94).
+  Failures: too few calibration windows 6, A/V lag 6, residual median 5, tile unlocated 4 (with
+  the 3 silent recordings: 7), no calibration 3, max residual 2, wrong tile 2.
+- **Raises:** 2,774 with a known start (train 1,674, validation 541, test 559), all re-timed
+  to the frame, 1,295 called; 2,674 in classes that pass QA. Per-class checks:
+  `data/logs/ingest_report.csv`.

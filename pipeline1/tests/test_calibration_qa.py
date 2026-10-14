@@ -1,8 +1,8 @@
 """Class calibration QA (spec §3 class QA, §4.3, §4.4 `test_calibration_qa`).
 
 A class is headline-eligible on timing only when Scribe's calibration was applied with status
-ok/piecewise, `method == "windowed"` with >= 6 usable windows, max_residual_s <= 1.5 s, and the
-measured residuals (calibrated voice start vs nearest ASR word start) have p95 <= 1.5 s and
+ok/piecewise, `method == "windowed"` with >= 6 usable windows, max_residual_s <= 2.5 s, and the
+measured residuals (calibrated voice start vs nearest ASR word start) have p95 <= 2.5 s and
 median <= 0.5 s. A global-fallback fit reports max_residual_s = 0 and must NEVER pass, not even
 in the 3 s sensitivity population. Synthetic data only.
 """
@@ -140,9 +140,9 @@ def test_residuals_use_quiet_events_and_a_2s_search():
 @pytest.mark.parametrize("cal, resid, ok, reason, sens_ok", [
     (_cal(), [0.1] * 19 + [0.9], True, "ok", True),
     (_cal(status="piecewise"), [0.1] * 20, True, "ok", True),
-    (_cal(), [0.1] * 10 + [2.0] * 10, False, "resid_p95", False),       # median 1.05 > 0.5
-    (_cal(), [0.1] * 18 + [2.5] * 2, False, "resid_p95", True),          # p95 in (1.5, 3]
-    (_cal(max_residual_s=1.6), [0.1] * 20, False, "cal_max_residual", True),
+    (_cal(), [0.1] * 10 + [2.8] * 10, False, "resid_p95", False),       # p95 2.8 > 2.5
+    (_cal(), [0.1] * 18 + [2.9] * 2, False, "resid_p95", True),          # p95 in (2.5, 3]
+    (_cal(max_residual_s=2.6), [0.1] * 20, False, "cal_max_residual", True),
     (_cal(max_residual_s=3.2), [0.1] * 20, False, "cal_max_residual", False),
     (_cal(windows=[[0, 0, 1]] * 5), [0.1] * 20, False, "cal_few_windows", False),
     (_cal(method="global", max_residual_s=0.0, windows=[[0, 0, 1]] * 2), [0.0] * 20,
@@ -157,8 +157,8 @@ def test_qa_row_rules(cal, resid, ok, reason, sens_ok):
 
 
 def test_max_residual_is_dropped_not_clamped():
-    row = transcribe.calibration_qa_row(_cal(max_residual_s=1.6), np.full(20, 0.1), "ms")
-    assert row["eps_F_s"] == pytest.approx(1.6)            # logged as measured ...
+    row = transcribe.calibration_qa_row(_cal(max_residual_s=2.6), np.full(20, 0.1), "ms")
+    assert row["eps_F_s"] == pytest.approx(2.6)            # logged as measured ...
     assert not row["cal_qa_pass"]                          # ... and the class leaves headline
 
 

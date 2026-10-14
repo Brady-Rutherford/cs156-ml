@@ -227,8 +227,9 @@ def eps_f_poll(eps_f_s: float) -> float:
 CAL_OK_STATUSES = ("ok", "piecewise")
 CAL_METHOD_REQUIRED = "windowed"
 CAL_MIN_WINDOWS = 6
-CAL_MAX_RESIDUAL_S = 1.5
-CAL_RESID_P95_MAX_S = 1.5
+# Brady, 14 Oct (full run): rough timing is fine, more classes are better: 2.5 s, not 1.5 s.
+CAL_MAX_RESIDUAL_S = 2.5
+CAL_RESID_P95_MAX_S = 2.5
 CAL_RESID_MED_MAX_S = 0.5
 CAL_SENSITIVITY_MAX_S = 3.0           # sensitivity admits residuals up to 3 s
 RESID_SEARCH_S = 2.0                  # residual = |cal voice start - nearest word start| within ±2 s
@@ -277,6 +278,14 @@ def av_lag_ok(lag_s: float, median_lag_s: float) -> bool:
 # --------------------------------------------------------------------------- hand detector
 
 F_SCAN = 2.0                          # samples per second
+# Decoder threads per ffmpeg process (0 = ffmpeg's default, one per core). Set it (e.g. 2)
+# when many classes are scanned at once, so the processes do not fight over the cores.
+FFMPEG_THREADS = int(os.environ.get("ONCUE_FFMPEG_THREADS", "0") or 0)
+# Video decoding on NVIDIA GPUs (pod, 14 Oct): ONCUE_HWACCEL=cuda, ONCUE_GPUS=number of GPUs to
+# spread the streams over. Frames come out bit-identical to the software decode (240 of 240 strip
+# frames, class 104899), at a quarter of the CPU. Unset (the default, the laptop): software.
+HWACCEL = os.environ.get("ONCUE_HWACCEL", "") or None
+GPUS = int(os.environ.get("ONCUE_GPUS", "0") or 0)
 THETA_ON = 0.20                       # baseline-subtracted icon fraction for UP
 THETA_OFF = 0.08                      # ... for DOWN (hysteresis)
 DOWN_BASELINE_FLAG = THETA_OFF / 2    # flag a class whose DOWN baseline exceeds this
