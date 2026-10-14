@@ -40,9 +40,17 @@ def main() -> int:
                      f"{len(ids & retimed):>10}")
     log_p = Path.home() / "ingest.log"
     if log_p.exists():
-        tail = log_p.read_text(errors="ignore").splitlines()[-400:]
-        stage = [x for x in tail if x.startswith("== ")]
-        lines += ["", "now: " + (stage[-1][3:] if stage else "starting")]
+        stage = None
+        with open(log_p, errors="ignore") as fh:        # stage markers anywhere in the log
+            for x in fh:
+                if x.startswith("== "):
+                    stage = x[3:].rstrip()
+        size = log_p.stat().st_size
+        with open(log_p, "rb") as fh:                    # recent lines: the last 4 MB
+            fh.seek(max(0, size - 4_000_000))
+            tail = fh.read().decode("utf-8", "ignore").splitlines()
+        tail = [x for x in tail if "[downloading]" not in x]
+        lines += ["", "now: " + (stage or "starting")]
         done = [x for x in tail if x.startswith("scan ")][-5:]
         trs = [x for x in tail if "[complete]" in x][-5:]
         if trs:
