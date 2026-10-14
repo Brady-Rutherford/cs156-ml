@@ -26,18 +26,21 @@ def main() -> int:
     tr = config.TRANSCRIPTS_DIR
     asr = {int(m.group(1)): p for p in tr.rglob("*_asr.json")
            if (m := re.search(r"class(\d+)_asr\.json$", p.name))}
-    scanned = {int(p.stem) for p in (config.TABLES_DIR / "hand_tiles").glob("*.parquet")}
+    tiles = list((config.TABLES_DIR / "hand_tiles").glob("*.parquet"))
+    scanned = {int(p.stem) for p in tiles if p.stat().st_size > 0}
+    elsewhere = {int(p.stem) for p in tiles if p.stat().st_size == 0}   # the laptop's (option B)
     eps_p = config.table_path("hand_episodes")
     retimed = set()
     if eps_p.exists():
         e = pd.read_parquet(eps_p, columns=["class_id", "onset_retimed_s"])
         retimed = set(e.loc[e["onset_retimed_s"].notna(), "class_id"].astype(int))
     lines = [f"Ingestion progress   {time.strftime('%Y-%m-%d %H:%M:%S %Z')}", ""]
-    lines.append(f"{'split':<11}{'classes':>8}{'transcribed':>13}{'scanned':>9}{'re-timed':>10}")
+    lines.append(f"{'split':<11}{'classes':>8}{'transcribed':>13}{'scanned':>9}{'re-timed':>10}"
+                 f"{'on laptop':>11}")
     for sp in config.SPLITS:
         ids = set(s.loc[s["split"] == sp, "class_id"].astype(int))
         lines.append(f"{sp:<11}{len(ids):>8}{len(ids & set(asr)):>13}{len(ids & scanned):>9}"
-                     f"{len(ids & retimed):>10}")
+                     f"{len(ids & retimed):>10}{len(ids & elsewhere):>11}")
     log_p = Path.home() / "ingest.log"
     if log_p.exists():
         stage = None

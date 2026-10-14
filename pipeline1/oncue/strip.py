@@ -74,6 +74,11 @@ LABEL_S_MAX, LABEL_V_MIN = 40, 225   # name text: near-pure white
 WORD_H, WORD_W = 16, 96
 WORD_BLUR = 1.0
 SAME_LABEL_NCC = 0.85            # same person at the same width: median 0.93; others <= 0.69
+# ... but a label is taken as Brady's without OCR only when it is this close to one of his. Full
+# run, 14 Oct (80193): a classmate's label scored 0.91 against his stored labels, so it was
+# taken as his, two tiles were his, and his tile went unread in 57% of his solo speech. Below
+# this, the label is read once, and the classmate's label gets its own entry.
+ME_SAME_LABEL_NCC = 0.95
 SAME_WIDTH_PX = 2
 ME_LABEL_NCC = 0.80              # a tile matching one of Brady's read labels at this width,
 ME_LABEL_NCC_ANY = 0.88          # or at any width (a reaction tints the label; tiles resize)
@@ -87,6 +92,11 @@ STRICT_ME_LABEL_COURSES = frozenset({"B111"})
 ME_CONFIRM_NCC = 0.75
 NAME_MATCH_MIN = 0.60            # difflib ratio between the OCR text and a roster name ...
 NAME_MATCH_MARGIN = 0.12         # ... that beats every other person's best ratio by this
+# A label counts as Brady's only when its OCR text is this close to his name. Full run, 14 Oct
+# (83098): a classmate whose display name is not on the roster read as him at 0.67, so her
+# label joined his, both tiles then matched him, and his tile went unread for minutes at a
+# time. His own label reads at 0.80-1.00 ("Bradl y", "° Brady"); names at 0.67 ("Andy").
+ME_NAME_MIN = 0.75
 # Tesseract's usual confusions on small white-on-video text ("Bracly" for "Brady").
 OCR_FIXES = (("cl", "d"), ("ci", "d"), ("rn", "m"), ("0", "o"), ("1", "l"), ("|", "l"))
 
@@ -344,7 +354,9 @@ class LabelBook:
             return None                                   # never confirmed as anyone's
         self.n_ocr += 1
         self.version += 1
-        uid, _ = match_name(self.ocr(white), self.names)
+        uid, score = match_name(self.ocr(white), self.names)
+        if uid == self.me_id and score < ME_NAME_MIN:
+            uid = None                                    # too far from his name to be his
         if k is None:
             ok = not (self.strict and uid == self.me_id and not self._like_me(patch))
             self.widths.append(int(width))
@@ -375,7 +387,8 @@ class LabelBook:
             return None
         s = _ncc_rows(np.stack([self.patches[i] for i in idx]), patch)
         j = int(np.argmax(s))
-        return idx[j] if s[j] >= SAME_LABEL_NCC else None
+        need = ME_SAME_LABEL_NCC if self.uids[idx[j]] == self.me_id else SAME_LABEL_NCC
+        return idx[j] if s[j] >= need else None
 
     def me_patches(self) -> tuple[np.ndarray, np.ndarray]:
         """(widths, patches) of the labels read as Brady's."""
@@ -532,6 +545,66 @@ def _anchor_windows(voice: pd.DataFrame | None) -> list[tuple[float, float]]:
         return []
     ev = hands.anchor_times(voice, max_events=10 ** 6)
     return [(min(ts), max(ts)) for ts in ev if ts]
+
+
+def ring_check_read(ht: pd.DataFrame, voice: pd.DataFrame | None) -> tuple[float, int]:
+    """The ring check over the frames where Brady's tile is read (QA; Brady, 14 Oct: breakouts
+    and unread stretches must not drop a class, a wrong tile must). Inside his isolated speech,
+    of the frames with exactly one bordered tile and his tile identified, the share where the
+    bordered tile is his. Returns (share, n frames); share is NaN when there are none."""
+    windows = _anchor_windows(voice)
+    if not windows or ht is None or not len(ht):
+        return float("nan"), 0
+    wa = np.array([a for a, _ in windows])
+    wb = np.array([b for _, b in windows])
+    h = ht[ht["tile_idx"] >= 0]
+    t = h["pts_s"].to_numpy(float)
+    j = np.searchsorted(wa, t, side="right") - 1
+    h = h[(j >= 0) & (t <= wb[np.clip(j, 0, None)])]
+    if not len(h):
+        return float("nan"), 0
+    bordered = np.nan_to_num(h["border"].to_numpy(float)) >= FORUM_DETECTOR.border_min
+    mine = h["ncc_me"].to_numpy(float) >= 1
+    g = pd.DataFrame({"t": h["pts_s"].to_numpy(float), "b": bordered, "bm": bordered & mine,
+                      "m": mine}).groupby("t")[["b", "bm", "m"]].sum()
+    use = (g["b"] == 1) & (g["m"] >= 1)
+    n = int(use.sum())
+    return (float(g.loc[use, "bm"].sum()) / n if n else float("nan")), n
+
+
+def cli_ringcheck(args) -> int:
+    """`oncue ringcheck`: re-score the ring check of scanned classes over the frames where
+    Brady's tile is read (`ring_check_read`) and update hand_qc (track_valid_share,
+    tile_status, template_validated) in place. Nothing else changes: the raises and their
+    re-timing stay. Then run `oncue qa`."""
+    classes = hands._selected_classes(args)
+    qc = hands._read_table("hand_qc")
+    voice = hands._read_table("voice")
+    if qc is None:
+        raise SystemExit("oncue ringcheck: run `oncue track` first")
+    qc = qc.copy()
+    changed = 0
+    for cid in (int(c) for c in classes["class_id"]):
+        row = qc["class_id"] == cid
+        p = hands.hand_tiles_path(cid)
+        if not row.any() or not p.exists() or p.stat().st_size == 0:
+            continue
+        ht = pd.read_parquet(p, columns=["pts_s", "tile_idx", "border", "ncc_me"])
+        share, _n = ring_check_read(ht, hands._for_class(voice, cid))
+        r = qc.loc[row].iloc[0]
+        n_anchor = int(r["n_anchor_events"]) if pd.notna(r["n_anchor_events"]) else 0
+        geom = hands.StripGeometry(found=bool(r["strip_found"]) if pd.notna(r["strip_found"])
+                                   else False)
+        cov = float(r["coverage"]) if pd.notna(r["coverage"]) else 0.0
+        status, validated = hands.tile_status(geom, cov, n_anchor, share)
+        changed += int(status != r["tile_status"])
+        qc.loc[row, "track_valid_share"] = share
+        qc.loc[row, "tile_status"] = status
+        qc.loc[row, "template_validated"] = validated
+    hands._upsert("hand_qc", qc)
+    print(f"oncue ringcheck: {int(qc['class_id'].isin(classes['class_id']).sum())} classes "
+          f"re-scored over read frames, {changed} changed tile status", flush=True)
+    return 0
 
 
 def scan_class(cid: int, frames: Iterable[tuple[float, np.ndarray]], book: LabelBook, *,
@@ -878,6 +951,7 @@ def _scan_job(cid: int) -> tuple[int, dict | None]:
     from . import events
 
     _one_thread()
+    _pick_gpu(cid)
     try:
         voice_all = hands._read_table("voice")
         from .transcribe import course_code_of
@@ -891,7 +965,8 @@ def _scan_job(cid: int) -> tuple[int, dict | None]:
             src["url_fn"], width=int(m["width"]), strip_y=0,
             strip_h=min(SCAN_ROWS, int(m["height"])), fps=config.F_SCAN,
             a_start=float(m.get("a_start") or 0.0), fmt_start=m.get("fmt_start"),
-            hwaccel=None)                      # software decode: 33x vs 13x real time (M-series)
+            hwaccel=config.HWACCEL)            # software unless ONCUE_HWACCEL=cuda (the pod's GPUs);
+                                               # on the Mac software beats VideoToolbox, 33x vs 13x
         ht, info = scan_class(cid, reader, book, voice=hands._for_class(voice_all, cid))
         info["media"] = {k: m.get(k) for k in ("a_start", "v_start", "fmt_start", "width",
                                                "height", "duration")}
@@ -933,13 +1008,32 @@ def cli_scan(args) -> int:
     return 0 if not bad else 1
 
 
+def _pick_gpu(cid: int) -> None:
+    """With ONCUE_HWACCEL=cuda and ONCUE_GPUS=n, this job's ffmpeg decodes on the next GPU in turn
+    (a counter shared by every worker on the machine, so the streams spread evenly)."""
+    if config.HWACCEL == "cuda" and config.GPUS > 1:
+        import fcntl
+
+        path = config.LOGS_DIR / ".gpu_turn"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a+") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            f.seek(0)
+            n = int(f.read().strip() or 0)
+            f.seek(0)
+            f.truncate()
+            f.write(str(n + 1))
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(n % config.GPUS)
+
+
 def _clip_reader(cid: int, client) -> hands.FfmpegClipReader:
     src = hands._sources(cid, client)
     m = src["media"]
+    _pick_gpu(cid)
     return hands.FfmpegClipReader(
         src["url_fn"], width=int(m["width"]), height=int(m["height"]),
         crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
-        fmt_start=m.get("fmt_start"))
+        fmt_start=m.get("fmt_start"), hwaccel=config.HWACCEL)
 
 
 def _retime_job(job: tuple[int, pd.DataFrame, float]) -> pd.DataFrame | None:

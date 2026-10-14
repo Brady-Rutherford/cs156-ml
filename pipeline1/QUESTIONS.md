@@ -202,3 +202,117 @@ pilot.
   under `caffeinate -i`. **For the overnight full run the Mac must be plugged in with the lid
   open:** closing the lid on battery still forces sleep.
 
+
+## The full run on a rented pod (14 Oct)
+
+- **Would a pod with more CPU be faster than the Mac? Is the GH200 a 72-core CPU?** Yes, the
+  scan is bound by the CPU (software H.264 decoding of each 1080p frame before the crop, then
+  Python per frame), so it scales with cores. The GH200's Grace CPU has 72 Arm cores. The pod
+  actually rented (5×A40) gives its container 40.8 CPUs by cgroup quota although `nproc` shows
+  96; `run.sh` reads the quota. The GPUs are not used: NVDEC would decode differently from the
+  pilot (the run must match the pilot exactly) and the Python part stays on the CPU anyway.
+- **Why did 2 of the 20 pilot classes fail?** 83649 and 95228 miss the strict calibration rule
+  (residual p95 1.68 s and 1.52 s against ≤ 1.5 s). Both pass the ≤ 3 s sensitivity rule. Which
+  rule to use is still Brady's call.
+- **Why is it so slow?** Each pod vCPU is about a quarter of a Mac core. Also, at first every
+  worker started one thread per library per visible core (96), and the load hit 204. Fixed:
+  one thread per library in each worker, and `-filter_threads` for ffmpeg. After that, about
+  40 train classes an hour with 16 workers.
+- **Are the pod and the Mac running at the same time?** Yes, on different classes ("option
+  B"): the pod does train and test, the Mac validation. An empty `hand_tiles/{class}.parquet` on one machine marks a
+  class the other machine does, so no class is scanned twice. `pod/pull_merge.sh` joins the
+  results at the end: per-class files, plus the tables merged class by class.
+- **Can more move to the Mac?** No. With 6 workers and 16 GB RAM, the Mac scans about 14
+  classes an hour (batches of 12 wait for their slowest class). Every 5th test class went to
+  the Mac at first; at 14/h it would have finished last, so they went back to the pod before
+  any was started. Validation alone (94) on the Mac and train + test (383) on the pod finish
+  their scans at about the same time.
+- **The network is good. Is it the bottleneck?** No. Both machines are short on CPU, not
+  bandwidth: a 600 kbps stream is tiny, but decoding it at full resolution is the expensive part.
+- **What is the scan doing?** Per class: a fresh signed URL for the `lowres` recording; ffmpeg
+  streams it, decodes every frame, keeps 2 per second (~12,100 frames for 100 minutes) and
+  crops the top 360 rows; Python finds the strip and its tiles, finds my tile by its name label
+  (stored label patches first, Tesseract OCR + roster for a new label), and measures every tile's
+  top-left corner (yellow-green share, round-hand shape) and its teal ring. It writes
+  `hand_tiles/{class}.parquet` (one row per tile per frame, `ncc_me` = 1 on mine; no names) and
+  the ring check. A log line `12121 frames, strip 80%, my tile on 9089, ring check 1.0 (294
+  frames), 1122 OCR reads` = frames read, share showing the strip, frames with my tile found,
+  ring check over that many solo-speech frames, OCR calls needed.
+- **What do the `pod_live` pictures show?** One PNG per class, rewritten every 60 s of video
+  while it is scanned (the last one stays): the strip in grey view (every tile but mine
+  pixelated, only teal and yellow-green kept in colour; my tile boxed), captioned with the
+  class, the video time, "my tile found / NOT found" and "HAND UP / hand down". A small
+  yellow-green square on another tile is a classmate's raised hand.
+
+## Found during the full run (14 Oct)
+
+- **The ring check mixes two things.** 17 of the first 92 train classes (all 2023–24) score
+  < 90%, against 1 of 20 in the pilot. Almost every miss is a frame where my tile was not read
+  at all (985 frames), not a wrong tile (52 frames: another tile ringed while mine was read).
+  When my tile is read during my solo speech, it is the ringed one in 95–100% of frames in 15 of
+  the 17 (81174: 64% of 42 frames; 79603: 81% of 21). Classmates speaking alone: 27 of 96,710
+  frames had their ring on "my" tile (0.03%). Unread frames never become DOWN: moments whose
+  window is not fully observed are left out of the labels (`unobservable`). So the 90% rule as
+  written drops classes for low coverage, which the label mask already handles. Decision for
+  Brady before the final QA: keep it, or apply 90% to the read frames only (plus the coverage
+  rule).
+- **"Does my tile have to be in 90% of the class? Breakouts are longer than that."** No. The
+  ring check only uses moments when Brady speaks alone in the main room; breakouts, before and
+  after class never count. Brady's rule (14 Oct): **drop no class** for coverage or breakouts,
+  and miss no raise.
+- **Why was my tile unread for minutes in some classes? (root cause, 14 Oct)** A classmate whose
+  display name is not on the roster got matched to "Brady" by OCR at 0.67 (the bar for any name
+  is 0.60). Their label then joined Brady's, both tiles matched him, and two tiles named Brady
+  make a frame ambiguous, so his tile went unread while both were on screen (83098: 68% of the
+  strip time). Brady's own label was clear and read correctly in those frames. Fix:
+  `ME_NAME_MIN = 0.75` (OCR text must be this close to his name; his own misreads score
+  0.80–1.00). Classes scanned before the fix with > 2 min unread in long stretches, > 10% unread,
+  or a classmate's ring on "his" tile are scanned again (57 train on the pod, 13 train copies +
+  10 validation on the laptop; old results in `data/rescan_backup/`).
+- **Is the progress board accurate?** It counted the other machine's empty placeholder files as
+  "scanned". Fixed: `scanned` counts real scans only, and a new column shows the classes left
+  to the laptop. One validation class (103407) failed transcription (the download broke) and is
+  being retried.
+- **"That's really expensive. How do we speed it up?" (14 Oct, 18:30)** Use the pod's five
+  A40 GPUs, idle until then, to decode the video: decoding was ~70% of the scan's CPU (ffmpeg ~14
+  CPUs, Python ~6, Tesseract little). `ONCUE_HWACCEL=cuda` decodes on the GPU, keeps 2 frames a
+  second there, downloads only those and converts them exactly as the software path does. The
+  frames are bit-identical to the pilot's software decode (240/240 strip frames of 104899, and
+  the scan reader's 120/120 frames with the same timestamps in 83098), at ~¼ of ffmpeg's CPU.
+  The laptop keeps software decoding (VideoToolbox was slower there, 13× vs 33× real time).
+- **"How did you make it faster, and where are the numbers?" (19:20)** GPU decoding (above), 50
+  scans at once dealt over the 5 GPUs in turn, and all work on the pod (~130 classes/hour against
+  ~45 before and ~14 on the laptop). 19:20: 132/477 scanned.
+- **A second cause of unread stretches (80193, 19:30).** After the first fix, 13 of 72 classes
+  still had Brady's tile unread during his solo speech, but never the wrong tile (when read, it
+  was his in 100% of frames in 12 of the 13). In 80193 a classmate's label looked 0.91 like his
+  stored labels (blurred 16 × 96 word patches), so it was taken as his without OCR (same-width
+  match ≥ 0.85), and two tiles were his. Fix: `ME_SAME_LABEL_NCC = 0.95`, so a label is taken as
+  his without OCR only when it is nearly identical to one of his; otherwise it is read once and the
+  classmate's label gets its own entry. Being verified on 80193 and a healthy class (76260)
+  before it goes into the run.
+- **"All the transcriptions are done, correct?" (20:40)** 477/477 transcripts exist and 475 have
+  words. 98590 (test) and 101578 (train) were recorded without sound: the `lowres` audio is
+  digital silence (−91 dB at 10, 40 and 70 min) and `highres` has no audio track. Deepgram
+  rightly returns no words; their raises come from the video, but there is no transcript and no
+  clock calibration. Keep or leave out: Brady's call. Calibration so far (train + test, 383): 371
+  ok, 7 piecewise, 5 unverified (the two silent ones + 3 to look at).
+- **"Is it running the faster process?" (20:33)** Yes: 50 GPU-decoding scans. It looked slow
+  because the restart for label fix 2 put every worker back at the start of a class (~18–20 min
+  each). The fix also makes Python work harder where labels look alike, and the CPU is at its
+  limit, so the steady rate is ~120–130/hour instead of ~150.
+- **"796 left-censored (32%): can you fix that?" (23:10)** Mostly they are not lost raises. Of
+  the 682 in train classes outside the milder re-scan, 573 (84%) have a hand-UP reading in the
+  10 s before: the same raise continuing through a short unread stretch or a flicker, already
+  counted from its first piece. Only ~20 have a clean DOWN reading ≤ 3 s before the hand goes up
+  and no UP in the 10 s before (~45 if the start may be 5 s uncertain). A first look at 7 s
+  windows had suggested ~400, which was wrong. A "single DOWN reading" rule would gain ~1%, so it
+  was not adopted (code written, measured on the pod's frames, reverted).
+- **Clips: "are you saving them? keep them" (23:20).** Yes: `pipeline1/audit/{class}/`, one 6 s
+  grey-view clip (3 s before, 3 s after) and a frame sheet per re-timed raise, plus `raises.csv`;
+  local, gitignored, kept (2,774 clips, 2.9 GB). For face work later: colour clips of his own tile
+  only (8 s before, 3 s after, plus non-raise moments), cut fresh from Forum's recordings with the
+  saved raise times and tile positions. Not done tonight (Brady: "only for next time").
+- **QA rules (Brady, 23:40):** clock limits 2.5 s; ring check over read frames; drop no class for
+  breakouts or unread stretches, but no useless data. Applied on the laptop after the pull:
+  446/477 classes pass (was 401 under the old rules).

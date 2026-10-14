@@ -6,6 +6,8 @@
 # classes are skipped (transcripts and scans already on disk are reused).
 # Workers: TRANSCRIBE_WORKERS (default 24: network-bound) and SCAN_WORKERS (default 40% of the
 # cores: each scan is one ffmpeg with ONCUE_FFMPEG_THREADS=2 plus one Python process).
+# SKIP_PREP="train" skips a split's transcripts/words/events step on a restart (14 Oct: the
+# scan restarted with the label fix while pod_test.sh writes the test tables).
 set -uo pipefail
 cd "$HOME/cs156-ml/pipeline1"
 PY=../.venv/bin/python
@@ -34,10 +36,13 @@ LOG="$HOME/ingest.log"
 echo "== $(date -u +%FT%TZ) start: $CPUS CPUs, transcribe workers $TW, scan workers $SW" | tee -a "$LOG"
 $PY pod/preflight.py 2>&1 | tee -a "$LOG"
 [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "preflight failed: fix it before running" | tee -a "$LOG"; exit 1; }
+SKIP_PREP=" ${SKIP_PREP:-} "              # e.g. SKIP_PREP=train: its transcripts and events are done
 for split in train validation test; do
-  echo "== $(date -u +%FT%TZ) $split: transcripts, words, events" | tee -a "$LOG"
-  $PY -u -m oncue ingest --split "$split" --workers "$TW" \
-      --stages transcribe,words,events,select 2>&1 | tee -a "$LOG"
+  if [[ "$SKIP_PREP" != *" $split "* ]]; then
+    echo "== $(date -u +%FT%TZ) $split: transcripts, words, events" | tee -a "$LOG"
+    $PY -u -m oncue ingest --split "$split" --workers "$TW" \
+        --stages transcribe,words,events,select 2>&1 | tee -a "$LOG"
+  fi
   echo "== $(date -u +%FT%TZ) $split: hand scan, raises, clips, QA" | tee -a "$LOG"
   $PY -u -m oncue ingest --split "$split" --workers "$SW" \
       --stages scan,track,episodes,retime,audit,qa 2>&1 | tee -a "$LOG"

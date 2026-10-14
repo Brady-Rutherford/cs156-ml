@@ -41,6 +41,8 @@ COMMANDS: dict[str, tuple[str, str, str]] = {
     "episodes": ("hands", "cli_episodes", "state machine, votes, outcomes -> hand_episodes"),
     "retime": ("hands", "cli_retime", "sub-second onset re-timing (should-tier)"),
     "qa": ("qa", "cli", "merge timing/detector/PCW QA into classes; qa_pass, qa_reason"),
+    "ringcheck": ("strip", "cli_ringcheck",
+                  "ring check over the frames where my tile is read -> hand_qc (then qa)"),
     "labels": ("labels", "cli", "speech onsets, at-risk grid and y_* -> points.parquet"),
     "frames": ("text", "cli_frames", "masking, normalisation, causal frames -> frames.parquet"),
     "embed": ("embed", "cli", "frame/tail/PCW embeddings with sha1 cache"),

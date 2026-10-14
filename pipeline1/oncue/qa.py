@@ -240,8 +240,13 @@ def cli(args) -> int:
     out = apply(classes, _read(TIMING_TABLE), _read(HAND_QC_TABLE), _read(PCW_STATUS_TABLE))
     schemas.validate(out, "classes")
     out.to_parquet(config.table_path("classes"), index=False)
-    sel = out[out["phase"].notna()] if "phase" in out else out
+    if config.SPLIT_PATH.exists():                 # the step-3 split's classes (A11)
+        from .splits import split_ids
+
+        sel, what = out[out["class_id"].isin(split_ids("all"))], "split"
+    else:
+        sel, what = (out[out["phase"].notna()] if "phase" in out else out), "selected"
     s = summary(sel)
-    print(f"oncue qa: {s['qa_pass']}/{s['classes']} selected classes pass "
+    print(f"oncue qa: {s['qa_pass']}/{s['classes']} {what} classes pass "
           f"({s['qa_pass_dev']} dev); failures by first reason {s['fail_by_first_reason']}")
     return 0

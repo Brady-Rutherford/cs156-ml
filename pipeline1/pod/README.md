@@ -75,3 +75,39 @@ cd ~/cs156-ml/pipeline1
 
 `run.sh` reads `TRANSCRIBE_WORKERS` (default 24), `SCAN_WORKERS` (default 40% of the cores) and
 `ONCUE_FFMPEG_THREADS` (default 2), e.g. `SCAN_WORKERS=24 bash run.sh`.
+
+## Sharing the scan with the laptop (option B, 14 Oct)
+
+The full run used both machines: the pod scanned train and test, the laptop validation.
+(`data/logs/mac_test_ids.txt` can hand test classes to the laptop; it ended up empty: the 19
+first given to it went back to the pod before any was started, as the laptop ran ~14/h.)
+
+- `mac_share.sh` (laptop): pulls the pod's transcripts, then scans every validation class in
+  batches of 12 (6 workers), then track, episodes, retime, audit and QA. Classes taken by the
+  other machine have an empty `data/tables/hand_tiles/{class}.parquet` placeholder, so neither
+  machine scans a class twice (track skips a class without a scan record).
+- `pod_test.sh` (pod, tmux session `test`): waits for the validation + test transcripts, drops
+  the pod's test placeholders, then words, events, select and the scan for test, next to
+  `run.sh`'s train scan. `run.sh` does the rest of test after train.
+- `pull_merge.sh` (laptop, replaces `pull.sh`): non-empty hand tiles only, new transcripts, caches
+  and clips, then the tables merged (the pod's rows for train + test, the laptop's for
+  validation; the laptop's tables are backed up in `data/tables_before_merge/`), then QA over
+  all classes and the report.
+
+```
+bash pipeline1/pod/pull_merge.sh root@HOST PORT ~/.ssh/id_ed25519
+```
+
+## Cutting the pod early
+
+`cut_to_mac.sh` (laptop) stops the pod's runs, brings back transcripts, finished scans and their
+caches, removes every placeholder, then runs steps 4–5 for all classes on the laptop
+(transcribe what is missing, words, events, select, one scan pool over every unscanned class,
+then track, episodes, retime, audit, QA). Stop `mac_share.sh` first. Then wipe and terminate
+the pod.
+
+**How it ended (14 Oct, evening).** With GPU decoding (`ONCUE_HWACCEL=cuda`, `ONCUE_GPUS=5`, 50
+workers) the pod became ~8× faster than the laptop, so everything moved to the pod: the laptop's
+16 clean validation scans were pushed to it (`data/logs/mac_push_ids.txt`), and the pod scans the
+rest, re-times, makes the clips and runs QA for all 477. No placeholders are left, so the plain
+`pull.sh` brings everything back; `pull_merge.sh` and `cut_to_mac.sh` were not needed.

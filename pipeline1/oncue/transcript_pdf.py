@@ -101,6 +101,21 @@ def names_transcript(cid: int, tmp_dir: Path) -> dict:
 # --------------------------------------------------------------------------- raises in the transcript
 
 
+ROW_MAX_CHARS = 2000      # a long monologue is split over several rows (a row cannot span pages)
+
+
+def _chunks(text: str, n: int = ROW_MAX_CHARS) -> list[str]:
+    """`text` in pieces of at most about `n` characters, cut at spaces."""
+    text = str(text)
+    out = []
+    while len(text) > n:
+        cut = text.rfind(" ", 0, n)
+        cut = n if cut <= 0 else cut
+        out.append(text[:cut])
+        text = text[cut:].lstrip()
+    return out + [text]
+
+
 def raise_onset(r: dict) -> float:
     o = r.get("onset_retimed_s")
     return float(r["onset_s"]) if o is None or not np.isfinite(o) else float(o)
@@ -348,8 +363,10 @@ def write_pdf(transcript: dict, summ: dict, path: Path, *, video_url: str | None
             marks.append(len(rows) - 1)
             continue
         style = grey if x.get("speaker_id") is None else body
-        rows.append([P(clock(x["start"])), P(speaker_label(transcript, x["speaker_id"]), style),
-                     P(x["text"], style)])
+        who = speaker_label(transcript, x["speaker_id"])
+        for k, part in enumerate(_chunks(x["text"])):  # a table row must fit on one page
+            rows.append([P(clock(x["start"]) if k == 0 else ""), P(who if k == 0 else "(cont.)",
+                         style), P(part, style)])
     t = tbl(rows, [0.75, 1.6, 4.65])
     for i in marks:
         t.setStyle(TableStyle([("BACKGROUND", (0, i), (-1, i), colors.HexColor("#e3efb5"))]))

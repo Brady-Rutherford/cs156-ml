@@ -684,6 +684,20 @@ def _url_fn():
     return fresh
 
 
+def test_ffmpeg_cmd_cuda_keeps_frames_on_the_gpu_until_the_fps_pick():
+    cmd = hands.ffmpeg_cmd(SIGNED.format(n=1), crop=(0, 360), fps=2, seek=900, hwaccel="cuda")
+    assert cmd[cmd.index("-hwaccel") + 1] == "cuda"
+    assert cmd[cmd.index("-hwaccel_output_format") + 1] == "cuda"
+    assert cmd.index("-hwaccel") < cmd.index("-i")
+    # same pixels as software: pick frames, download, nv12 -> yuv420p, then the same crop
+    assert cmd[cmd.index("-vf") + 1] == ("fps=2:round=up,hwdownload,format=nv12,format=yuv420p,"
+                                         "crop=iw:360:0:0,showinfo")
+    clip = hands.ffmpeg_cmd(SIGNED.format(n=1), crop=(0, 360), seek=10, duration=4.5,
+                            hwaccel="cuda")
+    assert clip[clip.index("-vf") + 1] == ("hwdownload,format=nv12,format=yuv420p,"
+                                           "crop=iw:360:0:0,showinfo")
+
+
 def test_ffmpeg_cmd_shape():
     cmd = hands.ffmpeg_cmd(SIGNED.format(n=1), crop=(28, 72), fps=2, seek=12.5,
                            hwaccel="videotoolbox")

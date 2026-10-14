@@ -8,11 +8,14 @@ PORT="${2:-22}"
 KEY="${3:-}"
 SSH="ssh -p $PORT -o StrictHostKeyChecking=accept-new${KEY:+ -i $KEY}"
 DIRS=(transcripts tables cache logs)
-[ "${4:-}" = "--no-audit" ] || DIRS+=(audit)
 for d in "${DIRS[@]}"; do
   echo "== $d"
-  rsync -az --info=progress2 -e "$SSH" "$HOST:cs156-ml/pipeline1/data/$d/" \
+  rsync -az -e "$SSH" "$HOST:cs156-ml/pipeline1/data/$d/" \
       "$HOME/cs156-ml/pipeline1/data/$d/"
 done
+if [ "${4:-}" != "--no-audit" ]; then           # the clips live in pipeline1/audit/, not data/
+  echo "== audit"
+  rsync -az -e "$SSH" "$HOST:cs156-ml/pipeline1/audit/" "$HOME/cs156-ml/pipeline1/audit/"
+fi
 rsync -az -e "$SSH" "$HOST:ingest.log" "$HOME/cs156-ml/pipeline1/data/logs/pod_ingest.log" || true
 echo "done. Then on the pod: bash ~/cs156-ml/pipeline1/pod/wipe.sh, and terminate the pod."

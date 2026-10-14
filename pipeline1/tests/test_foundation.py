@@ -75,8 +75,8 @@ def _cal(**kw):
     (_cal(windows=[[0, 0, 1]] * 5), 0.2, 0.9, False, "cal_few_windows"),
     (_cal(applied=False), 0.2, 0.9, False, "cal_not_applied"),
     (_cal(status="unverified"), 0.2, 0.9, False, "cal_status_unverified"),
-    (_cal(max_residual_s=1.6), 0.2, 0.9, False, "cal_max_residual"),
-    (_cal(), 0.2, 1.6, False, "resid_p95"),
+    (_cal(max_residual_s=2.6), 0.2, 0.9, False, "cal_max_residual"),
+    (_cal(), 0.2, 2.6, False, "resid_p95"),
     (_cal(), 0.6, 0.9, False, "resid_median"),
     (_cal(), 0.2, None, False, "resid_p95"),
     (None, 0.2, 0.9, False, "no_calibration"),
@@ -574,7 +574,8 @@ SPEC_SUBCOMMANDS = ["harvest", "harvest-import", "select", "transcribe", "words"
                     "results-bundle", "privacy"]
 
 
-INTEGRATION_SUBCOMMANDS = {"pcw", "qa", "e2e", "ingest", "ingest-report", "audit", "pdf"}     # added after the spec
+INTEGRATION_SUBCOMMANDS = {"pcw", "qa", "e2e", "ingest", "ingest-report", "audit", "pdf",
+                           "ringcheck"}     # added after the spec
 
 
 def test_cli_lists_every_spec_subcommand():
