@@ -27,6 +27,9 @@ SW="${SCAN_WORKERS:-$(( CPUS * 2 / 5 ))}"
 [ "$SW" -ge 1 ] || SW=1
 export ONCUE_FFMPEG_THREADS="${ONCUE_FFMPEG_THREADS:-2}"
 export ONCUE_LIVE=1                       # scan snapshots for pod/watch.sh
+# one thread per library in every worker process: in a container they would otherwise each
+# start one per visible host core (96 here) and swamp the 40 CPUs actually allowed
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_THREAD_LIMIT=1
 LOG="$HOME/ingest.log"
 echo "== $(date -u +%FT%TZ) start: $CPUS CPUs, transcribe workers $TW, scan workers $SW" | tee -a "$LOG"
 $PY pod/preflight.py 2>&1 | tee -a "$LOG"

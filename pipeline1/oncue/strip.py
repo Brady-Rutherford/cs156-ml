@@ -863,11 +863,21 @@ def pass1_info(cid) -> dict | None:
 # --------------------------------------------------------------------------- CLI
 
 
+def _one_thread() -> None:
+    """Worker processes run one thread each (the parallelism is the process pool). Without
+    this, OpenCV, BLAS and Tesseract each start a thread per visible core: in a container that
+    is the whole host (96), and 16 workers buried 40 CPUs under a load of 200."""
+    cv2.setNumThreads(1)
+    for k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "OMP_THREAD_LIMIT"):
+        os.environ.setdefault(k, "1")
+
+
 def _scan_job(cid: int) -> tuple[int, dict | None]:
     """Scan one class (run in its own process: the per-frame work is Python and holds the
     GIL, so threads would share one core). The work dir arrives through ONCUE_WORK_DIR."""
     from . import events
 
+    _one_thread()
     try:
         voice_all = hands._read_table("voice")
         from .transcribe import course_code_of
@@ -935,6 +945,7 @@ def _clip_reader(cid: int, client) -> hands.FfmpegClipReader:
 def _retime_job(job: tuple[int, pd.DataFrame, float]) -> pd.DataFrame | None:
     """Re-time one class's onsets (own process, own Forum client)."""
     cid, eps, base = job
+    _one_thread()
     try:
         labels = load_me_labels(cid)
         htp = hands.hand_tiles_path(cid)
@@ -985,6 +996,7 @@ def cli_retime(args) -> int:
 def _audit_job(job: tuple[int, pd.DataFrame]) -> int:
     """Clips and frame sheets for one class's raises (own process, own Forum client)."""
     cid, eps = job
+    _one_thread()
     try:
         labels = load_me_labels(cid)
         htp = hands.hand_tiles_path(cid)
