@@ -33,6 +33,7 @@ from __future__ import annotations
 import difflib
 import json
 import logging
+import os
 import re
 import subprocess
 from collections.abc import Callable, Iterable, Sequence
@@ -482,6 +483,45 @@ def mark_overlays(ht: pd.DataFrame) -> pd.DataFrame:
     return ht
 
 
+# A live view of the scan (Brady, 14 Oct: "see the video of the tile as it gets scraped"):
+# every minute of video, the grey view of the strip goes to {logs}/live/scan_{cid}.png.
+LIVE_EVERY_FRAMES = 120          # 60 s at 2 fps
+LIVE = os.environ.get("ONCUE_LIVE") == "1"      # pod/run.sh turns it on
+
+
+def live_snapshot(cid: int, t: float, strip_img: np.ndarray, band: Band, k: int, st: dict,
+                  det: hands.Detector | None = None) -> None:
+    """Write the strip as the scan sees it (grey view: only teal and green in colour, every
+    tile but Brady's pixelated) with a caption: class, video time, tile, hand state."""
+    det = det or FORUM_DETECTOR
+    try:
+        view = grey_view(strip_img, band, k)
+        hand = "-"
+        if k >= 0:
+            a, b = band.tiles[k]
+            cv2.rectangle(view, (int(a) - 2, 0), (int(b) + 1, band.h - 1), (40, 40, 40), 2)
+            up = (st["frac_hand_s1"][k] >= det.theta_on and hands.shape_ok(
+                st["shape_s1"][k:k + 1], st["white_s1"][k:k + 1], det)[0]) or (
+                st["frac_hand_s1"][k] >= OVERLAY_MIN and st["frac_hand_s2"][k] >= OVERLAY_MIN)
+            hand = "HAND UP" if up else "hand down"
+        view = view[:, :int(band.tiles[-1, 1]) + 4]
+        w = 1400
+        view = cv2.resize(view, (w, max(1, round(view.shape[0] * w / view.shape[1]))),
+                          interpolation=cv2.INTER_NEAREST)
+        head = np.full((34, w, 3), 255, np.uint8)
+        cap = (f"class {cid}   video {int(t // 60):3d}:{int(t % 60):02d}   "
+               f"my tile {'found' if k >= 0 else 'NOT found'}   {hand}")
+        cv2.putText(head, cap, (10, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                    (0, 120, 0) if hand == "HAND UP" else (40, 40, 40), 2, cv2.LINE_AA)
+        out = config.LOGS_DIR / "live" / f"scan_{cid}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_name(out.stem + ".tmp.png")
+        cv2.imwrite(str(tmp), np.vstack([head, view]))
+        tmp.replace(out)
+    except Exception as exc:  # noqa: BLE001 - a preview must never stop the scan
+        log.debug("live snapshot failed: %s", exc)
+
+
 # --------------------------------------------------------------------------- one class
 
 
@@ -527,6 +567,8 @@ def scan_class(cid: int, frames: Iterable[tuple[float, np.ndarray]], book: Label
         me = np.arange(len(band.tiles)) == k
         st["ncc_me"] = me.astype(np.float32)
         bands.append((band.y0, band.h, len(band.tiles), float(np.median(widths))))
+        if LIVE and n_frames % LIVE_EVERY_FRAMES == 1:
+            live_snapshot(cid, float(t), strip, band, int(k), st)
         n = len(band.tiles)
         cols["pts_s"].extend([float(t)] * n)
         cols["tile_idx"].extend(range(n))

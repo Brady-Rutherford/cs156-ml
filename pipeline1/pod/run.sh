@@ -26,6 +26,7 @@ TW="${TRANSCRIBE_WORKERS:-24}"
 SW="${SCAN_WORKERS:-$(( CPUS * 2 / 5 ))}"
 [ "$SW" -ge 1 ] || SW=1
 export ONCUE_FFMPEG_THREADS="${ONCUE_FFMPEG_THREADS:-2}"
+export ONCUE_LIVE=1                       # scan snapshots for pod/watch.sh
 LOG="$HOME/ingest.log"
 echo "== $(date -u +%FT%TZ) start: $CPUS CPUs, transcribe workers $TW, scan workers $SW" | tee -a "$LOG"
 $PY pod/preflight.py 2>&1 | tee -a "$LOG"
