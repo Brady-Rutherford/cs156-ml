@@ -881,67 +881,99 @@ def cli_scan(args) -> int:
     return 0 if not bad else 1
 
 
+def _clip_reader(cid: int, client) -> hands.FfmpegClipReader:
+    src = hands._sources(cid, client)
+    m = src["media"]
+    return hands.FfmpegClipReader(
+        src["url_fn"], width=int(m["width"]), height=int(m["height"]),
+        crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
+        fmt_start=m.get("fmt_start"))
+
+
+def _retime_job(job: tuple[int, pd.DataFrame, float]) -> pd.DataFrame | None:
+    """Re-time one class's onsets (own process, own Forum client)."""
+    cid, eps, base = job
+    try:
+        labels = load_me_labels(cid)
+        htp = hands.hand_tiles_path(cid)
+        return retime_class(eps, _clip_reader(cid, hands._forum_client()), base=base,
+                            me_widths=labels[0], me_patches=labels[1],
+                            hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
+    except Exception as exc:  # noqa: BLE001 - one bad class must not stop the batch
+        log.error("retime class %s failed: %s", cid, hands.redact(f"{type(exc).__name__}: {exc}"))
+        return None
+
+
+def _pool(workers: int):
+    import multiprocessing
+    from concurrent.futures import ProcessPoolExecutor
+
+    return ProcessPoolExecutor(max_workers=max(1, workers),
+                               mp_context=multiprocessing.get_context("spawn"))
+
+
 def cli_retime(args) -> int:
-    """`oncue retime` on real recordings: full-frame-rate re-read around every onset."""
+    """`oncue retime` on real recordings: full-frame-rate re-read around every onset,
+    `--workers` classes at a time."""
     classes = hands._selected_classes(args)
     eps_all = hands._read_table("hand_episodes")
     if eps_all is None:
         raise SystemExit("oncue retime: run `oncue episodes` first")
     qc = hands._read_table("hand_qc")
-    client = hands._forum_client()
-    out = []
+    jobs = []
     for cid in (int(c) for c in classes["class_id"]):
         eps, labels = hands._for_class(eps_all, cid), load_me_labels(cid)
         if eps is None or not len(eps) or labels is None or not len(labels[0]):
             continue
-        src = hands._sources(cid, client)
-        m = src["media"]
-        reader = hands.FfmpegClipReader(
-            src["url_fn"], width=int(m["width"]), height=int(m["height"]),
-            crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
-            fmt_start=m.get("fmt_start"))
         base = 0.0
         if qc is not None and (qc["class_id"] == cid).any():
             base = float(qc.loc[qc["class_id"] == cid, "down_baseline"].iloc[0])
-        htp = hands.hand_tiles_path(cid)
-        out.append(retime_class(eps, reader, base=base, me_widths=labels[0],
-                                me_patches=labels[1],
-                                hand_tiles=pd.read_parquet(htp) if htp.exists() else None))
+        jobs.append((cid, eps, base))
+    with _pool(int(getattr(args, "workers", 1) or 1)) as pool:
+        out = [r for r in pool.map(_retime_job, jobs) if r is not None]
     if out:
         eps = pd.concat(out, ignore_index=True)
         hands._upsert("hand_episodes", eps)
         hands.update_retime_qc(eps)
-    return 0
+    print(f"oncue retime: {len(out)} classes re-timed, {len(jobs) - len(out)} failed",
+          flush=True)
+    return 0 if len(out) == len(jobs) else 1
+
+
+def _audit_job(job: tuple[int, pd.DataFrame]) -> int:
+    """Clips and frame sheets for one class's raises (own process, own Forum client)."""
+    cid, eps = job
+    try:
+        labels = load_me_labels(cid)
+        htp = hands.hand_tiles_path(cid)
+        rows = onset_audit(cid, eps, _clip_reader(cid, hands._forum_client()),
+                           me_widths=labels[0], me_patches=labels[1],
+                           hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
+        if rows:
+            pd.DataFrame(rows).to_csv(config.AUDIT_DIR / str(cid) / "raises.csv", index=False)
+        return len(rows)
+    except Exception as exc:  # noqa: BLE001 - audit is best effort
+        log.error("audit class %s failed: %s", cid, hands.redact(f"{type(exc).__name__}: {exc}"))
+        return 0
 
 
 def cli_audit(args) -> int:
     """`oncue audit`: a grey-view clip and frame sheet around every bid onset (audit/{cid}/),
-    plus audit/{cid}/raises.csv. Local only (audit/ is gitignored)."""
+    plus audit/{cid}/raises.csv, `--workers` classes at a time. Local only (audit/ is
+    gitignored)."""
     classes = hands._selected_classes(args)
     eps_all = hands._read_table("hand_episodes")
     if eps_all is None:
         raise SystemExit("oncue audit: run `oncue episodes` (and `retime`) first")
-    client = hands._forum_client()
-    n = 0
+    jobs = []
     for cid in (int(c) for c in classes["class_id"]):
         eps, labels = hands._for_class(eps_all, cid), load_me_labels(cid)
         if eps is None or labels is None or not len(labels[0]):
             continue
         eps = eps[(eps["ep_type"] == config.EP_BID) & ~eps["left_censored"].astype(bool)]
-        if not len(eps):
-            continue
-        src = hands._sources(cid, client)
-        m = src["media"]
-        reader = hands.FfmpegClipReader(
-            src["url_fn"], width=int(m["width"]), height=int(m["height"]),
-            crop=(0, min(SCAN_ROWS, int(m["height"]))), a_start=float(m.get("a_start") or 0.0),
-            fmt_start=m.get("fmt_start"))
-        htp = hands.hand_tiles_path(cid)
-        rows = onset_audit(cid, eps, reader, me_widths=labels[0], me_patches=labels[1],
-                           hand_tiles=pd.read_parquet(htp) if htp.exists() else None)
-        if rows:
-            out = config.AUDIT_DIR / str(cid) / "raises.csv"
-            pd.DataFrame(rows).to_csv(out, index=False)
-            n += len(rows)
-    print(f"oncue audit: {n} raise clips under {config.AUDIT_DIR}")
+        if len(eps):
+            jobs.append((cid, eps))
+    with _pool(int(getattr(args, "workers", 1) or 1)) as pool:
+        n = sum(pool.map(_audit_job, jobs))
+    print(f"oncue audit: {n} raise clips under {config.AUDIT_DIR}", flush=True)
     return 0

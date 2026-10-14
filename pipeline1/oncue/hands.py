@@ -1428,6 +1428,8 @@ def ffmpeg_cmd(url: str, *, crop: tuple[int, int] | None = None, fps: float | No
                 # 30 s, and the reader restarts with a fresh signed URL
                 "-rw_timeout", "30000000"]
     cmd += ["-copyts"]
+    if config.FFMPEG_THREADS > 0:
+        cmd += ["-threads", str(config.FFMPEG_THREADS)]
     if hwaccel:
         cmd += ["-hwaccel", hwaccel]
     if seek is not None:

@@ -27,7 +27,7 @@ from .splits import split_table
 
 STAGES = ("transcribe", "words", "events", "select", "scan", "track", "episodes", "retime",
           "audit", "qa")
-PARALLEL = ("transcribe", "scan")          # stages that take --workers
+PARALLEL = ("transcribe", "scan", "retime", "audit")   # stages that take --workers
 WHOLE_TABLE = ("select", "qa")             # stages that work on the whole classes table
 
 

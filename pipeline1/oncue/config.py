@@ -277,6 +277,9 @@ def av_lag_ok(lag_s: float, median_lag_s: float) -> bool:
 # --------------------------------------------------------------------------- hand detector
 
 F_SCAN = 2.0                          # samples per second
+# Decoder threads per ffmpeg process (0 = ffmpeg's default, one per core). Set it (e.g. 2)
+# when many classes are scanned at once, so the processes do not fight over the cores.
+FFMPEG_THREADS = int(os.environ.get("ONCUE_FFMPEG_THREADS", "0") or 0)
 THETA_ON = 0.20                       # baseline-subtracted icon fraction for UP
 THETA_OFF = 0.08                      # ... for DOWN (hysteresis)
 DOWN_BASELINE_FLAG = THETA_OFF / 2    # flag a class whose DOWN baseline exceeds this
