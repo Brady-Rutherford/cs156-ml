@@ -685,3 +685,7 @@ pilot.
   the strip at the top of the frame, Tesseract on the name label, the yellow-green hue, the
   re-timing and the grey audit view; the sync is one sentence (one clock, the recording's frame
   times), followed by the original workbook / frames / grid / split sentences.
+- **Data file replaced (18 Oct, late).** Brady uploaded the fixed zip as a new Drive file,
+  pipeline1_data_private_v3.zip (id 1IlGYH6Flux__kAginY3hwFz6wuLQmNbS, 33 entries incl. the Forum
+  event tables); the v2 file is in Trash. v3 is shared only with pwatson@minerva.edu (Viewer,
+  email notice; general access Restricted) and the notebook's DRIVE_FILE_ID points to it.
