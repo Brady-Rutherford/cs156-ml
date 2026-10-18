@@ -654,3 +654,34 @@ pilot.
   LR), Figure 3.14 (all models compared on validation), 3.6 learning, Figure 3.18 (test
   comparison); test is now 3.7 and the example session 3.8. Colab: the setup cell clones the
   repo and downloads the private data zip from Drive (shared only with pwatson@minerva.edu).
+- **"Explain the labels paragraph more: splitting the top of the page, the grey view, Tesseract
+  for the name, the green hue, lining the video up with the transcript, and how everything stays
+  centred."** The doc's data section now has two paragraphs (from oncue/strip.py and
+  ingest_qa.py): the scan reads only the top of each 1920 x 1080 frame, finds the strip under
+  Forum's dark header and splits it into equal tiles, re-measured every frame (the strip
+  reflows); my tile is found by reading each white name label with Tesseract OCR (black on
+  white, matched to the roster, fixes for misreads like "Bracly"), then recognised by its
+  pixels; the icon is a yellow-green disc (OpenCV hue 26-40) with a white hand in the top-left
+  corner, UP at >= 10% of that corner plus the shape test, DOWN below 4%; every onset is re-read
+  at full frame rate and re-timed to 1/24 s, my tile re-found by its label on each frame; audit
+  sheets use the grey view (all grey except the teal ring and the green icon, other tiles
+  pixelated). Sync: the transcript comes from the same recording; Forum events are calibrated
+  onto it in windows (p95 <= 2.5 s); the teal speaker ring on my tile must start with my words
+  (about 0.1 s in the pilot), and a lag more than 0.5 s off the median drops the session. So
+  everything is centred on one clock (the recording's frame times) and the read stays on my tile.
+- **Data on Drive (18 Oct): "here it is, make Colab and the notebook use it."** The zip
+  (pipeline1_data_private_v2.zip, Drive file id 1KXS3xJFMr6GxeaWPDUwL-4xhBm3dw67d, in the school
+  Drive folder "CS156 Pipeline 1 data") is shared only with pwatson@minerva.edu as Viewer, with
+  the email notice; general access stays Restricted. The notebook's setup cell has that id and an
+  "Open in Colab" link: in Colab it clones the repo, signs in, downloads and unzips the data.
+  Tested by running the notebook from a fresh clone of main with only the zip as data and the
+  transcriber package blocked (as in Colab): no errors, the same 28 figures. That test found
+  that the uploaded zip lacks the Forum event tables (voice, chat, polls, segments; 8.8 MB,
+  speaker ids hashed, text masked) that section 1.4 shows; the fixed zip is in ~/Downloads (same
+  name) for Brady to upload as a new version of the same Drive file, and 1.4 now skips cleanly
+  if they are missing.
+- **"Revert it, keep the image recognition, don't overexplain the transcribing, a bit
+  shorter."** The data section is back to two paragraphs (373 words): the label paragraph keeps
+  the strip at the top of the frame, Tesseract on the name label, the yellow-green hue, the
+  re-timing and the grey audit view; the sync is one sentence (one clock, the recording's frame
+  times), followed by the original workbook / frames / grid / split sentences.
