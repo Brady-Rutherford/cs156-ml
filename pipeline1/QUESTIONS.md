@@ -316,3 +316,341 @@ pilot.
 - **QA rules (Brady, 23:40):** clock limits 2.5 s; ring check over read frames; drop no class for
   breakouts or unread stretches, but no useless data. Applied on the laptop after the pull:
   446/477 classes pass (was 401 under the old rules).
+
+## 18 Oct: pre-class work, inputs, models, notebook
+
+- **Pre-class work: was it saved?** Not until 18 Oct. The harvest (`oncue harvest`) fetched every
+  kept class's page (learning outcomes, study guide) and workbook (template, answers, every
+  revision). Side-effect check first (D8): two requests 2 min apart changed nothing. One class
+  (101578, never opened) got a blank workbook created by the request, as opening it in the
+  browser would; the guard stopped there and no other was created. 339 workbooks saved; all were
+  still edited after class began, so each is rebuilt **as of class start** by replaying its
+  revisions (`oncue/sharedb.py`; replaying all revisions reproduces the saved doc in 338 of 340).
+  Result: 325 classes `asof_start`, 12 empty, 139 none, 1 unknown.
+- **What are the 76 inputs?** Class context (22), who is talking (10), my participation (6), my
+  raise history (4), polls (4), questions (6), words of the last 15/60 s (7), pre-class work and
+  class content (16), punctuation (1). Dropped: people present (Brady: who spoke covers it), my
+  breakout group (not parsed), teaching-move scores (models removed from Hugging Face).
+- **What does "counts" mean / what is a positive moment?** A moment counts (`at_risk`) when a
+  raise could start then and the label can be trusted (hand down, not just lowered, not
+  speaking, main room, my tile readable, class passed QA): 628,079 of 1,427,872. A positive
+  moment is a counting moment whose raise comes 2-15 s later: 9,206 (1.5%), about 3.3 per raise.
+- **Embeddings and the vector store.** One encoder for all text: `BAAI/bge-small-en-v1.5`, 384
+  numbers per text (Brady: small is enough; only the transformer reads raw text). 512,381
+  transcript frames feed the per-moment inputs. The store (`data/vectors/`, local) holds only my
+  words and course material: 33,354 items (my utterances, study guide, prompts, learning
+  outcomes, my answers as of class start), tagged with class, course, term, date.
+- **Was the faster build less precise?** No: vectors streamed to disk instead of held in memory,
+  stored as float16 (the cache was already float16), and the teaching-move models were absent
+  anyway. The only precision choice is bge-small vs bge-base.
+- **Many models: one pipeline or exploration?** One pipeline with the trees as the final model;
+  baselines first (question timing, Naive Bayes, TF-IDF), then specialists stacked under the
+  trees (content-alignment MLP, TCN, fine-tuned transformer); a reinforcement-learning layer
+  could later decide *when* to cue. Draft: `design/model_pipeline_proposal.md`.
+- **Can the model give the exact time of the next raise?** Two views: the probability timeline
+  (fire at a threshold set on train; hit rate, lead time, false alarms per hour), and later a
+  time-to-event (hazard) view that predicts a time and is scored in seconds.
+- **What sets the threshold? Are 30 false alarms per hour OK?** The threshold is the probability
+  at which the model says "a raise is coming in 2-15 s". It is not learned: it is picked on the
+  train classes so the model fires at a chosen rate, then frozen for validation and test. The
+  first rule picked it for 6 or 30 false alarms per hour; 30 per hour was too loose (below).
+- **"3 of 16 raises warned": did I raise 16 times? Train, validation or test?** Yes, in that one
+  example validation class. Every model is trained on train only and scored on validation;
+  test is scored once, with everything frozen.
+- **What is AP?** Average precision: rank every moment by the model's probability, take the
+  precision at each truly positive moment, and average:
+  AP = (1/N+) Σ_{k: y_k = 1} P(k). Random ranking gives the positive share (0.015); perfect
+  gives 1. Worked example (asked again 18 Oct): ranked moments ✓ ✗ ✓ ✗ ✗ ✓ give
+  precisions 1/1, 2/3, 3/6 at the positives, so AP = 0.72. Validation AP of the naive models: base rate 0.015, professor-question rule 0.025,
+  question timing 0.023, Naive Bayes 0.017, TF-IDF 0.024.
+- **"We guessed way too many times": how to fix it?** The first rule (30 false alarms per hour)
+  made about 27 guesses per class for about 6 raises. Now the threshold is set so the model
+  guesses about as often as I raise (about 8 per hour of counting time on train), and it must
+  be high 2 moments in a row (4 s). TF-IDF on validation: about 5 guesses per class, but the
+  share of guesses followed by a raise stays at 3.3%, so the naive models lack signal rather
+  than restraint.
+- **Why a 60 s cooldown? I sometimes raise twice in 30 s.** It was a blunt way to stop one long
+  high stretch from counting as many guesses, chosen without checking my raises. On train, 10.5%
+  of my raises come within 60 s of the previous one (5.7% within 30 s, 3.4% within 15 s), so
+  even a perfect model could warn at most 93% of them. Dropped (Brady: "it needs to be able to
+  make a guess whenever it's possible"). The rule now: after a guess, the model may guess again
+  once its probability dips below the threshold and comes back, or once I have raised; never
+  sooner than 13 s (H - g, spec §8.3), because one guess already covers the next 13 s. A
+  perfect model could then warn 100% of my raises. The number of guesses is set by the
+  threshold, not by this gap.
+- **Does the model look at the past x seconds, with the probability rising as a raise nears?**
+  Yes: every 2 s it reads the class so far (the professor-question rule and question timing:
+  the state of the last question; Naive Bayes and TF-IDF: the words of the last 60 s) and gives
+  P(raise in the next 2-15 s). On validation, in the minute before my raises: the
+  professor-question rule climbs to 3x its usual level in the last 10 s; Naive Bayes sits at
+  about 2x the whole minute (it reacts to the topic, not the timing); question timing and
+  TF-IDF barely move (1.2x). On average none reaches its guess line before a raise. Notebook
+  Step 2 now has one 2-panel figure per model (the minute before my raises; one class), the 4
+  squares (TP / FP / FN / TN per 2-s moment), one combined figure and an accuracy table.
+- **Is making only 4-6 guesses an improvement already, even for the naive models?** Fewer
+  guesses is what we asked for, but the count is a setting (the threshold), not skill: any
+  model can be made to guess 5 times per class. Skill is how often a guess is right compared
+  with a random guess (1.5%): 3.3-3.8% on validation, 3.0-4.7% on test, so 2-3x better than
+  random, but still about 96% of guesses are wrong and only 2-5% of my raises are warned. Against
+  the first rule: wrong guesses fell from about 22-27 to about 5 per class, and caught raises
+  fell from 8-16% to 2-4%. Same models and the same AP, at a different point of the trade-off.
+- **Are we now capping how many guesses it can make? More variance than before? Did the change
+  break "raise in the next 2-15 s"?** No cap: the threshold is one number fixed on train, and
+  on validation and test the model guesses whenever its probability is above it. The target,
+  the models and their predictions are unchanged (AP identical to 4 decimals). The jumpiness
+  comes from small counts: the models warn a few percent of the 504 raises in the 86 scored
+  validation classes (3% is about 15 raises), so one or two raises move the numbers. Brady: the previous approach was better,
+  so no cooldowns or firing rules; every 2 s the model says yes when its probability is above
+  the threshold (open: which threshold).
+- **How do we build the flexible models, step by step: MLP, TCN, fine-tuned transformer, all
+  fed into the gradient-boosted trees?** Yes, a stacked pipeline (design/model_pipeline_proposal.md).
+  Each specialist gives a score that becomes one more input to the trees. The trees must only
+  see out-of-fold scores (each specialist trained on 3/4 of the train classes and scoring the
+  held-out quarter, 4 times), or they learn to trust overfit scores. Proposed order: the trees
+  on the 76 inputs first, then + MLP, + TCN, + transformer (on a pod), each measured on
+  validation, so every step leaves a finished result and the comparison table shows what each
+  part adds.
+- **How do the naive models make a prediction, and when?** Every 2 s, at each counting moment,
+  each model looks back (the question models: the state of the professor's last question; the
+  word models: the words of the last 60 s, tagged by who said them) and gives one probability;
+  at or above its threshold, that moment is a guess "my hand goes up in the next 2-15 s".
+  Walk-through with figures on one validation class (87550, 37:00-42:30): private page
+  https://claude.ai/artifact/PWjPAyPLau3baZDfVHDuxd.
+- **Is the model cheating, reading the transcript and seeing me talk after the raise?** No. A
+  word enters the window only once it has been fully spoken (end <= t - 0.25 s), chat once
+  posted; moments while my hand is up, while I speak or just after I lower it do not count,
+  and a guess only scores 2-15 s before the raise. Words and the hand icon come from the same
+  recording (one clock); names and call-on phrases are removed. Checked 18 Oct: the 20 causal
+  tests pass, incl. the real-data one (inputs rebuilt from data cut at t equal the stored
+  ones; the test's sampler was fixed to skip silent classes with no end time), and 300 of 300
+  random positive moments have a 60-s window identical to one rebuilt from data cut at t.
+- **The 4 squares make no sense: I am not raising most of the time, so true negatives are
+  silly.** Agreed (Brady): score only the guesses. How many times it guessed a raise in the
+  next 2-15 s, how many were right (my hand went up), how many wrong.
+- **What do the moment metrics mean (accuracy, precision, recall, median lead)?** Each treats a
+  2-s moment as one prediction. Accuracy (moments) = (right yes + right no) ÷ all; dropped,
+  it is almost all true negatives ("always no" scores 98.5%). Precision (moments) = right ÷
+  yes; kept as "% right". Recall (moments) = positive moments that got a yes ÷ all positive
+  moments; replaced by "raises warned", which counts raises, not moments. Median lead =
+  seconds between the earliest warning and the raise; replaced by the warning windows below.
+  The notebook's Step 2 now opens with a table explaining every number.
+- **Is "raises warned" how many it could have got if it was perfect?** No: "24 of 504" = the
+  model warned 24 of all 504 validation raises. A perfect model (guessing exactly at the
+  positive moments) warns only 326 of 504: 178 raises have no counting moment 2-15 s before
+  them (e.g. my tile unreadable, or I was speaking), so no model can warn them. Every table now
+  has a "perfect model (ceiling)" row.
+- **Why remove "warned more than 2 s"? 2-5 s is the ideal range.** It was not removed: every
+  warning is at least 2 s ahead by definition, so "raises warned" was that count; now labelled
+  "a guess 2-15 s ahead". Added (Brady): raises with a guess 2-5 s ahead (the ideal), 5-10 s,
+  and 10-15 s (a raise can count in more than one window).
+- **Part 3 started (18 Oct, Brady: trees first, then the MLP; Part 3 of the notebook).**
+  `oncue/flex.py`, `python -m oncue flex --step all` (402 s on the laptop). 3.1 trees
+  (HistGradientBoosting) on 68 inputs (76 minus has_qmark, spk_cur_in_my_group, ctx_n_present
+  and the 5 minute splines); 3 tree sizes x up to 600 trees, chosen on validation: 15 leaves,
+  80 trees. 3.2 content-alignment MLP (25,473 parameters) on 5 frozen bge vectors: the
+  professor's latest words, the last 60 s, the class material, my pre-class answers as of class
+  start, my earlier words (earlier classes + this class before t; tested causal), plus 7
+  cosines and 5 flags; best epoch 3 of 20 by validation AP; 4 grouped out-of-fold models for
+  the trees. GBT + MLP: the trees with the MLP's score and the cosines (31 leaves, 160 trees).
+  Validation AP: best naive 0.0245, trees 0.0270, MLP 0.0276, GBT + MLP 0.0292 (AP_w 0.062,
+  ROC AUC 0.70, the best on every ranking number); its guesses: 19.2 per class, 3.9% right,
+  18 of 504 raises warned (15 with a guess 2-5 s ahead). The MLP's score is the input the
+  stacked trees rely on most. Test not scored for Part 3 (held for the final pipeline).
+- **Did you not test the naive models? Why is it not in the notebook?** It is: section 2.6, just
+  before Part 3, with the models and thresholds frozen. Test AP: professor-question rule 0.0246,
+  question timing 0.0263, Naive Bayes 0.0196, TF-IDF 0.0268 (close to validation); 533 test
+  raises, a perfect model could warn 322. If the notebook is open in an editor from before the
+  rerun, reopen it (do not save the old copy over the new file).
+- **I do not raise 20.7 times per class, so why does the perfect model guess 20.7 times?** It
+  counts yes *moments*, not raises: the model predicts every 2 s and "a raise is coming in
+  2-15 s" is true at every counting moment of the 13 s before a raise, about 3.5 per raise
+  (1,778 positive moments / 504 raises), so 5.9 raises x 3.5 = 20.7 per class. Counting an
+  unbroken run of yes moments as one *warning* (counting only; no cooldown), the perfect model
+  makes 3.9 warnings per class (one per raise it can see; a third of raises have no counting
+  moment before them). Validation, warnings per class / % right: professor-question rule
+  14.8 / 3.4%, question timing 5.0 / 6.3%, TF-IDF 2.4 / 5.3%, trees 2.8 / 4.1%, MLP 8.8 /
+  6.6%, trees + MLP 4.8 / 4.8%. Proposed: count guesses as warnings in the notebook (asked).
+- **Why do even the naive models have most warnings 2-5 s before the raise? Does probability
+  build up as time passes?** Mostly a real build-up: the share of counting moments where a model
+  says yes is highest 2-5 s before a raise (validation, 2-5 / 5-10 / 10-15 s / elsewhere:
+  professor-question rule 4.6 / 3.2 / 2.5 / 1.3%; question timing 5.2 / 4.3 / 3.3 / 1.3%; MLP
+  8.5 / 6.9 / 6.5 / 2.7%; trees + MLP 5.2 / 3.3 / 2.7 / 1.4%), because what prompts a raise (a
+  question ending, the floor opening, a turn ending) usually happens only seconds before it,
+  and a model sees it only once it has happened. Also: more counting moments close to a raise
+  (153 vs 126 per second of window at 2-5 vs 10-15 s; further back I am more often speaking or
+  in my previous raise), and the window columns overlap (a raise counts in every window with a
+  guess: MLP 30 + 28 + 22 = 80 for 45 warned raises), while 2-5 s is the narrowest window.
+- **We build the TCN next? Will it give the biggest rise, given what it can reflect on?** Yes,
+  3.3 is next. It may help most because it reads the class as a sequence (one step per 2 s,
+  ~8.5 min look-back) and so sees the order of events, which the trees (one snapshot) and the
+  MLP (vectors) cannot; but with ~1,670 train raises it can overfit, so a modest gain is the
+  honest expectation. Plan: the 68 inputs + a 32-number compression of the sentence vectors per
+  step, causal dilated convolutions (kernel 3, dilations 1-64), ~30-50k parameters, loss on
+  counting moments only, epochs chosen on validation, 4 out-of-fold models, its score added to
+  the trees (trees + MLP + TCN), plus a no-future test. Waiting for Brady's go.
+- **Is a GRU different from a TCN? Which should do better?** Both read the class as a sequence.
+  A GRU reads one step at a time with a running memory (in principle the whole class, but it
+  fades; slower, harder to train on ~2,700 steps); a TCN looks at a fixed window all at once
+  through stacked dilated filters (here 8.5 min; fast, stable). No guaranteed winner; Bai,
+  Kolter & Koltun (2018) found generic TCNs match or beat recurrent nets on most tasks, and the
+  whole-class memory a GRU adds is already in the inputs as running counts. Built the TCN; the
+  repo's GRU (oncue/gru.py) can run later as a comparison row.
+- **3.3 TCN built (18 Oct).** Reuses oncue/gru.py's tested causal step builders (sentence
+  vector of the frames closing in each 2-s step, PCA-64 fitted on train; seconds of speech per
+  role; the trees' numeric inputs + one-hot categories): 214 numbers per step, every grid step
+  kept, loss on counting moments only. 7 causal dilated convolutions (kernel 3, dilations
+  1-64, 32 channels), 46,113 parameters, receptive field 255 steps = 8.5 min (tested: nothing
+  after t, nothing older than the window). Best epoch 7 of 15 (overfits after). Then GBT + MLP
+  + TCN. Found and fixed a stacking mismatch: validation scores came from a fifth model on a
+  different scale from the 4 out-of-fold models the trees learned on; validation is now scored
+  by the same 4 fold models (averaged). Validation AP: best naive 0.0245, trees 0.0262, MLP
+  0.0282, trees + MLP 0.0282, TCN 0.0299, trees + MLP + TCN 0.0310 (AP_w 0.069, ROC AUC 0.71,
+  best on every ranking number); the TCN's score is the second input the stack relies on.
+  Open: the threshold set on single-model OOF train scores does not carry over to the averaged
+  validation scores (every flexible model says yes less often than the truth: 4.0-13.3 yes
+  moments per class vs 20.7), so their warning counts undercount. Guess counting switched to
+  warnings (one unbroken run of yes moments = one warning).
+- **What is within-class AP vs normal AP? Why is it so much better within class, and is within
+  class all we care about?** AP ranks all validation moments of all classes in one list (needs
+  "when" and "which classes", on one scale); AP_w ranks each class's moments only against
+  that class, then averages weighted by positives (only "when within this class"). Its random
+  level is higher (a constant model gets each class's share of positives; weighted by
+  positives that is 0.022 on validation, vs 0.015 pooled), but not only that: trees + MLP + TCN
+  is 3.1x random within class (0.069) vs 2.0x pooled (0.031); professor-question rule 2.3x vs
+  1.6x. Pooled ranking suffers when a model's scores drift between classes. AP_w best matches
+  "in this class, is a raise coming?" (proposed as the headline ranking number, and a novel
+  metric for the rubric), but pooled AP and the warnings still matter because the guess
+  threshold is one number for all classes. Proposed: keep both, AP_w first, with "x random".
+- **Within class means within B111 etc.? Isn't that just overfitting?** A class is one session
+  (one recorded meeting, e.g. 87550), not a course. Not overfitting: AP_w is computed on the
+  86 validation sessions the models never trained on, with one model for all sessions; it only
+  scores the same predictions per session instead of pooled. Real limit: train, validation and
+  test share the same 26 courses and the trees lean on ctx_course, so results describe new
+  sessions of known courses, not a brand-new course; a leave-one-course-out check
+  (splits.loco) would measure that (offered, not run).
+- **What does AP_w mean? (still confused)** Per session: sort its moments by probability, take
+  that session's AP (how near the top its real pre-raise moments landed); then average over
+  sessions, weighted by their raises. Toy example: session A (scores run high) 0.9 no, 0.8 yes,
+  0.7 no, 0.6 no -> AP 0.5; session B (scores run low) 0.4 yes, 0.3, 0.2, 0.1 no -> AP 1.0;
+  AP_w = 0.75, but pooled AP = (1/2 + 2/5) / 2 = 0.45, punishing B's perfect timing only for
+  its lower scores. Trees + MLP + TCN: AP_w 0.069 vs 0.022 random, about 3x chance.
+- **So we can use AP_w reliably on test later?** Yes, with three conditions: fix it as the
+  headline before looking at Part 3's test (choosing after would be cherry-picking); give it
+  error bars, because 86 test sessions / 533 raises are few (question timing moved 0.049 ->
+  0.063 from validation to test), via a bootstrap over sessions (and a paired version for
+  "is model A really better than B?"); and report it with the warnings, since it ignores
+  whether one threshold works across sessions. Proposed: add the session bootstrap (asked).
+- **Does the current pipeline make sense? Is there an obviously better way or combination?**
+  The structure is sound (causal inputs tested, baselines first, session-grouped out-of-fold
+  stacking, validation-only choices, test held back) and the gains are real but small (AP
+  0.0245 -> 0.031, AP_w 0.050 -> 0.069). The bottleneck is information and labels, not
+  architecture: every flexible model starts memorising train within a few epochs (~1,670
+  train raises). Ranked ideas: (1) my own video tile before the raise (causal frames; likely
+  the strongest 2-5 s cue; new vision pipeline); (2) classmates' raises as extra training
+  events (~20x labels; events OK, identities never stored; rescanning cost); (3) cheap fixes:
+  threshold option 1 + calibrating the stack, averaging 5 training runs of TCN/MLP, a
+  logistic-regression combiner vs the trees, session-bootstrap error bars; (4) the fine-tuned
+  transformer (smaller expected gain, biggest cost). Checked: "I start speaking" as an extra
+  target adds only 4,814 train positives (fewer than raises). Alternative combination to test:
+  one TCN that also gets the MLP's alignment vectors per step. Recommended: (3) now, then
+  Brady chooses between the transformer and own-tile video.
+- **What was the outcome of the pilot?** The 20-class pilot (13 Oct, train only; QUALITY.md
+  section 2): one clock per recording (audio and video start at 0 s, lengths match Forum within
+  ±1 s); Forum timestamps calibrate with no drift (18 of 20 met the strict rule then); video,
+  transcript and Forum agree (ring vs voice events ~0.06 s, vs transcript ~0.1 s); my tile never
+  confused (0 wrong-tile frames, 0 classmates as me, ~41,000 frames); 118 raises found, re-timed
+  to 1/24 s; 18 of 20 passed QA. The full run followed: 446 of 477 pass under the 2.5 s rule.
+  data/pilot/ (193 MB) is still there, marked to be discarded; not deleted (Brady's call). The
+  24 + 8 class "smoke runs" of Part 3 only checked that the code runs.
+- **Cheap fixes + "just TCN + MLP, no trees" (18 Oct, Brady's go).** All Part 3 models retrained
+  (python -m oncue flex --step all, 1,155 s): each validation session scored by ONE fold model
+  (round-robin) so validation scores are made like the out-of-fold train scores; 5 training
+  runs averaged per fold for the MLP and TCN (epochs chosen on the mean curve: 4 for the TCN);
+  logistic combiners without trees; Platt calibration; a 1,000-resample session bootstrap.
+  Validation AP_w / AP: trees 0.053 / 0.026, MLP 0.057 / 0.027, TCN 0.057 / 0.028, trees + MLP
+  + TCN 0.058 / 0.027, logistic on all inputs 0.065 / 0.030, MLP + TCN without trees
+  0.073 / 0.031 (3.3x random; 95% interval 0.058-0.090). Paired bootstrap, MLP + TCN vs:
+  every naive and single model 99-100% of resamples, trees + MLP + TCN 97% (gain +0.015,
+  -0.001 to +0.033), logistic on all inputs 89%. A plain average of the two scores gives the
+  same (0.074), and the two scores correlate only 0.53, so the gain is the specialists'
+  complementarity, not the combiner. Out-of-fold train AP_w shows the same order (MLP 0.054,
+  TCN 0.063, both 0.068).
+- **So you are removing the trees?** No: the trees stay as comparison rows (part of the story
+  and the comparison table); the proposed final pipeline is MLP + TCN without trees (best and
+  simplest); Brady's call.
+- **Can we train with AP_w?** Measuring it on (out-of-fold) train: yes (numbers above).
+  Optimising it directly: no, because it depends only on the order of moments, so it is flat
+  almost everywhere and has no gradient for the networks or the trees to follow. What works: a
+  smooth stand-in, a within-session ranking loss (penalise every ordinary moment that outscores
+  a pre-raise moment of the same session), and/or choosing settings by AP_w. Offered (~1 h).
+- **Final test with AP and AP_w? Which is more legit? Can we set everything by AP and still look
+  at AP_w?** Both are legitimate; what matters is fixing before test which is the headline and
+  how the final model is picked. Settings were chosen by AP on validation; the final model is
+  the same by either (MLP + TCN). Proposed: report both on test with bootstrap intervals,
+  AP_w as the headline, declared before scoring.
+- **Would a Temporal Fusion Transformer (attention) be better than the TCN?** Probably not with
+  this data: attention models are data-hungry, the 46k-parameter TCN already overfits after
+  4-7 epochs on ~1,670 train raises, and TFT's strengths (multi-horizon continuous forecasts,
+  static covariates, variable selection) matter less for a rare yes/no event whose cues land
+  seconds before it. Cheaper to try first: one small attention layer on top of the TCN, and a
+  multi-horizon head (2-5, 5-10, 10-15 s); a small TFT as a comparison row (Lim et al., 2021).
+- **Move all equations into the assignment doc; notebook = overview, code, runs.** Done 18 Oct:
+  in the Google Doc, the old draft model bullets ((1)-(4) and the rules) were replaced by
+  Models / Naive models (N1-N5) / Flexible models (F1-F6) / Metrics (M1-M6), each a bold
+  heading, 3-4 sentences with results from the runs, and the LaTeX ($$...$$); the template
+  reference placeholders were replaced by 26 APA references (alphabetical, hanging indent).
+  The notebook's markdown now carries no equations, only pointers to those sections. Source:
+  scratchpad doc/make_doc.py.
+- **DECLARED BEFORE SCORING TEST (18 Oct 2026, 21:51), Brady: "yes thats perfect".** Final
+  pipeline: MLP + TCN without trees (a logistic regression on the two specialists' scores, C =
+  0.01), chosen on validation. Test headline: within-session AP (AP_w) with its 95% session-
+  bootstrap interval; AP alongside; warnings at the threshold fixed on the out-of-fold train
+  scores. Test is scored once, with every model, setting and threshold frozen.
+- **TEST, scored once (18 Oct, after the declaration).** `python -m oncue flex --step test`
+  (156 s + 84 s bootstrap): the fold models retrained with the same settings and seeds
+  reproduce validation exactly (AP_w 0.0734 both, correlation 1.000). Final pipeline (MLP +
+  TCN, no trees) on the 86 test sessions: **AP_w 0.076 (3.0x random 0.025; 95% interval
+  0.059-0.096)**, AP 0.035 (2.3x random 0.015; 0.027-0.047); validation was 0.073 / 0.031, so
+  it holds up. Paired bootstrap (AP_w / AP): beats the professor-question rule, Naive Bayes and
+  the MLP alone in 100% of resamples; question timing and TF-IDF in 93% / 100%; the TCN alone
+  only 80% / 85% (TCN alone on test: AP_w 0.071). Warnings: 6.4 per session, 6.7% right
+  (random one-moment guess 1.5%), 35 of 533 raises warned (a perfect model: 322), 17 with a
+  guess 2-5 s ahead. Notebook section 3.6.
+- **An example timeline at the end of the notebook (test: where the predictions happened and
+  my raises).** Section 3.7, Figure 3.15: one test session start to end (probability,
+  threshold, warnings green = right / red = wrong, my raises) plus a 5-minute zoom around one
+  warned raise. Session chosen by a fixed rule so it is not flattering: the median
+  within-session AP among the 45 test sessions with >= 5 raises (86380: 15 raises, 9 warnings,
+  2 right, 2 raises warned; in the zoom a wrong warning ~35 s early, then a right one 4 s before
+  the raise). The session with the most raises (100374) was tried first and ranked 16th of 45
+  (34 warnings, 1 right, 1 of 20 raises warned), so the median rule is more representative.
+- **"The probability rises steeply before almost every raise, just not enough to hit the
+  threshold. Is that a strong sign? What adds the most weight to the probability?"** Yes, on
+  test: before 62% of raises the final pipeline's probability is higher 4 s before than 40 s
+  before (46% for random moments; median odds rise x1.12 against x0.97), but only 5% of raises
+  are above the threshold 4 s before. A tree surrogate of the final scores (R² 0.85) ranks what
+  moves it: talk in the last 60 s (Spearman +0.39), course, time into the segment (+0.34), time
+  since the professor's last question (-0.36), current silence (-0.48); CS156 / CS114, intros and
+  debriefs highest. The combiner weighs the TCN about twice the MLP (0.77 vs 0.37 per SD).
+  Saved: data/results/flex/explain.pkl.
+- **Write-up doc: graphs, then "no, remove them; just leave the write-up good, I will place the
+  graphs".** The pasted figures and the caps notes were removed again; the doc follows the
+  11-item structure with text for every item (pipeline, data and ingestion, code and notebook,
+  models, metrics, learning, final performance, comparisons with a table, discussion,
+  references). The final review is Brady's.
+- **"Figures characterizing the model's learning: can we get a visualization of the learning
+  process (of the final model)?"** New step `python -m oncue flex --step learning` (validation
+  only, 556 s): the MLP and TCN fold models retrained exactly as in the final run (same folds,
+  settings, seeds) for 15 epochs, scoring validation after every epoch, combined as the final
+  pipeline; epoch 4 reproduces the final pipeline exactly (AP_w 0.0734, correlation 1.000).
+  Train loss falls every epoch (TCN 0.076 -> 0.050, MLP 0.075 -> 0.066); validation loss turns up
+  after 2-3 epochs (TCN 0.0755 -> 0.094). Pipeline validation AP_w: 0.064 after 1 epoch, a
+  plateau 0.073-0.074 at epochs 3-5 (0.0742 at 5, within noise of the 4 used, which were fixed
+  before from each specialist's own curve and are not changed after test), 0.062 at 15. The
+  pre-raise build-up (probability / normal level, 40 s -> 4 s before a raise): 1.30 -> 1.41
+  after 1 epoch, 1.32 -> 1.53 at 4, 1.25 -> 1.40 at 15. Notebook section 3.6, Figures 3.15-3.16.
+- **Notebook additions (18 Oct):** Figure 1.1 (one raise frame by frame, my tile only,
+  classmates pixelated), Figure 2.6 (naive models compared, best by AP_w highlighted: TF-IDF +
+  LR), Figure 3.14 (all models compared on validation), 3.6 learning, Figure 3.18 (test
+  comparison); test is now 3.7 and the example session 3.8. Colab: the setup cell clones the
+  repo and downloads the private data zip from Drive (shared only with pwatson@minerva.edu).

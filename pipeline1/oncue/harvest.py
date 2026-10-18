@@ -81,8 +81,11 @@ SLE_DOC_PATH = "doc/{uuid}/"
 # GET-only probes for a history / versions endpoint (D8 decides Branch H vs N).
 SLE_HISTORY_CANDIDATES = ("doc/{doc}/history/", "doc/{doc}/versions/", "doc/{doc}/revisions/",
                           "templates/{tmpl}/versions/", "templates/{tmpl}/history/")
-# Set once D8 finds a history endpoint (Branch H), e.g. "doc/{doc}/history/".
-PCW_HISTORY_PATH: str | None = None
+# D8 (18 Oct, class 96124): the SLE app reads `doc/{id}/` (answers per template block, with
+# `templateId`), `templates/{uuid}/` and `revs/{id}`: every edit as a ShareDB op with `m.ts`
+# (ms). Reads changed nothing (content hash, template _mtime, 215 revisions all the same
+# after POST + GETs 2 min apart). Branch H: the doc can be rebuilt as of class start.
+PCW_HISTORY_PATH: str | None = "revs/{doc}"
 
 HARVEST_RATE_PER_S = 1.0                  # §10: about 165 x 4 requests at 1 req/s, once
 SYNC_RATE_PER_S = 3.0                     # `scribe sync`'s own default (694 classes)
@@ -432,6 +435,9 @@ def locate_pcw(response) -> PcwTarget:
     tmpl = _uuid_of(data, _TMPL_KEYS) or _uuid_in_link(link, ("template", "templates"))
     doc = _uuid_of(data, _DOC_KEYS) or _uuid_in_link(link, ("doc", "docs", "document",
                                                             "documents"))
+    if doc is None and link:                 # D8: https://sle-collaboration.../?id=<doc uuid>&...
+        q = dict(parse_qsl(urlsplit(link).query))
+        doc = q.get("id") if _UUID_RE.match(str(q.get("id") or "")) else None
     created = data.get("created") if isinstance(data.get("created"), bool) else None
     return PcwTarget(link, tmpl, doc, created)
 
@@ -460,6 +466,13 @@ def pcw_meta(template, doc, target: PcwTarget, fetched_at: datetime,
     created_at = parse_iso(_first(d, ("created-at", "created")))
     if created is None and created_at is not None:
         created = created_at >= fetched_at - timedelta(seconds=CREATED_TOL_S)
+    revs = history if isinstance(history, list) else []
+    ts = [r.get("m", {}).get("ts") for r in revs if isinstance(r, dict)]
+    ts = [x for x in ts if isinstance(x, (int, float))]
+    if ts:                                   # D8: the first revision is the doc's creation
+        first = datetime.fromtimestamp(min(ts) / 1000, tz=UTC)
+        if created is None:
+            created = first >= fetched_at - timedelta(seconds=CREATED_TOL_S)
     meta = {
         "template_id": target.template_uuid or t.get("id"),
         "doc_id": target.doc_uuid or d.get("id"),
@@ -470,6 +483,10 @@ def pcw_meta(template, doc, target: PcwTarget, fetched_at: datetime,
         "created": created,
         "fetched_at": _iso(fetched_at),
     }
+    if ts:
+        meta["doc_created_at"] = _iso(datetime.fromtimestamp(min(ts) / 1000, tz=UTC))
+        meta["doc_last_edit_at"] = _iso(datetime.fromtimestamp(max(ts) / 1000, tz=UTC))
+        meta["n_revisions"] = len(revs)
     if history is not None:
         meta["history"] = history
     return meta
@@ -522,6 +539,11 @@ def _pcw_snapshot(class_id, poster, sle_factory, locate, now) -> _Snapshot:
                        missing_ok=False)
     if target.doc_uuid:
         dr = _sle_json(sle, SLE_DOC_PATH.format(uuid=target.doc_uuid), "doc", missing_ok=True)
+        tid = dr.data.get("templateId") if isinstance(dr.data, dict) else None
+        if tr is None and tid and _UUID_RE.match(str(tid)):   # D8: the template id is in the doc
+            target.template_uuid = str(tid)
+            tr = _sle_json(sle, SLE_TEMPLATE_PATH.format(uuid=target.template_uuid), "template",
+                           missing_ok=False)
     template = tr.data if tr is not None and tr.status == 200 else None
     doc = dr.data if dr is not None and dr.status == 200 else None
     history = None
@@ -636,7 +658,8 @@ def class_edit_page(client, class_id, *, raw_dir=None, refresh: bool = False):
 
 
 def harvest_classes(class_ids, *, client, poster=None, sle_factory=None, raw_dir=None,
-                    pcw: bool = True, refresh: bool = False, now=_now) -> dict:
+                    pcw: bool = True, refresh: bool = False, now=_now,
+                    stop_if_created: bool = True) -> dict:
     """class_edit_page + PCW for each class. Per-class failures are recorded (and retried
     next run); a dead cookie (401 or redirect) stops the run."""
     summary = {"classes": 0, "edit_page": 0, "edit_page_missing": 0, "pcw_found": 0,
@@ -654,6 +677,12 @@ def harvest_classes(class_ids, *, client, poster=None, sle_factory=None, raw_dir
                                        raw_dir=raw_dir, refresh=refresh, now=now)
                 summary["pcw_found" if meta.get("template_id") or meta.get("doc_id")
                         else "pcw_none"] += 1
+                if meta.get("created"):          # the request made a (blank) doc (D8)
+                    summary["created"] = summary.get("created", 0) + 1
+                    print(f"class {cid}: the PCW request CREATED a blank doc"
+                          + ("; harvest stopped" if stop_if_created else ""), file=sys.stderr)
+                    if stop_if_created:
+                        break
             (cdir / "_harvest_error.json").unlink(missing_ok=True)
         except ForumAuthError as exc:
             if exc.status != 403:

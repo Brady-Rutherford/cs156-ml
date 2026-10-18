@@ -575,7 +575,7 @@ SPEC_SUBCOMMANDS = ["harvest", "harvest-import", "select", "transcribe", "words"
 
 
 INTEGRATION_SUBCOMMANDS = {"pcw", "qa", "e2e", "ingest", "ingest-report", "audit", "pdf",
-                           "ringcheck"}     # added after the spec
+                           "ringcheck", "vectors", "flex"}     # added after the spec
 
 
 def test_cli_lists_every_spec_subcommand():

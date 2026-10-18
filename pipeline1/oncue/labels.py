@@ -545,6 +545,10 @@ def selected(classes: pd.DataFrame, args=None) -> pd.DataFrame:
     explicit `--class` ids; `--phase P` narrows to one phase."""
     if getattr(args, "class_ids", None):
         return classes[classes["class_id"].isin([int(c) for c in args.class_ids])]
+    if getattr(args, "split", None):               # the step-3 split (A11): train|validation|test|all
+        from .splits import split_ids
+
+        return classes[classes["class_id"].isin(split_ids(args.split))].reset_index(drop=True)
     if "phase" in classes:
         classes = classes[classes["phase"].notna()]
         if getattr(args, "phase", None):

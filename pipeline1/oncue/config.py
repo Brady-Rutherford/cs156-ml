@@ -454,8 +454,12 @@ COURSE_AREAS = ("CS", "SS", "NS", "AH", "B", "other")
 TERMS = ("F23", "Sp24", "F24", "Sp25", "F25", "Sp26", "F26")
 SEMESTER_IDX = {term: i + 1 for i, term in enumerate(TERMS)}   # F23 = 1 ... F26 = 7
 S_TIME_TRAIN_MAX_IDX = 5              # S-time: train F23-F25, test Sp26 and F26
-# Semester -> IANA timezone of Brady's city. PROVISIONAL: Brady commits this table (Mon, §12).
-TERM_TZ: dict[str, str | None] = {term: None for term in TERMS}
+# Semester -> IANA timezone of Brady's city (Brady, 18 Oct): San Francisco, San Francisco,
+# Taipei, Seoul, Buenos Aires, Buenos Aires, Berlin.
+TERM_TZ: dict[str, str | None] = {
+    "F23": "America/Los_Angeles", "Sp24": "America/Los_Angeles", "F24": "Asia/Taipei",
+    "Sp25": "Asia/Seoul", "F25": "America/Argentina/Buenos_Aires",
+    "Sp26": "America/Argentina/Buenos_Aires", "F26": "Europe/Berlin"}
 
 
 def course_area(course_code: str | None) -> str:

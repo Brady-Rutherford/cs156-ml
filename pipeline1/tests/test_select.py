@@ -28,10 +28,12 @@ def dev_ids(n, start=1):
 
 @pytest.fixture(scope="module")
 def built(data_dir):
-    return select.build_classes(data_dir["manifest"], data_dir["raw"],
-                                schedule_dir=data_dir["scribe"] / "schedule",
-                                me_path=data_dir["scribe"] / "me.json",
-                                hasher=select.spk_hasher("synthetic-test-salt"), log_path=False)
+    with pytest.MonkeyPatch.context() as mp:            # the synthetic truth has no local timezone
+        mp.setattr(config, "TERM_TZ", {})
+        return select.build_classes(data_dir["manifest"], data_dir["raw"],
+                                    schedule_dir=data_dir["scribe"] / "schedule",
+                                    me_path=data_dir["scribe"] / "me.json",
+                                    hasher=select.spk_hasher("synthetic-test-salt"), log_path=False)
 
 
 # --------------------------------------------------------------------------- build_classes
@@ -101,7 +103,7 @@ def test_session_no_falls_back_to_manifest_dates(data_dir, tmp_path, world):
 
 
 def test_hour_local_uses_the_term_timezone(data_dir, monkeypatch, world):
-    monkeypatch.setitem(config.TERM_TZ, "F26", "Asia/Tokyo")
+    monkeypatch.setattr(config, "TERM_TZ", {"F26": "Asia/Tokyo"})     # only F26 has one here
     df = select.build_classes(data_dir["manifest"], data_dir["raw"],
                               schedule_dir=data_dir["scribe"] / "schedule",
                               me_path=data_dir["scribe"] / "me.json", log_path=False)

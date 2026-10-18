@@ -557,11 +557,17 @@ def test_truncation_on_real_tables():  # pragma: no cover - needs harvested data
     dev = classes[~classes["in_vault"].astype(bool)]["class_id"].astype(int).tolist()
     assert len(dev) >= 5
     rng = np.random.default_rng(config.SEED)
-    picks = rng.choice(dev, min(len(dev), 10), replace=False)
     kw = {"encoder": F.Memo(F.HashEncoder(48))}
-    per = max(50, int(os.environ.get("ONCUE_CAUSAL_N", "500")) // len(picks))
-    for cid in picks:
+    per = max(50, int(os.environ.get("ONCUE_CAUSAL_N", "500")) // 10)
+    checked = []
+    for cid in rng.permutation(dev):                    # 10 classes with a known end (silent ones have none)
         tb = causal.class_tables(tables, cid)
         info = causal.class_info(tb["classes"], cid)
+        if not np.isfinite(info.T_end) or info.T_end <= 0:
+            continue
         ts = rng.uniform(0, info.T_end, per)
         assert_same(F.build(cid, ts, tb, **kw), reference(cid, ts, tb, kw))
+        checked.append(int(cid))
+        if len(checked) == 10:
+            break
+    assert len(checked) >= 5, checked
