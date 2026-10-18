@@ -47,6 +47,8 @@ COMMANDS: dict[str, tuple[str, str, str]] = {
     "frames": ("text", "cli_frames", "masking, normalisation, causal frames -> frames.parquet"),
     "embed": ("embed", "cli", "frame/tail/PCW embeddings with sha1 cache"),
     "features": ("features", "cli", "vectorised causal features -> features.parquet"),
+    "vectors": ("vectors", "cli", "content vector store: my answers, utterances, course material"),
+    "flex": ("flex", "cli", "Part 3 flexible models: trees, content-alignment MLP, stacking"),
     "train": ("experiments", "cli_train", "run comparison conditions -> oof/{cond}.parquet"),
     "evaluate": ("experiments", "cli_evaluate", "metrics, bootstrap -> results.parquet"),
     "controls": ("controls", "cli", "positive/negative controls (P-clock, P-plant, CALLON ...)"),

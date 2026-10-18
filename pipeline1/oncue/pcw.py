@@ -319,8 +319,10 @@ def class_materials(class_edit_page) -> dict:
     sg = page.get("study-guide")
     sg_text = html_to_text(sg.get("description") if isinstance(sg, dict) else sg)
     prep = html_to_text((page.get("preparatory-assignment") or {}).get("description"))
-    return {"learning_outcomes": los,
-            "study_guide": [p for p in sg_text.split("\n") if p.strip()], "prep": prep}
+    guide = [p for p in sg_text.split("\n") if p.strip()]
+    if not guide and prep:            # this Forum version keeps the study guide as the prep
+        guide = [p for p in prep.split("\n") if p.strip()]
+    return {"learning_outcomes": los, "study_guide": guide, "prep": prep}
 
 
 # --------------------------------------------------------------------------- git as-of (CS156)
@@ -369,6 +371,106 @@ def _read_raw(class_id, source: str, raw_dir: Path | None, log_path=None):
     if not path.exists():
         return None
     return _kebab(json.loads(path.read_text(encoding="utf-8")))
+
+
+# --------------------------------------------------------------------------- SLE workbooks (D8)
+# The real SLE format (harvested 18 Oct 2026): template blocks {type, uuid, block_components:
+# [{type, uuid, value}]}; prompts are the "Text" components (a Quill delta as a JSON string);
+# answers live in the doc keyed by the uuid of the block's answer component. These files hold
+# only Brady's own workbook, so they are read directly (the raw whitelist was written for an
+# earlier guess of the format) and only the fields below are used.
+
+ANSWER_COMPONENTS = ("RichTextField", "CodeField", "ChoicesField", "FileField", "TableField")
+
+
+def _raw_json(class_id, name: str, raw_dir: Path | None):
+    path = Path(raw_dir or config.RAW_DIR) / str(class_id) / f"{name}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def sle_answer(kind: str, value, starter=None) -> dict:
+    """{"text", "has_code", "n_files", "answered"} of one answer component."""
+    out = {"text": "", "has_code": False, "n_files": 0, "answered": False}
+    if kind == "RichTextField" and isinstance(value, dict):
+        out["text"] = quill_to_text(value)
+    elif kind == "CodeField":
+        code = value.get("code") if isinstance(value, dict) else value
+        if isinstance(code, str) and code.strip() and code.strip() != str(starter or "").strip():
+            out["text"], out["has_code"] = code_text(code), True
+    elif kind == "ChoicesField" and isinstance(value, list):
+        out["answered"] = any(v is not None for v in value)
+    elif kind == "FileField" and isinstance(value, list):
+        names = [f.get("name") or f.get("filename") for f in value if isinstance(f, dict)]
+        names = [n for n in names if n]
+        out["text"], out["n_files"] = " ".join(filename_words(n) for n in names), len(names)
+    elif kind == "TableField" and isinstance(value, list):
+        cells = [c for row in value if isinstance(row, list) for c in row if isinstance(c, dict)]
+        out["text"] = "\n".join(t for t in (quill_to_text(c.get("value")) for c in cells
+                                             if not c.get("readOnly")) if t)
+    out["answered"] = out["answered"] or bool(out["text"]) or out["n_files"] > 0
+    return out
+
+
+def sle_blocks(template, doc, class_id: int = 0) -> pd.DataFrame:
+    """`pcw_blocks` rows for one class from the real SLE format (doc may be None)."""
+    rows = []
+    for pos, b in enumerate((template or {}).get("blocks") or []):
+        comps = [c for c in (b.get("block_components") or []) if isinstance(c, dict)]
+        prompt = "\n".join(t for t in (quill_to_text(c.get("value")) for c in comps
+                                        if c.get("type") == "Text") if t)
+        ans = {"text": "", "has_code": False, "n_files": 0}
+        for c in comps:
+            if c.get("type") in ANSWER_COMPONENTS and isinstance(doc, dict):
+                a = sle_answer(c["type"], doc.get(c.get("uuid")), c.get("value"))
+                ans = {"text": "\n".join(x for x in (ans["text"], a["text"]) if x),
+                       "has_code": ans["has_code"] or a["has_code"],
+                       "n_files": ans["n_files"] + a["n_files"]}
+        rows.append({"class_id": class_id, "block_uuid": str(b.get("uuid") or ""),
+                     "block_order": pos, "prompt_text": prompt, "answer_text": ans["text"],
+                     "answer_words": len(ans["text"].split()), "has_code": ans["has_code"],
+                     "n_files": ans["n_files"]})
+    if not rows:
+        return schemas.empty("pcw_blocks")
+    return schemas.coerce(pd.DataFrame(rows), "pcw_blocks")
+
+
+def _class_start(class_id, raw_dir: Path | None):
+    """Scheduled start (UTC): the class's start-time, else the listing's full timestamp."""
+    klass = _raw_json(class_id, "class", raw_dir) or {}
+    listing = (_raw_json(class_id, "listing", raw_dir) or {}).get("class") or {}
+    ts = klass.get("start-time") or (listing.get("date") if "T" in str(listing.get("date") or "")
+                                     else None)
+    return to_utc(ts)
+
+
+def sle_for_class(class_id, *, raw_dir: Path | str | None = None) -> tuple[str, pd.DataFrame]:
+    """(pcw_status, pcw_blocks) with the doc rebuilt AS OF CLASS START from its revisions:
+    "asof_start" (answers before class), "empty" (no answer yet at class start, or a doc the
+    harvest created), "none" (no workbook, or none existed before class), "unknown" (no
+    start time or the replay failed: answers are then left out)."""
+    from .sharedb import ReplayError, doc_at
+
+    raw_dir = Path(raw_dir) if raw_dir is not None else None
+    tmpl = _raw_json(class_id, "pcw_template", raw_dir)
+    meta = _raw_json(class_id, "pcw_meta", raw_dir) or {}
+    if not tmpl:
+        return STATUS_NONE, schemas.empty("pcw_blocks")
+    prompts_only = sle_blocks(tmpl, None, int(class_id))
+    start = _class_start(class_id, raw_dir)
+    if meta.get("created"):
+        return STATUS_EMPTY, prompts_only
+    revs = meta.get("history")
+    if start is None or not isinstance(revs, list) or not revs:
+        return STATUS_UNKNOWN, prompts_only
+    try:
+        asof = doc_at(revs, start.timestamp() * 1000)
+    except (ReplayError, IndexError, KeyError, TypeError, ValueError):
+        return STATUS_UNKNOWN, prompts_only
+    if asof is None:
+        return STATUS_NONE, prompts_only
+    b = sle_blocks(tmpl, asof, int(class_id))
+    return (STATUS_ASOF if (b["answer_words"].sum() > 0 or b["n_files"].sum() > 0)
+            else STATUS_EMPTY), b
 
 
 def pcw_for_class(class_id, *, raw_dir: Path | str | None = None, class_start=None,
@@ -432,9 +534,16 @@ def blocks_table(class_ids: Sequence, *, raw_dir: Path | str | None = None,
                  reads_verified: bool = True, log_path=None) -> tuple[pd.DataFrame, dict]:
     """`pcw_blocks` for many classes plus {class_id: pcw_status} (status goes to classes)."""
     parts, status = [], {}
+    rd = Path(raw_dir) if raw_dir is not None else None
     for cid in class_ids:
-        s, b = pcw_for_class(cid, raw_dir=raw_dir, reads_verified=reads_verified,
-                             log_path=log_path)
+        meta = _raw_json(cid, "pcw_meta", rd)
+        if meta is None:                                        # never harvested
+            s, b = STATUS_NONE, schemas.empty("pcw_blocks")
+        elif meta.get("history") is not None or not meta.get("template_id"):
+            s, b = sle_for_class(cid, raw_dir=raw_dir)         # real SLE format (D8)
+        else:
+            s, b = pcw_for_class(cid, raw_dir=raw_dir, reads_verified=reads_verified,
+                                 log_path=log_path, class_start=_class_start(cid, rd))
         status[cid] = s
         if len(b):
             parts.append(b)

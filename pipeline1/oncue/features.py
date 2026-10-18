@@ -1477,11 +1477,20 @@ def cli(args) -> int:
     all_pcw = load_tables(("classes", "pcw_blocks"))
     all_classes, all_blocks = table(all_pcw, "classes"), table(all_pcw, "pcw_blocks")
     znull_for = _znull_builder(all_classes, all_blocks, enc)
-    frames, embs, offset = [], [], 0
+    frames, offset = [], 0
     with_points = set(pts["class_id"].astype(int))       # labels wrote the population
-    for cid in classes["class_id"].astype(int):
-        if cid not in with_points:
-            continue
+    # The pooled embeddings ([v15, v60, e_last, e_lastprof] per point, ~1.5k numbers) go
+    # straight to a float16 memmap, class by class: held in memory for 1.4M points they
+    # need ~9 GB (full run, 18 Oct). Rows follow the order of the points written below.
+    import time
+
+    t_start = time.time()
+    todo = [int(c) for c in classes["class_id"].astype(int) if int(c) in with_points]
+    n_total = int(pts["class_id"].astype(int).isin(todo).sum())
+    emb_path = config.TABLES_DIR / "features_emb.npy"
+    config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
+    emb_mm = None
+    for cid in todo:
         ct = class_tables(tables, cid)
         if not len(table(ct, "prep")):
             ct["prep"] = _prep_from_raw(cid)
@@ -1489,12 +1498,20 @@ def cli(args) -> int:
         df, emb = build(cid, pts, ct, encoder=enc, znull=znull_for(cid), edu=edu,
                         pcw_ref_sets=refs, return_emb=True)
         df["emb_row"] = pd.array(np.arange(len(df)) + offset, dtype="Int64")
+        emb = np.asarray(emb)
+        if emb_mm is None:
+            emb_mm = np.lib.format.open_memmap(emb_path, mode="w+", dtype=np.float16,
+                                               shape=(n_total, emb.shape[1]))
+        emb_mm[offset:offset + len(df)] = emb.astype(np.float16)
         offset += len(df)
         frames.append(df)
-        embs.append(emb)
+        if len(frames) % 25 == 0:
+            print(f"features: {len(frames)}/{len(todo)} classes, "
+                  f"{time.time() - t_start:.0f} s", flush=True)
+    if emb_mm is not None:
+        emb_mm.flush()
+        del emb_mm
     out = schemas.validate(pd.concat(frames, ignore_index=True), "features")
-    config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
     out.to_parquet(config.table_path("features"), index=False)
-    np.save(config.TABLES_DIR / "features_emb.npy", np.concatenate(embs))
     print(f"features: {len(out):,} rows x {len(schemas.feature_columns(out))} columns")
     return 0

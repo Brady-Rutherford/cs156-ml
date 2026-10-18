@@ -260,12 +260,14 @@ class _CausalConv(nn.Module):
 
 
 class CausalTCN(nn.Module):
-    """Dilated causal convolutions (kernel 3, dilations 1-8): output t sees inputs <= t."""
+    """Dilated causal convolutions (kernel 3, dilations 1-8 by default): output t sees inputs
+    <= t. Receptive field 1 + (kernel - 1) * sum(dilations) steps."""
 
-    def __init__(self, in_dim: int, channels: int = 32, dropout: float = 0.3):
+    def __init__(self, in_dim: int, channels: int = 32, dropout: float = 0.3,
+                 dilations: tuple = TCN_DILATIONS):
         super().__init__()
         layers, c = [], in_dim
-        for d in TCN_DILATIONS:
+        for d in dilations:
             layers.append(_CausalConv(c, channels, d, dropout))
             c = channels
         self.blocks = nn.Sequential(*layers)
@@ -294,11 +296,11 @@ def choose_size(in_dim: int, kind: str = "gru", lo_hi=config.GRU_PARAM_RANGE) ->
 
 
 def make_net(in_dim: int, kind: str = "gru", size: int | None = None,
-             dropout: float = 0.3) -> nn.Module:
+             dropout: float = 0.3, dilations: tuple | None = None) -> nn.Module:
     if kind == "gru":
         return HazardGRU(in_dim, size or config.GRU_HIDDEN, dropout)
     if kind == "tcn":
-        return CausalTCN(in_dim, size or 32, dropout)
+        return CausalTCN(in_dim, size or 32, dropout, dilations or TCN_DILATIONS)
     raise ValueError(f"kind must be one of {HAZARD_KINDS}")
 
 
@@ -355,15 +357,22 @@ def train_net(xs, ys, masks, *, kind: str = "gru", size: int | None = None,
               epochs: int = config.GRU_MAX_EPOCHS, chunk: int = config.GRU_CHUNK_STEPS,
               lr: float = 1e-3, weight_decay: float = 1e-2, dropout: float = 0.3,
               batch_classes: int = 8, val: tuple | None = None, patience: int = 5,
-              seed: int = config.SEED, device: str | None = None) -> TrainResult:
+              seed: int = config.SEED, device: str | None = None,
+              dilations: tuple | None = None, init_bias: float | None = None,
+              on_epoch=None) -> TrainResult:
     """Train one network on class sequences. Loss = BCE over steps with mask = 1 only (no
     pos_weight, no resampling). With `val=(xs, ys, masks)`, keep the epoch with the best
-    validation AP (early stopping); otherwise train for `epochs`."""
+    validation AP (early stopping); otherwise train for `epochs`. `init_bias` starts the
+    output at that logit (e.g. the base rate's) instead of 0 (p = 0.5). `on_epoch(epoch, net)`
+    is called after every epoch (e.g. to score held-out sessions as the net learns)."""
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     dev = _device(device)
     in_dim = xs[0].shape[1]
-    net = make_net(in_dim, kind, size or choose_size(in_dim, kind), dropout).to(dev)
+    net = make_net(in_dim, kind, size or choose_size(in_dim, kind), dropout, dilations).to(dev)
+    if init_bias is not None:
+        with torch.no_grad():
+            net.head.bias.fill_(float(init_bias))
     opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=weight_decay)
     bce = nn.BCEWithLogitsLoss(reduction="sum")
     best = (-np.inf, 0, {k: v.detach().clone() for k, v in net.state_dict().items()})
@@ -411,6 +420,8 @@ def train_net(xs, ys, masks, *, kind: str = "gru", size: int | None = None,
             else:
                 since_best += 1
         history.append(rec)
+        if on_epoch is not None:
+            on_epoch(epoch, net)
         if val is not None and since_best >= patience:
             break
     if val is not None:

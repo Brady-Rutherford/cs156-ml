@@ -123,6 +123,25 @@ def _term_name(course: dict, listing: dict, manifest_row: dict):
     return _val(term) or _val(listing.get("term")) or _val(manifest_row.get("term"))
 
 
+_SPLIT_TERMS: dict | None = None
+
+
+def _split_term(class_id) -> str | None:
+    """The term code from the step-3 split file. The listing's "term" is a Forum term id
+    (e.g. 36), not a name, and no course term is synced, so 457 of 477 classes had no term
+    (16 Oct)."""
+    global _SPLIT_TERMS
+    if _SPLIT_TERMS is None:
+        _SPLIT_TERMS = {}
+        if config.SPLIT_PATH.exists():
+            import pandas as pd
+
+            s = pd.read_csv(config.SPLIT_PATH, usecols=["class_id", "term"])
+            _SPLIT_TERMS = {int(c): config.term_code(tm) for c, tm in zip(s["class_id"], s["term"])
+                            if isinstance(tm, str)}
+    return _SPLIT_TERMS.get(int(class_id))
+
+
 def _local(dt, term: str | None):
     tz_name = config.TERM_TZ.get(term) if term else None
     if dt is None or not tz_name:
@@ -167,9 +186,12 @@ def class_row(class_id: int, *, raw_dir=None, manifest_row: dict | None = None,
                   or _val(man.get("section_id")))
     course_code = (_val(course.get("course-code")) or _val(listing.get("course-code"))
                    or _val(man.get("course_code")))
-    term = config.term_code(_term_name(course, listing, man))
+    term = config.term_code(_term_name(course, listing, man)) or _split_term(class_id)
     date = _val(klass.get("date")) or _val(item.get("date")) or _val(man.get("date"))
-    sched = parse_iso(klass.get("start-time") or item.get("start-time"))
+    # The listing's "date" is the start as a full UTC timestamp when no "start-time" is synced
+    # (all 739 classes, 16 Oct): "2025-09-29T21:00:00Z". A bare date is not a start time.
+    listed = item.get("date") if "T" in str(item.get("date") or "") else None
+    sched = parse_iso(klass.get("start-time") or item.get("start-time") or listed)
     local = _local(sched, term)
     segs = recording_timeline(klass)
     rec_start = segs[0].wall_start_ms if segs else None
