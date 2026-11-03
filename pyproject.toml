@@ -24,6 +24,7 @@ dependencies = [
     "requests>=2.34.2",
     "setfit>=1.2.0",
     "reportlab>=5.0.1",
+    "xgboost>=3.4.1",
 ]
 
 [build-system]
