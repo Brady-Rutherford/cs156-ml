@@ -3,6 +3,21 @@
 *Handoff note, updated 15 Oct 2026 (night, after the full run of steps 4-5). Due Fri 16 Oct (closes Sun 18 Oct). Start a new chat with:
 "Read `pipeline1/PROCESS.md` and `pipeline1/design/amendments.md`, then run the next step."*
 
+## Update, 3 Nov 2026: new classes added
+
+- **Step 1:** Forum sync (`oncue.harvest.run_sync`, after a fresh cookie) fetched 16 classes recorded
+  since 13 Oct; 755 synced in total, 0 failed.
+- **Step 2:** `02_clean/clean.py` finds 7 of them usable (5 CS156, 2 IL18102): 484 usable classes,
+  up from 477. The other 9: 6 B145 TA sections, 2 classes marked absent, GL97 (a one-off course).
+  No previously usable class changed.
+- **Step 3:** the 7 were **appended** to `split.csv` as train. `03_split/split.py` was not rerun: with
+  new classes its per-course 20% cut-offs would move some existing classes between splits. The
+  planned reshuffle (`RERUN_PLAN.md`) reassigns everything anyway.
+- **Steps 4-5:** `oncue ingest --class ...` for the 7 (10/10 stages ok): 7 transcripts, 7 scans,
+  96 bids (40 with a known start, all re-timed; audit clips in `pipeline1/audit/`). QA: 5 pass,
+  2 fail `tile_unlocated` (104605 IL18102 14 Oct, 105084 CS156 27 Oct). 451/484 classes pass; known-start
+  raises in passing classes 2,674 -> 2,710.
+
 ## The question
 
 Can a model tell, from what is being said in class and the class context, that I am about to

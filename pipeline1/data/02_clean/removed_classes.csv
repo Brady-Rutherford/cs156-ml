@@ -30,6 +30,12 @@ class_id,course_code,course_title,term,date,title,reason
 105317,B145,Venture Initiation and Valuation,Fall 2026,2026-09-30,B145 Session 8 - The Business Plan I,TA section (not a student)
 105318,B145,Venture Initiation and Valuation,Fall 2026,2026-10-05,B145 Session 9 - The Business Plan II,TA section (not a student)
 105319,B145,Venture Initiation and Valuation,Fall 2026,2026-10-07,B145 Session 10 - Sharing the Wealth: Stock and Options,TA section (not a student)
+105320,B145,Venture Initiation and Valuation,Fall 2026,2026-10-14,B145 Session 11 - The Term Sheet: Negotiating and Structuring the Investment,TA section (not a student)
+105321,B145,Venture Initiation and Valuation,Fall 2026,2026-10-19,B145 Session 12 - Case Studies in Closing a Financing Round,TA section (not a student)
+105582,B145,Venture Initiation and Valuation,Fall 2026,2026-10-21,B145 Session 13 - Discounted Cash Flow: Theory and Methodology,TA section (not a student)
+105583,B145,Venture Initiation and Valuation,Fall 2026,2026-10-26,B145 Session 14 - Case Studies in Comparables Valuation,TA section (not a student)
+105584,B145,Venture Initiation and Valuation,Fall 2026,2026-10-28,B145 Session 15 - Option Theory and Investing in Startups,TA section (not a student)
+105585,B145,Venture Initiation and Valuation,Fall 2026,2026-11-02,B145 Session 16 - The Venture Capital Method: Valuing Pre-Revenue Startups I,TA section (not a student)
 100375,B155,Capital Allocation and Value Creation,Spring 2026,2026-02-02,"B155 Session 7 - ROIC, Growth and Value",absent
 101617,B155,Capital Allocation and Value Creation,Spring 2026,2026-03-11,B155 Session 17 - Growth Through Mergers and Acquisitions I,absent
 101620,B155,Capital Allocation and Value Creation,Spring 2026,2026-03-30,B155 Session 20 - Mergers and Acquisitions: Case,absent
@@ -119,6 +125,7 @@ class_id,course_code,course_title,term,date,title,reason
 96862,CS142,Theory of Computation,Fall 2025,2025-10-27,CS142 Session 14 - Decidable Languages,absent
 104722,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-09-15,CS156 Session 3 - Linear Algebra 2: Collinearity,absent
 105072,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-01,CS156 Session 8 - Gradients: Multivariate Derivatives,absent
+105082,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-22,CS156 Session 13 - Projections 1: Support Vector Machines & Kernels,absent
 95507,CS312,Knowledge: Information Based Decisions,Fall 2025,2025-09-12,CS312 Session 1 - Introducing CS312,not enrolled
 95508,CS312,Knowledge: Information Based Decisions,Fall 2025,2025-09-13,CS312 Session 2 - Statistical Learning,not enrolled
 95509,CS312,Knowledge: Information Based Decisions,Fall 2025,2025-09-13,CS312 Session 3 - First Small Group Sessions: Group A,not enrolled
@@ -154,6 +161,7 @@ class_id,course_code,course_title,term,date,title,reason
 83554,FA51,Formal Analyses,Spring 2024,2024-03-05,FA51 Session 16 - (9.1) Utility II - Broad Framing,absent
 84709,FA51,Formal Analyses,Spring 2024,2024-03-26,FA51 Session 20 - (12.1) Decision Trees I,absent
 85022,FA51,Formal Analyses,Spring 2024,2024-04-09,FA51 Session 24 - (14.1) Game Theory III: Multiple Players and Iterated Games,absent
+104606,IL18102,AI Lab,Fall 2026,2026-10-21,IL18102 Session 7 - Portfolio Day 2,absent
 82183,MC51,Multimodal Communications,Spring 2024,2024-02-20,MC51 Session 12 - (7.1) Workshop: Interpretation with #medium + #context,absent
 82866,MC51,Multimodal Communications,Spring 2024,2024-02-29,MC51 Session 15 - (8.2) Audiences + Contexts of Persuasion,absent
 83470,MC51,Multimodal Communications,Spring 2024,2024-03-26,MC51 Session 20 - (12.1) Film Workshop,absent
