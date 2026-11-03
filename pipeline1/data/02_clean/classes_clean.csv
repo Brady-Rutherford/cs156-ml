@@ -275,6 +275,11 @@ class_id,course_code,course_title,term,date,title
 104899,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-09-29,CS156 Session 7 - Networks 1: Feed-Forward Neural Networks
 105074,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-06,CS156 Session 9 - Metrics and Cross-Validation
 105076,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-08,CS156 Session 10 - Review 1: Unit 1 Synthesis and Assignment 1 Prep
+105078,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-15,CS156 Session 11 - Data Ethics and the Bias-Variance Trade off
+105080,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-20,CS156 Session 12 - Basis Functions 1: Functions as Parameters
+105084,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-27,CS156 Session 14 - Trees 2: XGBoost
+105086,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-10-29,CS156 Session 15 - Basis Functions 2: Ridge and Lasso
+105088,CS156,Finding Patterns in Data with Machine Learning,Fall 2026,2026-11-03,CS156 Session 16 - Dimensionality reduction 1: PCA
 76302,CX50,Complex Systems,Fall 2023,2023-09-04,CX50 Session 1 - (1.1) Complex Systems Introduction
 76313,CX50,Complex Systems,Fall 2023,2023-09-06,CX50 Session 2 - (1.2) System Mappings
 76324,CX50,Complex Systems,Fall 2023,2023-09-11,CX50 Session 3 - (2.1) Levels of Analysis
@@ -416,6 +421,8 @@ class_id,course_code,course_title,term,date,title
 104602,IL18102,AI Lab,Fall 2026,2026-09-23,IL18102 Session 3 - Sprint 1 (C&D Demo)
 104603,IL18102,AI Lab,Fall 2026,2026-09-30,IL18102 Session 4 - Portfolio Day 1
 104604,IL18102,AI Lab,Fall 2026,2026-10-07,IL18102 Session 5 - Sprint 2 (A&B Demo)
+104605,IL18102,AI Lab,Fall 2026,2026-10-14,IL18102 Session 6 - Sprint 2 (C&D Demo)
+104607,IL18102,AI Lab,Fall 2026,2026-10-28,IL18102 Session 8 - Sprint 1 (A&B demo)
 76161,MC50,Multimodal Communications,Fall 2023,2023-09-05,MC50 Session 1 - (1.1) Multimodal Communications Introduction
 76172,MC50,Multimodal Communications,Fall 2023,2023-09-07,MC50 Session 2 - (1.2) Keeping an Open Mind
 76483,MC50,Multimodal Communications,Fall 2023,2023-09-12,MC50 Session 3 - (2.1) Putting Things in Context
