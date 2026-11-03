@@ -689,3 +689,42 @@ pilot.
   pipeline1_data_private_v3.zip (id 1IlGYH6Flux__kAginY3hwFz6wuLQmNbS, 33 entries incl. the Forum
   event tables); the v2 file is in Trash. v3 is shared only with pwatson@minerva.edu (Viewer,
   email notice; general access Restricted) and the notebook's DRIVE_FILE_ID points to it.
+- **"Would XGBoost, alone or with the TCN and MLP, do well with all the training?" (2 Nov)** Yes, but it
+  does not beat the final pipeline. `xgb_full.py`, 467 s on the laptop, results in `data/results/xgb/`.
+  Same protocol as the HGB stacks; settings chosen on validation and frozen before test. Within-session
+  AP (AP_w), validation then test: MLP + TCN logistic 0.0734, 0.0758; XGBoost + MLP + TCN on all 274
+  train classes 0.0757, 0.0757; the same as 4 fold models 0.0655, 0.0746; XGBoost + TCN (fold models)
+  0.0612, 0.0750; XGBoost alone (fold models) 0.0569, 0.0691. HGB on validation: 0.0532 alone, 0.0581
+  with MLP + TCN. The final pipeline's gain over the best XGBoost is -0.0002 on test (95% interval
+  -0.0091 to +0.0091), so a tie; its AP is higher on both splits (test 0.0354 vs 0.0333). On test it
+  warns of 35 of 533 raises against 18 for XGBoost + MLP + TCN (fold models), at about the same share
+  right (6.7%, 6.5%). Kept as the final pipeline: validation gives no clear win and it is simpler.
+  **This was a second look at test, for the XGBoost models only.** HGB has still never been scored on
+  test, and no saved result in `data/results/flex/` changed (checksums).
+- **"What is the strongest now, still MLP + TCN?" (2 Nov)** Yes. See above; before that run XGBoost had
+  only been tried on 20 classes (`xgb_vs_hgb.ipynb`: pooled AP 1.55x chance, against 1.71x for MLP + TCN).
+- **"How did I train before, on GPU? Is an RTX 4090 needed, or is the Mac fine?" (2 Nov)** The Mac is
+  fine. The MLP and TCN trained on the Mac's own GPU (`device="mps"`) and the trees on its CPU. The
+  pod's 5 A40 GPUs only decoded video for the hand scan. One XGBoost fit on all train takes 9 s and
+  1.8 GB. A 4090 would not be used as the code stands (`flex._device()` picks only MPS or CPU, the TCN
+  passes `device="mps"`), and could change the results slightly. It is worth having for the transformer.
+- **"For an improved headline later, would we need to reshuffle?" (2 Nov)** No. A reshuffle puts classes
+  that shaped the features, settings and final model into the new test set, so it is not unseen. In
+  order: score classes after 8 Oct 2026 (where the data stops) once, with the model frozen; or keep
+  this split, choose on validation only, declare it, score test once more and report both numbers as a
+  second look; use reshuffles only to check how much the result depends on the split.
+- **"How much better is XGBoost? Is it running on all 274 train classes?" (2 Nov)** Better than HGB, not
+  better than the final pipeline. On validation, with fold models on both sides: AP_w 0.0569 vs 0.0532
+  alone (+7%), 0.0655 vs 0.0581 with MLP + TCN (+13%); no paired interval was run for these. Yes, 274:
+  the settings search and the "all train" fits use all 274 (385,063 moments), and each fold model uses
+  3/4 of them, as the MLP and TCN do. The MLP and TCN scores in the stacks stay out-of-fold. Charts:
+  `xgb_full_plots.py` writes `data/results/xgb/figures/`; the five sessions come from a fixed rule.
+- **"Why is this so hard to predict? What would be a better model?" (2 Nov)** Measured on train and
+  validation only. Few events: 385,063 train moments hold only 1,637 raises, median 5 per class. Many
+  raises cannot be warned at all, because no counting moment falls 2-15 s before them: 999 of 1,637 on
+  train, 326 of 504 on validation are warnable. The final pipeline knows the stretch more than the
+  moment: on validation its score is 1.36x normal 60 s before a raise and only 1.52x at 6 s. Five model
+  types land close together, so the limit looks like the inputs, not the architecture (a judgement, not
+  proven). To try, on validation only: XGBoost `rank:map` grouped by class (optimises within-session
+  order directly); a multi-task TCN with extra labels such as speech onsets; new signals (audio, other
+  students' hands, my face, see `later/the_tell_face.md`). None of these is tested yet.
